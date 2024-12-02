@@ -1,0 +1,16 @@
+body {
+  font-family: sans-serif, Arial, Helvetica;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
