@@ -6,6 +6,7 @@ import Data from './pages/Data';
 import Contact from './pages/Contact';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import Scaffold from './pages/Scaffold';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path='/' element={<Home />} />
           <Route path='/data' element={<Data />} />
           <Route path='/contact' element={<Contact />} />
+          <Route path='/grna' element={<Scaffold />} />
       </Routes>
 
       <Footer />

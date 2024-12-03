@@ -7,10 +7,8 @@ const port = 5000;
 app.use(cors());
 app.use(express.json());
 
-
-const cas9Routes = require('./routes/cas9');
-app.use('/cas9', cas9Routes);
-
+const gRNARoutes = require('./routes/gRNA_scaffold');
+app.use('/grna', gRNARoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
