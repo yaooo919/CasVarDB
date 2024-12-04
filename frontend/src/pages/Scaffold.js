@@ -49,13 +49,22 @@ function Scaffold() {
     const selectedData = filteredItems.filter((item) =>
       selectedItems.includes(item.ID)
     );
-    const blob = new Blob([JSON.stringify(selectedData, null, 2)], {
-      type: "application/json",
+  
+    const headers = Object.keys(selectedData[0]).join(",");
+    const rows = selectedData.map((item) =>
+      Object.values(item)
+        .map((value) => `"${value}"`) 
+        .join(",")
+    );
+    const csvContent = [headers, ...rows].join("\n");
+  
+    const blob = new Blob([csvContent], {
+      type: "text/csv",
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "selected_data.json";
+    link.download = "selected_data.csv";
     link.click();
     URL.revokeObjectURL(url);
   };
