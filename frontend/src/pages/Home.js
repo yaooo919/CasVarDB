@@ -16,7 +16,7 @@ function Home() {
                     <div class="content">
                         <div class="text-column">
                             <h1>Welcome to the Cas9 Variant Database</h1>
-                            <p>Cas 9 Variant Database is a database that contains .... It has 
+                            <p>Cas9 Variant Database is a database that contains .... It has&nbsp;
                                 <strong><span class="standout-text">999,999</span></strong> datapoints across <strong><span class="standout-text">5</span></strong> studies</p>
                             
                             <div class="text-column-buttons">

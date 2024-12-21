@@ -1,11 +1,14 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
 function Navbar() {
+    const location = useLocation();
+    const navbarClass = location.pathname === "/" ? "navbar-home" : "navbar-data";
+
     return (
         <div>
             <div className="navbar-bg">
-                <div className="navbar-content">
+                <div className={`${navbarClass}`}>
                     <div className="logo">
                         <Link to='/'>Cas9 Variant Database</Link>
                     </div>

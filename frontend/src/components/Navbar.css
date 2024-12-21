@@ -4,7 +4,7 @@
     height: 50px;
 }
   
-.navbar-content {
+.navbar-home {
     color: #fff;
     display: flex;
     justify-content: space-between;
@@ -12,7 +12,16 @@
     max-width: 1200px;
     margin: auto; 
 }
-  
+
+.navbar-data {
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 90%;
+    margin: auto; 
+}
+
 .logo a {
     font-size: 20px;
     font-weight: bold;
