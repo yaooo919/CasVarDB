@@ -94,18 +94,17 @@
 
 
 /* table */
-.table-container {
-  flex: 1;
+.scaffold-table-container {
   margin: 20px auto;
-  max-width: 90%;
-  overflow-y: auto;
+  max-width: 90vw;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 120px;
   }
 
 table {
-  width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout: auto;
+  min-width: 90vw;
 }
 
 th, td {
@@ -113,6 +112,7 @@ th, td {
   text-align: left;
   border-bottom: 1px solid #ddd;
   word-wrap: break-word;
+  max-width: 300px;
 }
 
 thead {
@@ -120,7 +120,6 @@ thead {
   color: white;
   vertical-align: top;
   border-bottom: 1px solid #ddd;
-  word-wrap: break-word;
 }
 
 .col-checkbox {

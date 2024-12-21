@@ -22,7 +22,7 @@ function Scaffold() {
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedItems(items.map((item) => item.ID));
+      setSelectedItems(items.map((item) => item.id));
     } else {
       setSelectedItems([]);
     }
@@ -47,7 +47,7 @@ function Scaffold() {
 
   const handleDownload = () => {
     const selectedData = filteredItems.filter((item) =>
-      selectedItems.includes(item.ID)
+      selectedItems.includes(item.id)
     );
   
     const headers = Object.keys(selectedData[0]).join(",");
@@ -98,7 +98,7 @@ function Scaffold() {
         </div>
       </div>
 
-      <table className="table-container"> 
+      <table className="scaffold-table-container"> 
         <thead>
           <tr>
             <th className="col-checkbox">
@@ -116,12 +116,12 @@ function Scaffold() {
         </thead>
         <tbody>
           {filteredItems.map((item) => (
-            <tr key={item.ID}>
+            <tr key={item.id}>
               <td>
                 <input
                   type="checkbox"
-                  checked={selectedItems.includes(item.ID)}
-                  onChange={() => handleSelect(item.ID)}
+                  checked={selectedItems.includes(item.id)}
+                  onChange={() => handleSelect(item.id)}
                 />
               </td>
               <td>{item.gRNA_scaffold}</td>

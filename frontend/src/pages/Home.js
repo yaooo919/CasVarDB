@@ -5,7 +5,8 @@ function Home() {
     return (
         <div>
             <div class="video-background">
-                <iframe src="https://player.vimeo.com/video/871987849?autoplay=1&loop=1&muted=1&background=1" 
+                <iframe src="https://player.vimeo.com/video/871987849?autoplay=1&loop=1&muted=1&background=1"
+                    title='CRISPR/Cas9 interaction video' 
                     frameborder="0" 
                     allow="autoplay; fullscreen" 
                     allowfullscreen>
