@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import ReactPaginate from "react-paginate";
 import './Data.css';
 
 function Data() {
@@ -11,6 +12,7 @@ function Data() {
     const [pageSize, setPageSize] = useState(50);
     const [totalItems, setTotalItems] = useState(0);
 
+    const totalPages = Math.max(Math.ceil(totalItems / pageSize), 1);
     const startIndex = (currentPage - 1) * pageSize;
     const startItem = totalItems > 0 ? startIndex + 1 : 0;
     const endItem = Math.min(startIndex + pageSize, totalItems);
@@ -36,19 +38,23 @@ function Data() {
         fetchData();
     }, [currentPage, pageSize, searchTerm, searchField]);
 
-    const handlePageChange = (page) => {
-      if (page >= 1 && page <= Math.ceil(totalItems / pageSize)) {
-        setCurrentPage(page);
-      }
-    };
-
+    const handlePageClick = (data) => {
+      setCurrentPage(data.selected + 1);
+    }
+        
   const handleSelectAll = (e) => {
+    const currentPageIds = items.map((item) => item.id);
+
     if (e.target.checked) {
-      setSelectedItems(items.map((item) => item.id));
+      setSelectedItems((prev) => [...new Set([...prev, ...currentPageIds])]);
     } else {
-      setSelectedItems([]);
+      setSelectedItems((prev) => prev.filter((id) => !currentPageIds.includes(id)));
     }
   };
+
+  const isCurrentPageAllSelected = items.every((item) => 
+    selectedItems.includes(item.id)
+  );
 
   const handleSelect = (id) => {
     setSelectedItems((prev) =>
@@ -58,18 +64,17 @@ function Data() {
 
   const handleSearch = () => {
     setCurrentPage(1);
-    fetchData();
   };
 
   const handleDownload = () => {
+    const selectedData = items.filter((item) =>
+      selectedItems.includes(item.id)
+    );
+
     if (selectedData.length === 0) {
       alert("No items selected for download");
       return;
     }
-
-    const selectedData = items.filter((item) =>
-      selectedItems.includes(item.id)
-    );
 
     const headers = Object.keys(selectedData[0]).join(",");
     const rows = selectedData.map((item) =>
@@ -100,7 +105,7 @@ function Data() {
             <div className="controls">
                 <div className="total-count-column">
                     <p><span id="total">Total: </span><span id="item-count">{totalItems}</span></p>
-                    <p>Showing {startItem} to {endItem} of {totalItems} entries</p>
+                    <p id="entry-count">Showing {startItem} to {endItem} of {totalItems} entries</p>
                 </div>
                 <div className="search-download-column">
                     <div className="search-field">
@@ -143,7 +148,7 @@ function Data() {
                           <input
                               type="checkbox"
                               onChange={handleSelectAll}
-                              checked={selectedItems.length === items.length}
+                              checked={isCurrentPageAllSelected}
                           />
                           </th>
                           <th className="col-1">Spacer sequence (raw)</th>
@@ -203,29 +208,36 @@ function Data() {
                   </tbody>
               </table>
             </div>
-
-            <div className="page-size-selector">
-                <label>
-                    Items per page:
-                    <select value={pageSize} onChange={(e) => setPageSize(parseInt(e.target.value))}>
-                        <option value={50}>50</option>
-                        <option value={100}>100</option>
-                        <option value={200}>200</option>
-                    </select>
-                </label>
-            </div>  
             
-            <div className="pagination">
-                  <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
-                    Prev
-                  </button>
-                  <span>
-                    Page {currentPage} of {Math.ceil(totalItems / pageSize)}
-                  </span>
-                  <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === Math.ceil(totalItems / pageSize)}>
-                    Next
-                  </button>
+            <div className="pagination-container">
+              <div className="page-size-selector">
+                  <label>
+                      Items per page:&nbsp;
+                      <select value={pageSize} onChange={(e) => setPageSize(parseInt(e.target.value))}>
+                          <option value={50}>50</option>
+                          <option value={100}>100</option>
+                          <option value={200}>200</option>
+                      </select>
+                  </label>
+              </div>  
+              
+              <div className="pagination">
+                <ReactPaginate
+                  previousLabel={"Prev"}
+                  nextLabel={"Next"}
+                  breakLabel={"..."}
+                  pageCount={totalPages}
+                  marginPagesDisplayed={1}
+                  pageRangeDisplayed={5}
+                  onPageChange={handlePageClick}
+                  containerClassName={"pagination"}
+                  activeClassName={"active"}
+                  previousClassName={currentPage === 1 ? "disabled" : ""}
+                  nextClassName={currentPage === totalPages ? "disabled" : ""}  
+                />
+              </div>
             </div>
+            
         </div>
 
     )
