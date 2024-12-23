@@ -1,47 +1,218 @@
 import React, { useEffect, useState } from "react";
+import { Tooltip, OverlayTrigger, Modal, Button } from 'react-bootstrap';
 import axios from "axios";
 import ReactPaginate from "react-paginate";
 import './Data.css';
+import colDescriptionImg from "../assets/col-description.png";
+
+
+const columnDescriptions = {
+  "col-1": {
+    title: "Spacer sequence (raw)",
+    short: "The DNA representation of the sgRNA's spacer region",
+    full: (
+      <>
+        <p>The DNA representation of the sgRNA's spacer region without any added padding. For SpCas9, the spacer sequence is typically 20 nt long, although other Cas9 variants may have different guide lengths. A 5’ guanosine (G) was added if it was missing (i.e., implied) in the raw sequences from the source data.</p>
+        <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
+      </>
+    )
+  },
+  "col-2": {
+    title: "Target sequence (raw)",
+    short: "Target context sequence taken from the non-target DNA strand",
+    full: (
+      <>
+        <p>The original target context sequence taken directly from the non-target DNA strand in the source data. It includes</p>
+        <ul>
+          <li><b>5' Context Sequence:</b> Optional nucleotides upstream of the target sequence</li>
+          <li><b>Target Sequence:</b> Main target sequence (e.g., 20 nt for SpCas9)</li>
+          <li><b>PAM Sequence:</b> Protospacer Adjacent Motif, specific to each Cas9 variant (e.g., 5'-NGG for SpCas9)</li>
+          <li><b>3' Context Sequence:</b> Optional nucleotides downstream of the PAM</li>
+        </ul>
+        <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
+      </>
+    ),
+  },
+  "col-3": {
+    title: "Spacer sequence",
+    short: "The padded version of the raw spacer sequence",
+    full: (
+      <>
+        <p>The padded version of the raw spacer sequence, with 'N' padding added to the 5' and 3' ends. The padding extends the total length of the spacer sequence to 42 nt, ensuring alignment with the target context sequence.</p>
+        <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
+      </>
+    ),
+  },
+  "col-4": {
+    title: "Target context sequence",
+    short: "The padded version of the raw target sequence",
+    full: (
+      <>
+        <p>Derived from the raw target context sequence with added 'N' padding on both the 5' and 3' ends to align the PAM with the 27th nucleotide position. The full padded sequence is 42 nt long and can be divided into</p>
+        <ul>
+          <li><b>5' context + target:</b> 27 nt</li>
+          <li><b>PAM + 3' context:</b> 15 nt</li>
+        </ul>
+        <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
+      </>
+    ),
+  },
+  "col-5": {
+    title: "Variant",
+    short: "The protein containing the Cas9 nuclease",
+    full: (
+      <>
+        <p>The protein containing the Cas9 nuclease. Variants come in two types</p>
+        <ul>
+          <li><b>Cas9-NLS-FLAG-P2A:</b> for nucleases not from the "Small Cas9" paper. </li>
+          <li><b>NLS-Cas9-NLS-FLAG-P2A:</b> for nucleases from the "Small Cas9" paper. </li>
+        </ul>
+        <p>In these names, <b>NLS</b> refers to a nuclear localization signal, <b>FLAG</b> refers to the FLAG protein tag, and <b>P2A</b> is a type of 2A peptide.</p>
+      </>
+    )
+  },
+  "col-6": {
+    title: "Nuclease",
+    short: "The Cas9 nuclease contained within each variant",
+    full: "The Cas9 nuclease contained within each variant."
+  },
+  "col-7": {
+    title: "gRNA scaffold",
+    short: "The scaffold of the sgRNA",
+    full: "The scaffold of the sgRNA, consisting of the repeat-anti-repeat loop and other stem loops."
+  },
+  "col-8": {
+    title: "Day",
+    short: "The timepoint at which indel frequencies were measured",
+    full: "The timepoint at which indel frequencies were measured. After introducing Cas9 into cells via transfection (for “Wild SpCas9,” “xCas9_NG,” and “DeepHF” studies) or transduction (for “SpCas9,” “Small Cas9,” “Base Editor,” and “Sniper” studies), cells were harvested and indel frequencies were analyzed by deep sequencing."
+  },
+  "col-9": {
+    title: "tRNA feature",
+    short: "Whether tRNA-associated processing happened",
+    full: "Indicates whether tRNA-associated processing happened. If so, the tRNA-N20 sgRNA was cleaved to yield an N20 sgRNA (for more details, refer to Supplementary Figure 3 of the “SpCas9” study)."
+  },
+  "col-10": {
+    title: "Study",
+    short: "The source study from which the data was obtained.",
+    full: (
+      <>
+        <p>The source study from which the data was obtained. Each study has an abbreviated name.
+          See <a href="" style={{ color: 'blue', textDecoration: 'underline' }}>Studies</a> for more details.
+        </p>
+      </>
+    )
+  },
+  "col-11": {
+    title: "Library",
+    short: "The lentiviral library used for the data point",
+    full: "The lentiviral library used for the data point."
+  },
+  "col-12": {
+    title: "Table",
+    short: "The supplementary table number from the publication containing the data",
+    full: "The supplementary table number from the publication containing the data."
+  },
+  "col-13": {
+    title: "Sheet",
+    short: "The sheet in the supplementary table where the data can be found",
+    full: "The sheet in the supplementary table where the data can be found."
+  },
+  "col-14": {
+    title: "src_idx",
+    short: "Row number in the sheet corresponding to the specific data point",
+    full: "Row number in the sheet corresponding to the specific data point."
+  },
+  "col-15": {
+    title: "n_data",
+    short: "Number of times the experiment was repeated for the same guide-target-scaffold-Cas9 combination",
+    full: "Number of times the experiment was repeated for the same guide-target-scaffold-Cas9 combination."
+  },
+  "col-16": {
+    title: "Partition",
+    short: "The part the data point belongs to",
+    full: "Indicates whether the data point was used in deep learning, and if so, whether it was part of the training or test set, or which fold it belongs to."
+  },
+  "col-17": {
+    title: "Barcode",
+    short: "A unique identifier for each experiment",
+    full: "A unique identifier for each experiment, allowing identification of individual experiments, especially where some guide-target pairs were included multiple times for reliable data recovery. "
+  },
+  "col-18": {
+    title: "Background subtracted indel frequency (%)",
+    short: "A list of lists of floats, where each inner list corresponds to data from a single study",
+    full: "This is represented as a list of lists of floats, where each inner list corresponds to data from a single study. Each float in these lists is capped at 100 but may occasionally fall slightly below zero due to experimental error."
+  },
+  "col-19": {
+    title: "Mean background subtracted indel frequency (source, %)",
+    short: "A list of floats, where each float represents the average value of the Background-subtracted indel frequencies (%) for a corresponding list",
+    full: (
+      <>
+        <p>A list of floats, where each float represents the average value of the <b> Background-subtracted indel frequencies (%)</b> for a corresponding list.</p>
+      </>
+    )
+  },
+  "col-20": {
+    title: "Mean background subtracted indel frequency",
+    short: "A single float obtained through a weighted average",
+    full: (
+      <>
+        <p>This is a single float obtained through a weighted average. The weights are the integers in <b>n_data</b>, and the values are the floats in <b>Mean background-subtracted indel frequency (source, %)</b>. It is computed as the dot product of these two vectors divided by the sum of the weights.</p>
+      </>
+    )
+  }
+}
 
 function Data() {
-    const [items, setItems] = useState([]);
-    const [selectedItems, setSelectedItems] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [searchField, setSearchField] = useState("spacer_sequence_raw");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(50);
-    const [totalItems, setTotalItems] = useState(0);
+  const [items, setItems] = useState([]);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
 
-    const totalPages = Math.max(Math.ceil(totalItems / pageSize), 1);
-    const startIndex = (currentPage - 1) * pageSize;
-    const startItem = totalItems > 0 ? startIndex + 1 : 0;
-    const endItem = Math.min(startIndex + pageSize, totalItems);
+  const [searchField, setSearchField] = useState("spacer_sequence_raw");
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  
+  const [hoveredColumn, setHoveredColumn] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalContent, setModalContent] = useState({title:"", full:""});
+  
+  const startIndex = (currentPage - 1) * pageSize;
+  const startItem = totalItems > 0 ? startIndex + 1 : 0;
+  const endItem = Math.min(startIndex + pageSize, totalItems);
+  const totalPages = Math.max(Math.ceil(totalItems / pageSize), 1);
 
-    const fetchData = async() => {
-      try {
-        const response = await axios.get(`http://localhost:5000/data`, {
-          params: {
-            page: currentPage,
-            pageSize: pageSize,
-            searchTerm: searchTerm,
-            searchField: searchField
-          }
-        });
-        setItems(response.data.rows);
-        setTotalItems(response.data.total);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-      }
+  const fetchData = async() => {
+    try {
+      const response = await axios.get(`http://localhost:5000/data`, {
+        params: {
+          page: currentPage,
+          pageSize: pageSize,
+          searchField: searchField,
+          searchTerm: searchTerm
+        }
+      });
+      setItems(response.data.rows);
+      setTotalItems(response.data.total);
+    } catch (err) {
+      console.error("Error fetching data:", err);
     }
+  }
 
-    useEffect(() => {
-        fetchData();
-    }, [currentPage, pageSize, searchTerm, searchField]);
+  useEffect(() => {
+    fetchData();
+  }, [currentPage, pageSize, searchField, searchTerm]);
 
-    const handlePageClick = (data) => {
-      setCurrentPage(data.selected + 1);
-    }
-        
+  const handleSearch = () => {
+    setCurrentPage(1);
+  };
+
+  const handleSelect = (id) => {
+    setSelectedItems((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
   const handleSelectAll = (e) => {
     const currentPageIds = items.map((item) => item.id);
 
@@ -56,15 +227,9 @@ function Data() {
     selectedItems.includes(item.id)
   );
 
-  const handleSelect = (id) => {
-    setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
-
-  const handleSearch = () => {
-    setCurrentPage(1);
-  };
+  const handlePageClick = (data) => {
+    setCurrentPage(data.selected + 1);
+  }
 
   const handleDownload = () => {
     const selectedData = items.filter((item) =>
@@ -83,7 +248,7 @@ function Data() {
         .join(",")
     );
     const csvContent = [headers, ...rows].join("\n");
-  
+
     const blob = new Blob([csvContent], {
       type: "text/csv",
     });
@@ -94,153 +259,184 @@ function Data() {
     link.click();
     URL.revokeObjectURL(url);
   };
-    return (
-        <div>
-            <div className="header-container">
-                <div className="header">
-                    <h1>Data</h1>
-                </div>
-            </div>
-            
-            <div className="controls">
-                <div className="total-count-column">
-                    <p><span id="total">Total: </span><span id="item-count">{totalItems}</span></p>
-                    <p id="entry-count">Showing {startItem} to {endItem} of {totalItems} entries</p>
-                </div>
-                <div className="search-download-column">
-                    <div className="search-field">
-                        <span className="search-by">
-                            <select
-                              value={searchField}
-                              onChange={(e) => setSearchField(e.target.value)}
-                            >
-                                <option value="spacer_sequence_raw">Spacer sequence (raw)</option>
-                                <option value="target_context_sequence_raw">Target context sequence (raw)</option>
-                                <option value="spacer_sequence">Spacer sequence</option>
-                                <option value="target_context_sequence">Target context sequence</option>
-                                <option value="variant">Variant</option>
-                                <option value="nuclease">Nuclease</option>
-                                <option value="gRNA_scaffold">gRNA scaffold</option>
-                                <option value="day">Day</option>
-                                <option value="tRNA_feature">tRNA feature</option>
-                                <option value="study">Study</option>
-                            </select>
-                        </span>
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        <button onClick={handleSearch}>Search</button>
-                    </div>
-                
-                    <div className="download-link">
-                        <a href="#" onClick={handleDownload}>Download Checked <i class="bi bi-file-earmark-arrow-down-fill"></i></a>
-                    </div> 
-                </div>
-            </div>
 
-            <div className="data-table-container">
-              <table> 
-                  <thead>
-                      <tr>
-                          <th className="col-0">
-                          <input
-                              type="checkbox"
-                              onChange={handleSelectAll}
-                              checked={isCurrentPageAllSelected}
-                          />
-                          </th>
-                          <th className="col-1">Spacer sequence (raw)</th>
-                          <th className="col-2">Target context sequence (raw)</th>
-                          <th className="col-3">Spacer sequence</th>
-                          <th className="col-4">Target context sequence</th>
-                          <th className='col-5'>Variant</th>
-                          <th className='col-6'>Nuclease</th>
-                          <th className='col-7'>gRNA scaffold</th>
-                          <th className='col-8'>Day</th>
-                          <th className='col-9'>tRNA feature</th>
-                          <th className='col-10'>Study</th>
-                          <th className='col-11'>Library</th>
-                          <th className='col-12'>Table</th>
-                          <th className='col-13'>Sheet</th>
-                          <th className='col-14'>src_idx</th>
-                          <th className='col-15'>n_data</th>
-                          <th className='col-16'>Partition</th>
-                          <th className='col-17'>Barcode</th>
-                          <th className='col-18'>Background subtracted indel frequency (%)</th>
-                          <th className='col-19'>Mean background subtracted indel frequency (source, %)</th>
-                          <th className='col-20'>mean background subtracted indel frequency</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                  {items.map((item) => (
-                      <tr key={item.id}>
-                      <td>
-                          <input
-                          type="checkbox"
-                          checked={selectedItems.includes(item.id)}
-                          onChange={() => handleSelect(item.id)}
-                          />
-                      </td>
-                      <td>{item.spacer_sequence_raw}</td>
-                      <td>{item.target_context_sequence_raw}</td>
-                      <td>{item.spacer_sequence}</td>
-                      <td>{item.target_context_sequence}</td>
-                      <td>{item.variant}</td>
-                      <td>{item.nuclease}</td>
-                      <td>{item.gRNA_scaffold}</td>
-                      <td>{item.day}</td>
-                      <td>{item.tRNA_feature}</td>
-                      <td>{item.study}</td>
-                      <td>{item.library}</td>
-                      <td>{item.table_number}</td>
-                      <td>{item.sheet_number}</td>
-                      <td>{item.src_idx}</td>
-                      <td>{item.n_data}</td>
-                      <td>{item.partition}</td>
-                      <td>{item.barcode}</td>
-                      <td>{item.background_subtracted_indel_frequencies}</td>
-                      <td>{item.mean_background_subtracted_indel_frequency_source}</td>
-                      <td>{item.mean_background_subtracted_indel_frequency}</td>
-                      </tr>
-                  ))}
-                  </tbody>
-              </table>
-            </div>
-            
-            <div className="pagination-container">
-              <div className="page-size-selector">
-                  <label>
-                      Items per page:&nbsp;
-                      <select value={pageSize} onChange={(e) => setPageSize(parseInt(e.target.value))}>
-                          <option value={50}>50</option>
-                          <option value={100}>100</option>
-                          <option value={200}>200</option>
-                      </select>
-                  </label>
-              </div>  
-              
-              <div className="pagination">
-                <ReactPaginate
-                  previousLabel={"Prev"}
-                  nextLabel={"Next"}
-                  breakLabel={"..."}
-                  pageCount={totalPages}
-                  marginPagesDisplayed={1}
-                  pageRangeDisplayed={5}
-                  onPageChange={handlePageClick}
-                  containerClassName={"pagination"}
-                  activeClassName={"active"}
-                  previousClassName={currentPage === 1 ? "disabled" : ""}
-                  nextClassName={currentPage === totalPages ? "disabled" : ""}  
-                />
-              </div>
-            </div>
-            
+  const renderTooltip = (column) => (
+    <Tooltip id={`tooltip-${column}`}>
+      {columnDescriptions[column].short} <br />
+      <a href="#" onClick={() => handleShowModal(column)} style={{ fontSize: '12px', color: 'blue', textDecoration: 'underline' }}>View More</a>
+    </Tooltip>
+  );
+
+  const handleShowModal = (column) => {
+    setModalContent({
+      title: columnDescriptions[column].title,
+      full: columnDescriptions[column].full
+    });
+    setShowModal(true);
+  }
+
+  const handleCloseModal = () => setShowModal(false);
+
+  return (
+    <div>
+      <div className="header-container">
+          <div className="header">
+              <h1>Data</h1>
+          </div>
+      </div>
+          
+      <div className="controls">
+        <div className="total-count-column">
+          <p><span id="total">Total: </span><span id="item-count">{totalItems}</span></p>
+          <p id="entry-count">Showing {startItem} to {endItem} of {totalItems} entries</p>
         </div>
 
-    )
+        <div className="search-download-column">
+          <div className="search-field">
+            <span className="search-by">
+              <select
+                value={searchField}
+                onChange={(e) => setSearchField(e.target.value)}
+              >
+                <option value="spacer_sequence_raw">Spacer sequence (raw)</option>
+                <option value="target_context_sequence_raw">Target context sequence (raw)</option>
+                <option value="spacer_sequence">Spacer sequence</option>
+                <option value="target_context_sequence">Target context sequence</option>
+                <option value="variant">Variant</option>
+                <option value="nuclease">Nuclease</option>
+                <option value="gRNA_scaffold">gRNA scaffold</option>
+                <option value="day">Day</option>
+                <option value="tRNA_feature">tRNA feature</option>
+                <option value="study">Study</option>
+              </select>
+            </span>
+            <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button onClick={handleSearch}>Search</button>
+          </div>
+          
+          <div className="download-link">
+            <a href="#" onClick={handleDownload}>Download Checked <i class="bi bi-file-earmark-arrow-down-fill"></i></a>
+          </div> 
+        </div>
+      </div>
+
+      <div className="data-table-container">
+        <table> 
+          <thead>
+            <tr>
+              <th className="col-0">
+              <input
+                  type="checkbox"
+                  onChange={handleSelectAll}
+                  checked={isCurrentPageAllSelected}
+              />
+              </th>
+
+              {Object.keys(columnDescriptions).map((column) => (
+                <th
+                  key={column}
+                  onMouseEnter={() => setHoveredColumn(column)}
+                  onMouseLeave={() => setHoveredColumn(null)}
+                >                            
+                <OverlayTrigger
+                  show={hoveredColumn === column}
+                  placement="top"
+                  overlay={renderTooltip(column)}
+                >
+                <span>{columnDescriptions[column].title}</span>
+                </OverlayTrigger>
+                </th>
+              ))}                        
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item) => (
+              <tr key={item.id}>
+                <td>
+                    <input
+                    type="checkbox"
+                    checked={selectedItems.includes(item.id)}
+                    onChange={() => handleSelect(item.id)}
+                    />
+                </td>
+                <td>{item.spacer_sequence_raw}</td>
+                <td>{item.target_context_sequence_raw}</td>
+                <td>{item.spacer_sequence}</td>
+                <td>{item.target_context_sequence}</td>
+                <td>{item.variant}</td>
+                <td>{item.nuclease}</td>
+                <td>{item.gRNA_scaffold}</td>
+                <td>{item.day}</td>
+                <td>{item.tRNA_feature}</td>
+                <td>{item.study}</td>
+                <td>{item.library}</td>
+                <td>{item.table_number}</td>
+                <td>{item.sheet_number}</td>
+                <td>{item.src_idx}</td>
+                <td>{item.n_data}</td>
+                <td>{item.partition}</td>
+                <td>{item.barcode}</td>
+                <td>{item.background_subtracted_indel_frequencies}</td>
+                <td>{item.mean_background_subtracted_indel_frequency_source}</td>
+                <td>{item.mean_background_subtracted_indel_frequency}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
+      <div className="pagination-container">
+        <div className="page-size-selector">
+          <label>
+            Items per page:&nbsp;
+            <select value={pageSize} onChange={(e) => setPageSize(parseInt(e.target.value))}>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value={200}>200</option>
+            </select>
+          </label>
+        </div>  
+        
+        <div className="pagination">
+          <ReactPaginate
+            previousLabel={"Prev"}
+            nextLabel={"Next"}
+            breakLabel={"..."}
+            pageCount={totalPages}
+            marginPagesDisplayed={1}
+            pageRangeDisplayed={5}
+            onPageChange={handlePageClick}
+            containerClassName={"pagination"}
+            activeClassName={"active"}
+            previousClassName={currentPage === 1 ? "disabled" : ""}
+            nextClassName={currentPage === totalPages ? "disabled" : ""}  
+          />
+        </div>
+      </div>
+
+      <Modal
+        show={showModal}
+        onHide={handleCloseModal}
+        backdrop="static" 
+        keyboard={true}   
+        centered          
+      >
+        <Modal.Header>
+          <Modal.Title>{modalContent.title}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{modalContent.full}</Modal.Body>
+        <Modal.Footer>
+          <Button id="modal-button" onClick={handleCloseModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>      
+    </div>
+  )
 }
 
 export default Data;
