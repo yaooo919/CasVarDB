@@ -231,33 +231,28 @@ function Data() {
     setCurrentPage(data.selected + 1);
   }
 
-  const handleDownload = () => {
-    const selectedData = items.filter((item) =>
-      selectedItems.includes(item.id)
-    );
-
-    if (selectedData.length === 0) {
+  const handleDownload = async () => {
+    if (selectedItems.length === 0) {
       alert("No items selected for download");
       return;
     }
 
-    const headers = Object.keys(selectedData[0]).join(",");
-    const rows = selectedData.map((item) =>
-      Object.values(item)
-        .map((value) => `"${value}"`) 
-        .join(",")
-    );
-    const csvContent = [headers, ...rows].join("\n");
-
-    const blob = new Blob([csvContent], {
-      type: "text/csv",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "selected_data.csv";
-    link.click();
-    URL.revokeObjectURL(url);
+    try {
+      const response = await axios.post(`http://localhost:5000/download`, {
+        selectedIds: selectedItems,
+      }, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: "text/csv"});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "selected_data.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error downloading data:", err)
+    }
   };
 
   const renderTooltip = (column) => (

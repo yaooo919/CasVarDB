@@ -13,6 +13,9 @@ app.use('/grna', gRNARoutes);
 const dataRoutes = require('./routes/data');
 app.use('/data', dataRoutes);
 
+const downloadRoutes = require('./routes/download');
+app.use('/download', downloadRoutes);
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
