@@ -121,7 +121,7 @@ function Scaffold() {
         </div>
       </div>
 
-      <table className="scaffold-table-container"> 
+      <table className="general-table-container"> 
         <thead>
           <tr>
             <th className="col-checkbox">

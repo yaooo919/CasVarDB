@@ -94,7 +94,7 @@
 
 
 /* table */
-.scaffold-table-container {
+.general-table-container {
   margin: 20px auto;
   max-width: 90vw;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -154,4 +154,13 @@ tr:nth-child(even) {
 #gRNA_scaffold_sequence_length {
   width: 20%;
 }
-  
+
+.general-table-container a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.general-table-container a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
