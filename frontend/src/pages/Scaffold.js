@@ -6,19 +6,28 @@ function Scaffold() {
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
+
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [sortField, setSortField] = useState("id");
+  const [sortDirection, setSortDirection] = useState("ASC");
+
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/grna")
-      .then((response) => {
-        setItems(response.data);
-        setFilteredItems(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
+    const fetchData = async() => {
+      try {
+        const response = await axios.get("http://localhost:5000/grna", {
+          params: {
+            sortField,
+            sortDirection,
+          },
       });
-  }, []);
+      setItems(response.data);
+      setFilteredItems(response.data);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }};
+    fetchData();
+  }, [sortField, sortDirection]);
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -69,6 +78,20 @@ function Scaffold() {
     URL.revokeObjectURL(url);
   };
 
+  const handleSort = (column) => {
+    setSortField(column);
+    setSortDirection((prevDirection) =>
+      prevDirection === "ASC" ? "DESC" : "ASC"
+    );
+  };
+
+  const renderSortIcon = (column) => {
+    if (sortField === column) {
+      return sortDirection === "ASC" ? (<i className="bi bi-caret-up-fill"></i>) : (<i className="bi bi-caret-down-fill"></i>);
+    }
+    return null;
+  }
+
   return (
     <div>
       <div className="header-container">
@@ -108,10 +131,10 @@ function Scaffold() {
                 checked={selectedItems.length === items.length}
               />
             </th>
-            <th className="col-scaffold">gRNA Scaffold</th>
-            <th className="col-sequence">gRNA Scaffold Sequence</th>
-            <th className="col-polyT">PolyT Length</th>
-            <th className="col-length">gRNA Scaffold Sequence Length</th>
+            <th id="gRNA_scaffold" onClick={() => handleSort("gRNA_scaffold")}>gRNA Scaffold {renderSortIcon("gRNA_scaffold")}</th>
+            <th id="gRNA_scaffold_sequence" onClick={() => handleSort("gRNA_scaffold_sequence")}>gRNA Scaffold Sequence {renderSortIcon("gRNA_scaffold_sequence")}</th>
+            <th id="polyT_length" onClick={() => handleSort("polyT_length")}>PolyT Length {renderSortIcon("polyT_length")}</th>
+            <th id="gRNA_scaffold_sequence_length" onClick={() => handleSort("gRNA_scaffold_sequence_length")}>gRNA Scaffold Sequence Length {renderSortIcon("gRNA_scaffold_sequence_length")}</th>
           </tr>
         </thead>
         <tbody>

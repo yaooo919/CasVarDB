@@ -113,6 +113,7 @@ th, td {
   border-bottom: 1px solid #ddd;
   word-wrap: break-word;
   max-width: 300px;
+  cursor: pointer;
 }
 
 thead {
@@ -138,19 +139,19 @@ tr:nth-child(even) {
   width: 3%;
 }
 
-.col-scaffold {
+#gRNA_scaffold {
   width: 12%;
 }
 
-.col-sequence {
+#gRNA_scaffold_sequence {
   width: 50%;
 }
 
-.col-polyT {
+#polyT_length {
   width: 15%;
 }
 
-.col-length {
+#gRNA_scaffold_sequence_length {
   width: 20%;
 }
   

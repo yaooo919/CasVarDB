@@ -7,7 +7,7 @@ import colDescriptionImg from "../assets/col-description.png";
 
 
 const columnDescriptions = {
-  "col-1": {
+  "spacer_sequence_raw": {
     title: "Spacer sequence (raw)",
     short: "The DNA representation of the sgRNA's spacer region",
     full: (
@@ -17,7 +17,7 @@ const columnDescriptions = {
       </>
     )
   },
-  "col-2": {
+  "target_context_sequence_raw": {
     title: "Target sequence (raw)",
     short: "Target context sequence taken from the non-target DNA strand",
     full: (
@@ -33,7 +33,7 @@ const columnDescriptions = {
       </>
     ),
   },
-  "col-3": {
+  "spacer_sequence": {
     title: "Spacer sequence",
     short: "The padded version of the raw spacer sequence",
     full: (
@@ -43,7 +43,7 @@ const columnDescriptions = {
       </>
     ),
   },
-  "col-4": {
+  "target_context_sequence": {
     title: "Target context sequence",
     short: "The padded version of the raw target sequence",
     full: (
@@ -57,7 +57,7 @@ const columnDescriptions = {
       </>
     ),
   },
-  "col-5": {
+  "variant": {
     title: "Variant",
     short: "The protein containing the Cas9 nuclease",
     full: (
@@ -71,27 +71,27 @@ const columnDescriptions = {
       </>
     )
   },
-  "col-6": {
+  "nuclease": {
     title: "Nuclease",
     short: "The Cas9 nuclease contained within each variant",
     full: "The Cas9 nuclease contained within each variant."
   },
-  "col-7": {
+  "gRNA_scaffold": {
     title: "gRNA scaffold",
     short: "The scaffold of the sgRNA",
     full: "The scaffold of the sgRNA, consisting of the repeat-anti-repeat loop and other stem loops."
   },
-  "col-8": {
+  "day": {
     title: "Day",
     short: "The timepoint at which indel frequencies were measured",
     full: "The timepoint at which indel frequencies were measured. After introducing Cas9 into cells via transfection (for “Wild SpCas9,” “xCas9_NG,” and “DeepHF” studies) or transduction (for “SpCas9,” “Small Cas9,” “Base Editor,” and “Sniper” studies), cells were harvested and indel frequencies were analyzed by deep sequencing."
   },
-  "col-9": {
+  "tRNA_feature": {
     title: "tRNA feature",
     short: "Whether tRNA-associated processing happened",
     full: "Indicates whether tRNA-associated processing happened. If so, the tRNA-N20 sgRNA was cleaved to yield an N20 sgRNA (for more details, refer to Supplementary Figure 3 of the “SpCas9” study)."
   },
-  "col-10": {
+  "study": {
     title: "Study",
     short: "The source study from which the data was obtained.",
     full: (
@@ -102,47 +102,47 @@ const columnDescriptions = {
       </>
     )
   },
-  "col-11": {
+  "library": {
     title: "Library",
     short: "The lentiviral library used for the data point",
     full: "The lentiviral library used for the data point."
   },
-  "col-12": {
+  "table_number": {
     title: "Table",
     short: "The supplementary table number from the publication containing the data",
     full: "The supplementary table number from the publication containing the data."
   },
-  "col-13": {
+  "sheet_number": {
     title: "Sheet",
     short: "The sheet in the supplementary table where the data can be found",
     full: "The sheet in the supplementary table where the data can be found."
   },
-  "col-14": {
+  "src_idx": {
     title: "src_idx",
     short: "Row number in the sheet corresponding to the specific data point",
     full: "Row number in the sheet corresponding to the specific data point."
   },
-  "col-15": {
+  "n_data": {
     title: "n_data",
     short: "Number of times the experiment was repeated for the same guide-target-scaffold-Cas9 combination",
     full: "Number of times the experiment was repeated for the same guide-target-scaffold-Cas9 combination."
   },
-  "col-16": {
+  "partition": {
     title: "Partition",
     short: "The part the data point belongs to",
     full: "Indicates whether the data point was used in deep learning, and if so, whether it was part of the training or test set, or which fold it belongs to."
   },
-  "col-17": {
+  "barcode": {
     title: "Barcode",
     short: "A unique identifier for each experiment",
     full: "A unique identifier for each experiment, allowing identification of individual experiments, especially where some guide-target pairs were included multiple times for reliable data recovery. "
   },
-  "col-18": {
+  "background_subtracted_indel_frequencies": {
     title: "Background subtracted indel frequency (%)",
     short: "A list of lists of floats, where each inner list corresponds to data from a single study",
     full: "This is represented as a list of lists of floats, where each inner list corresponds to data from a single study. Each float in these lists is capped at 100 but may occasionally fall slightly below zero due to experimental error."
   },
-  "col-19": {
+  "mean_background_subtracted_indel_frequency_source": {
     title: "Mean background subtracted indel frequency (source, %)",
     short: "A list of floats, where each float represents the average value of the Background-subtracted indel frequencies (%) for a corresponding list",
     full: (
@@ -151,7 +151,7 @@ const columnDescriptions = {
       </>
     )
   },
-  "col-20": {
+  "mean_background_subtracted_indel_frequency": {
     title: "Mean background subtracted indel frequency",
     short: "A single float obtained through a weighted average",
     full: (
@@ -176,6 +176,9 @@ function Data() {
   const [hoveredColumn, setHoveredColumn] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState({title:"", full:""});
+
+  const [sortField, setSortField] = useState("id");
+  const [sortDirection, setSortDirection] = useState("ASC");
   
   const startIndex = (currentPage - 1) * pageSize;
   const startItem = totalItems > 0 ? startIndex + 1 : 0;
@@ -189,8 +192,10 @@ function Data() {
           page: currentPage,
           pageSize: pageSize,
           searchField: searchField,
-          searchTerm: searchTerm
-        }
+          searchTerm: searchTerm,
+          sortField: sortField,
+          sortDirection: sortDirection,
+        },
       });
       setItems(response.data.rows);
       setTotalItems(response.data.total);
@@ -201,7 +206,7 @@ function Data() {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, pageSize, searchField, searchTerm]);
+  }, [currentPage, pageSize, searchField, searchTerm, sortField, sortDirection]);
 
   const handleSearch = () => {
     setCurrentPage(1);
@@ -272,6 +277,21 @@ function Data() {
 
   const handleCloseModal = () => setShowModal(false);
 
+  const handleSort = (column) => {
+    setSortField(column);
+    setSortDirection((prevDirection) =>
+      prevDirection === "ASC" ? "DESC" : "ASC"
+    );
+    setCurrentPage(1);
+  };
+
+  const renderSortIcon = (column) => {
+    if (sortField === column) {
+      return sortDirection === "ASC" ? (<i className="bi bi-caret-up-fill"></i>) : (<i className="bi bi-caret-down-fill"></i>);
+    }
+    return null;
+  }
+
   return (
     <div>
       <div className="header-container">
@@ -336,13 +356,14 @@ function Data() {
                   key={column}
                   onMouseEnter={() => setHoveredColumn(column)}
                   onMouseLeave={() => setHoveredColumn(null)}
+                  onClick={() => handleSort(column)}
                 >                            
                 <OverlayTrigger
                   show={hoveredColumn === column}
                   placement="top"
                   overlay={renderTooltip(column)}
                 >
-                <span>{columnDescriptions[column].title}</span>
+                <span>{columnDescriptions[column].title} {renderSortIcon(column)}</span>
                 </OverlayTrigger>
                 </th>
               ))}                        
@@ -408,7 +429,8 @@ function Data() {
             containerClassName={"pagination"}
             activeClassName={"active"}
             previousClassName={currentPage === 1 ? "disabled" : ""}
-            nextClassName={currentPage === totalPages ? "disabled" : ""}  
+            nextClassName={currentPage === totalPages ? "disabled" : ""}
+            forcePage={currentPage - 1}  
           />
         </div>
       </div>

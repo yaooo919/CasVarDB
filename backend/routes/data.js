@@ -20,6 +20,8 @@ router.get("/", (req, res) => {
   const pageSize = parseInt(req.query.pageSize) || 50;
   const searchTerm = req.query.searchTerm || "";
   const searchField = req.query.searchField || "spacer_sequence_raw";
+  const sortField = req.query.sortField || "id";
+  const sortDirection = req.query.sortDirection || "ASC";
 
   if (!allowedSearchFields.includes(searchField)) {
     return res.status(400).json({ error: "Invalid search field" });
@@ -47,11 +49,11 @@ router.get("/", (req, res) => {
     if (searchTerm) {
       dataQuery += ` WHERE ?? LIKE ?`;
     }
-    dataQuery += ` LIMIT ? OFFSET ?`;
+    dataQuery += ` ORDER BY ?? ${sortDirection} LIMIT ? OFFSET ?`;
 
     db.query(
       dataQuery,
-      [...queryParams, pageSize, offset],
+      [...queryParams, sortField, pageSize, offset],
       (err, results) => {
         if (err) {
           console.error("Error fetching data:", err);
