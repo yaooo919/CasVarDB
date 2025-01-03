@@ -60,7 +60,7 @@
 .search-download-column input {
   font-size: 17px;
   padding: 10px;
-  padding-right: 200px;
+  /* padding-right: 200px; */
   border: 1px solid #ccc;
   border-radius: 4px;
   letter-spacing: 0.5px;
@@ -76,7 +76,10 @@
   cursor: pointer;
   letter-spacing: 1.2px;
 }
-  
+
+.search-field input {
+  width: 400px;
+}
 .search-download-column button:hover {
   background-color: #0056b3;
 }
