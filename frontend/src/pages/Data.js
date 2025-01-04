@@ -263,7 +263,16 @@ function Data() {
   const renderTooltip = (column) => (
     <Tooltip id={`tooltip-${column}`}>
       {columnDescriptions[column].short} <br />
-      <a href="#" onClick={() => handleShowModal(column)} style={{ fontSize: '12px', color: 'blue', textDecoration: 'underline' }}>View More</a>
+      <a 
+        href="#"
+        onClick={(event) => {
+          event.stopPropagation();
+          handleShowModal(column);
+        }}
+        style={{ fontSize: '12px', color: 'blue', textDecoration: 'underline' }}
+      >
+        View More
+      </a>
     </Tooltip>
   );
 
