@@ -147,7 +147,7 @@ const columnDescriptions = {
     full: "A unique identifier for each experiment, allowing identification of individual experiments, especially where some guide-target pairs were included multiple times for reliable data recovery. "
   },
   "background_subtracted_indel_frequencies": {
-    title: "Background subtracted indel frequency (%)",
+    title: "Background subtracted indel frequencies (%)",
     short: "A list of lists of floats, where each inner list corresponds to data from a single study",
     full: "This is represented as a list of lists of floats, where each inner list corresponds to data from a single study. Each float in these lists is capped at 100 but may occasionally fall slightly below zero due to experimental error."
   },
