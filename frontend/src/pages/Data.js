@@ -5,6 +5,15 @@ import ReactPaginate from "react-paginate";
 import './Data.css';
 import colDescriptionImg from "../assets/col-description.png";
 
+const studyURLs = {
+  "['Base Editor']": "https://www.nature.com/articles/s41587-023-01792-x",
+  "['xCas9_NG']": "https://www.nature.com/articles/s41551-019-0505-1",
+  "['Small Cas9']": "https://www.nature.com/articles/s41592-023-01875-2",
+  "['DeepHF']": "https://www.nature.com/articles/s41467-019-12281-8",
+  "['SpCas9']": "https://www.nature.com/articles/s41587-020-0537-9",
+  "['Sniper']": "https://www.science.org/doi/10.1126/sciadv.aax9249",
+  "['Wild SpCas9']": "https://www.science.org/doi/10.1126/sciadv.aax9249",
+}
 
 const columnDescriptions = {
   "spacer_sequence_raw": {
@@ -97,7 +106,7 @@ const columnDescriptions = {
     full: (
       <>
         <p>The source study from which the data was obtained. Each study has an abbreviated name.
-          See <a href="" style={{ color: 'blue', textDecoration: 'underline' }}>Studies</a> for more details.
+          See <a href="/studies" style={{ color: 'blue', textDecoration: 'underline' }}>Studies</a> for more details.
         </p>
       </>
     )
@@ -397,7 +406,7 @@ function Data() {
                 <td>{item.gRNA_scaffold}</td>
                 <td>{item.day}</td>
                 <td>{item.tRNA_feature}</td>
-                <td>{item.study}</td>
+                <td><a href={studyURLs[item.study]} style={{ color:"#3a89c9"}}>{item.study}</a></td>
                 <td>{item.library}</td>
                 <td>{item.table_number}</td>
                 <td>{item.sheet_number}</td>
