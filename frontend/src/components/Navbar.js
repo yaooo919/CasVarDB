@@ -22,7 +22,7 @@ function Navbar() {
                     <ul className="navbar-menu">
                         <li><Link to='/'>Home</Link></li>
                         <li><Link to='/data'>Data</Link></li>
-                        <li><Link to='/'>Statistics</Link></li>
+                        <li><Link to='/statistics'>Statistics</Link></li>
                         <li><Link to='/grna'>gRNA Scaffold</Link></li>
                         <li><Link to='/studies'>Studies</Link></li>
                         <li><Link to='/'>Download</Link></li>

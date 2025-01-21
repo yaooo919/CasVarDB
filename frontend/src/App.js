@@ -6,7 +6,8 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Data from './pages/Data';
 import Scaffold from './pages/Scaffold';
-import Studies from './pages/Studies'
+import Studies from './pages/Studies';
+import Statistics from './pages/Statistics'
 import Contact from './pages/Contact';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path='/data' element={<Data />} />
           <Route path='/grna' element={<Scaffold />} />
           <Route path='/studies' element={<Studies />} />
+          <Route path='/statistics' element={<Statistics />}/>
           <Route path='/contact' element={<Contact />} />
       </Routes>
 
