@@ -19,6 +19,9 @@ app.use('/download', downloadRoutes);
 const statisticsRoutes = require('./routes/statistics');
 app.use('/statistics', statisticsRoutes);
 
+const submitRoutes = require('./routes/submit');
+app.use('/submit', submitRoutes);
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
