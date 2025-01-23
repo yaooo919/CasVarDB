@@ -7,7 +7,8 @@ import Home from './pages/Home';
 import Data from './pages/Data';
 import Scaffold from './pages/Scaffold';
 import Studies from './pages/Studies';
-import Statistics from './pages/Statistics'
+import Statistics from './pages/Statistics';
+import Submit from './pages/Submit';
 import Contact from './pages/Contact';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path='/grna' element={<Scaffold />} />
           <Route path='/studies' element={<Studies />} />
           <Route path='/statistics' element={<Statistics />}/>
+          <Route path='/submit' element={<Submit />}/>
           <Route path='/contact' element={<Contact />} />
       </Routes>
 

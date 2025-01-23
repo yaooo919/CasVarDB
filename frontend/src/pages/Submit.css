@@ -1,0 +1,54 @@
+#flex-container {
+    display: flex;
+    max-width: 90%;
+    margin: auto;
+    margin-bottom: 100px;
+    gap: 70px;
+
+}
+
+#submit-paragraph {
+    font-size: large;
+    font-weight: 700;
+}
+
+#flex-left {
+  flex: 3;
+}
+
+#flex-right {
+  flex: 2.5;
+  margin-top: 20px;
+   
+}
+
+#select-file {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 50px;
+}
+
+#meta-text {
+    display: block;
+}
+
+#metadata textarea {
+    margin: 10px 0;
+}
+
+button {
+    padding: 10px 25px;
+    font-size: 17px;
+    color: white;
+    background-color: #3a89c9;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 1.2px;
+}
+
+#close-button {
+    width: 20%;
+    justify-content: right;
+}
