@@ -116,6 +116,9 @@ th, td {
   border-bottom: 1px solid #ddd;
   word-wrap: break-word;
   max-width: 300px;
+}
+
+.general-table-container th {
   cursor: pointer;
 }
 

@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Tooltip, OverlayTrigger, Modal, Button } from 'react-bootstrap';
 import axios from "axios";
 import ReactPaginate from "react-paginate";
+import { useDraggable } from 'react-use-draggable-scroll';
 import './Data.css';
 import colDescriptionImg from "../assets/col-description.png";
 
@@ -194,6 +195,9 @@ function Data() {
   const endItem = Math.min(startIndex + pageSize, totalItems);
   const totalPages = Math.max(Math.ceil(totalItems / pageSize), 1);
 
+  const ref = useRef();
+  const { events } = useDraggable(ref);
+
   const fetchData = async() => {
     try {
       const response = await axios.get(`http://localhost:5000/data`, {
@@ -357,7 +361,7 @@ function Data() {
         </div>
       </div>
 
-      <div className="data-table-container">
+      <div className="data-table-container" ref={ref} {...events}>
         <table> 
           <thead>
             <tr>
