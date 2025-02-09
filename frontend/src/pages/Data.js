@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Tooltip, OverlayTrigger, Modal, Button } from 'react-bootstrap';
 import axios from "axios";
 import ReactPaginate from "react-paginate";
@@ -177,8 +178,11 @@ function Data() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
 
-  const [searchField, setSearchField] = useState("spacer_sequence_raw");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchField, setSearchField] = useState(searchParams.get("field") || "spacer_sequence_raw");
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("query") || "");
+  const [pendingSearchField, setPendingSearchField] = useState(searchField);
+  const [loading, setLoading] = useState(false);
   
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
@@ -203,11 +207,11 @@ function Data() {
       const response = await axios.get(`http://localhost:5000/data`, {
         params: {
           page: currentPage,
-          pageSize: pageSize,
-          searchField: searchField,
-          searchTerm: searchTerm,
-          sortField: sortField,
-          sortDirection: sortDirection,
+          pageSize,
+          searchField,
+          searchTerm,
+          sortField,
+          sortDirection,
         },
       });
       setItems(response.data.rows);
@@ -215,6 +219,7 @@ function Data() {
     } catch (err) {
       console.error("Error fetching data:", err);
     }
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -222,7 +227,10 @@ function Data() {
   }, [currentPage, pageSize, searchField, searchTerm, sortField, sortDirection]);
 
   const handleSearch = () => {
+    setSearchField(pendingSearchField); 
+    setSearchParams({ field: pendingSearchField, query: searchTerm });
     setCurrentPage(1);
+    setLoading(true);
   };
 
   const handleSelect = (id) => {
@@ -332,8 +340,8 @@ function Data() {
           <div className="search-field">
             <span className="search-by">
               <select
-                value={searchField}
-                onChange={(e) => setSearchField(e.target.value)}
+                value={pendingSearchField}
+                onChange={(e) => setPendingSearchField(e.target.value)}
               >
                 <option value="spacer_sequence_raw">Spacer sequence (raw)</option>
                 <option value="target_context_sequence_raw">Target context sequence (raw)</option>
@@ -392,37 +400,45 @@ function Data() {
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => (
-              <tr key={item.id}>
-                <td>
-                    <input
-                    type="checkbox"
-                    checked={selectedItems.includes(item.id)}
-                    onChange={() => handleSelect(item.id)}
-                    />
+            {loading ? (
+              <tr>
+                <td colSpan="20" style={{ textAlign: "center", fontSize: "16px", padding: "20px" }}>
+                  Loading...
                 </td>
-                <td>{item.spacer_sequence_raw}</td>
-                <td>{item.target_context_sequence_raw}</td>
-                <td>{item.spacer_sequence}</td>
-                <td>{item.target_context_sequence}</td>
-                <td>{item.variant}</td>
-                <td>{item.nuclease}</td>
-                <td>{item.gRNA_scaffold}</td>
-                <td>{item.day}</td>
-                <td>{item.tRNA_feature}</td>
-                <td><a href={studyURLs[item.study]} style={{ color:"#3a89c9"}}>{item.study}</a></td>
-                <td>{item.library}</td>
-                <td>{item.table_number}</td>
-                <td>{item.sheet_number}</td>
-                <td>{item.src_idx}</td>
-                <td>{item.n_data}</td>
-                <td>{item.partition}</td>
-                <td>{item.barcode}</td>
-                <td>{item.background_subtracted_indel_frequencies}</td>
-                <td>{item.mean_background_subtracted_indel_frequency_source}</td>
-                <td>{item.mean_background_subtracted_indel_frequency}</td>
               </tr>
-            ))}
+            ) : (
+              items.map((item) => (
+                <tr key={item.id}>
+                  <td>
+                      <input
+                      type="checkbox"
+                      checked={selectedItems.includes(item.id)}
+                      onChange={() => handleSelect(item.id)}
+                      />
+                  </td>
+                  <td>{item.spacer_sequence_raw}</td>
+                  <td>{item.target_context_sequence_raw}</td>
+                  <td>{item.spacer_sequence}</td>
+                  <td>{item.target_context_sequence}</td>
+                  <td>{item.variant}</td>
+                  <td>{item.nuclease}</td>
+                  <td>{item.gRNA_scaffold}</td>
+                  <td>{item.day}</td>
+                  <td>{item.tRNA_feature}</td>
+                  <td><a href={studyURLs[item.study]} style={{ color:"#3a89c9"}}>{item.study}</a></td>
+                  <td>{item.library}</td>
+                  <td>{item.table_number}</td>
+                  <td>{item.sheet_number}</td>
+                  <td>{item.src_idx}</td>
+                  <td>{item.n_data}</td>
+                  <td>{item.partition}</td>
+                  <td>{item.barcode}</td>
+                  <td>{item.background_subtracted_indel_frequencies}</td>
+                  <td>{item.mean_background_subtracted_indel_frequency_source}</td>
+                  <td>{item.mean_background_subtracted_indel_frequency}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
