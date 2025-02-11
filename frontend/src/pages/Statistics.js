@@ -90,7 +90,7 @@ const Statistics = () => {
   // Process data for "Data Count Per Study" chart
   const processDataCountPerStudy = (data) => {
     const studyCounts = data.reduce((acc, item) => {
-      const { study } = item;
+      let study = JSON.stringify(item.study).replace(/"\['xCas9_NG', 'xCas9_NG'\]"/, "\"['xCas9_NG']\"");
       if (!acc[study]) {
         acc[study] = 0;
       }
