@@ -30,4 +30,4 @@ yarn-error.log*
 
 /.idea
 
-Cas9.csv
+/frontend/public/Cas9.csv

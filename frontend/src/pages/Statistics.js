@@ -59,6 +59,33 @@ const Statistics = () => {
       ],
     };
   };
+
+  // Process data for "Frequency Per gRNA Scaffold" chart
+  const processFreqPerScaffoldData = (data) => {
+    const groupedData = data.reduce((acc, item) => {
+      const { gRNA_scaffold, mean_background_subtracted_indel_frequency } = item;
+      if (!acc[gRNA_scaffold]) acc[gRNA_scaffold] = [];
+      acc[gRNA_scaffold].push(mean_background_subtracted_indel_frequency);
+      return acc;
+    }, {});
+
+    const sortedScaffolds = Object.entries(groupedData)
+      .map(([scaffold, values]) => ({ scaffold, values, median: median(values) }))
+      .sort((a, b) => b.median - a.median);
+
+    return {
+      labels: sortedScaffolds.map((item) => item.scaffold),
+      datasets: [
+        {
+          label: "Mean Background Subtracted Indel Frequency",
+          data: sortedScaffolds.map((item) => item.values),
+          backgroundColor: "rgba(75, 192, 192, 0.2)",
+          borderColor: "rgba(75, 192, 192, 1)",
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
     
   // Process data for "Data Count Per Study" chart
   const processDataCountPerStudy = (data) => {
@@ -94,12 +121,14 @@ const Statistics = () => {
       setChartStates((prevState) => ({
         ...prevState,
         freqPerVariant: { data: processFreqPerVariantData(rawData), loading: false },
+        freqPerScaffold: { data: processFreqPerScaffoldData(rawData), loading: false },
         dataCountPerStudy: { data: processDataCountPerStudy(rawData), loading: false },
       }));
     } else {
       setChartStates((prevState) => ({
         ...prevState,
         freqPerVariant: { ...prevState.freqPerVariant, loading: false },
+        freqPerScaffold: { ...prevState.freqPerScaffold, loading: false },
         dataCountPerStudy: { ...prevState.dataCountPerStudy, loading: false },
       }));
     }
@@ -136,6 +165,15 @@ const Statistics = () => {
           <div>Loading Frequency Per Variant Chart...</div>
         ) : (
           <Chart type="boxplot" data={chartStates.freqPerVariant.data} options={chartOptions("Mean Background Subtracted Indel Frequency per Variant")} />
+        )}
+      </div>
+
+      {/* Frequency Per gRNA Scaffold Chart */}
+      <div id="freq_per_scaffold_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
+        {chartStates.freqPerScaffold.loading ? (
+          <div>Loading Frequency Per gRNA Scaffold Chart...</div>
+        ) : (
+          <Chart type="boxplot" data={chartStates.freqPerScaffold.data} options={chartOptions("Mean Background Subtracted Indel Frequency per gRNA Scaffold")} />
         )}
       </div>
 
