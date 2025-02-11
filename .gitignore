@@ -29,3 +29,5 @@ yarn-error.log*
 /frontend/node_modules
 
 /.idea
+
+Cas9.csv

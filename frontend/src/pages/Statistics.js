@@ -9,6 +9,7 @@ ChartJS.register(BoxPlotController, BoxAndWiskers, CategoryScale, LinearScale, B
 const Statistics = () => {
   const [chartStates, setChartStates] = useState({
     freqPerVariant: { data: null, loading: true },
+    freqPerScaffold: { data: null, loading: true },
     dataCountPerStudy: { data: null, loading: true },
   });
 
@@ -23,6 +24,13 @@ const Statistics = () => {
     }
   };
 
+  const median = (arr) => {
+    if (arr.length === 0) return 0;
+    const sorted = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  }
+
   // Process data for "Frequency Per Variant" chart
   const processFreqPerVariantData = (data) => {
     const groupedData = data.reduce((acc, item) => {
@@ -34,20 +42,24 @@ const Statistics = () => {
       return acc;
     }, {});
 
-    const labels = Object.keys(groupedData);
-    const datasets = [
-      {
-        label: "Mean Background Subtracted Indel Frequency",
-        data: Object.values(groupedData),
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
-      },
-    ];
+    const sortedVariants = Object.entries(groupedData)
+      .map(([variant, values]) => ({ variant, values, median: median(values) }))
+      .sort((a, b) => b.median - a.median);
 
-    return { labels, datasets };
+    return {
+      labels: sortedVariants.map((item) => item.variant),
+      datasets: [
+        {
+          label: "Mean Background Subtracted Indel Frequency",
+          data: sortedVariants.map((item) => item.values),
+          backgroundColor: "rgba(75, 192, 192, 0.2)",
+          borderColor: "rgba(75, 192, 192, 1)",
+          borderWidth: 1,
+        },
+      ],
+    };
   };
-
+    
   // Process data for "Data Count Per Study" chart
   const processDataCountPerStudy = (data) => {
     const studyCounts = data.reduce((acc, item) => {
