@@ -13,6 +13,7 @@ const allowedSearchFields = [
   'day',
   'tRNA_feature',
   'study',
+  'number_of_mismatches'
 ];
 
 router.get("/", (req, res) => {

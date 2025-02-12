@@ -58,6 +58,7 @@ function Home() {
                                         <option value="day">Day</option>
                                         <option value="tRNA_feature">tRNA feature</option>
                                         <option value="study">Study</option>
+                                        <option value="number_of_mismatches">Number of mismatches</option>
                                     </select>
                                 </div>
                     

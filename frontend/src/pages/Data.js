@@ -147,6 +147,15 @@ const columnDescriptions = {
     short: "A unique identifier for each experiment",
     full: "A unique identifier for each experiment, allowing identification of individual experiments, especially where some guide-target pairs were included multiple times for reliable data recovery. "
   },
+  "number_of_mismatches": {
+    title: "Number of mismatches",
+    short: "Number of mismatches between spacer and target sequences",
+    full: (
+      <>
+        <p>Number of mismatches between spacer and target sequences</p>
+      </>
+    )
+  },
   "background_subtracted_indel_frequencies": {
     title: "Background subtracted indel frequencies (%)",
     short: "A list of lists of floats, where each inner list corresponds to data from a single study",
@@ -349,6 +358,7 @@ function Data() {
                 <option value="day">Day</option>
                 <option value="tRNA_feature">tRNA feature</option>
                 <option value="study">Study</option>
+                <option value="number_of_mismatches">Number of mismatches</option>
               </select>
             </span>
             <input
@@ -429,6 +439,7 @@ function Data() {
                   <td>{item.n_data}</td>
                   <td>{item.partition}</td>
                   <td>{item.barcode}</td>
+                  <td>{item.number_of_mismatches}</td>
                   <td>{item.background_subtracted_indel_frequencies}</td>
                   <td>{item.mean_background_subtracted_indel_frequency_source}</td>
                   <td>{item.mean_background_subtracted_indel_frequency}</td>
