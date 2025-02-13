@@ -12,6 +12,7 @@ const Statistics = () => {
     freqPerScaffold: { data: null, loading: true },
     dataCountPerStudy: { data: null, loading: true },
     meanFrequencyPerMismatch: { data: null, loading: true },
+    meanFrequencyPerVariant: { data: null, loading: true },
   });
 
   // Fetch data function
@@ -31,6 +32,38 @@ const Statistics = () => {
     const mid = Math.floor(sorted.length / 2);
     return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
   }
+
+  // Process data for "Mean Frequency per Variant" chart
+  const processMeanFrequencyPerVariantData = (data) => {
+    const variantData = data.reduce((acc, item) => {
+      const { variant, number_of_mismatches, mean_background_subtracted_indel_frequency } = item;
+      if (!acc[variant]) {
+        acc[variant] = [];
+      }
+      acc[variant].push({ number_of_mismatches, mean_background_subtracted_indel_frequency });
+      return acc;
+    }, {});
+
+    const labels = [...new Set(data.map((item) => item.number_of_mismatches))].sort((a, b) => a - b);
+
+    const datasets = Object.keys(variantData).map((variant) => ({
+      label: `Variant ${variant}`,
+      data: labels.map((mismatchCount) => {
+        const filteredData = variantData[variant].filter(
+          (item) => item.number_of_mismatches === mismatchCount
+        );
+        const meanFrequency = filteredData.reduce((sum, item) => sum + item.mean_background_subtracted_indel_frequency, 0) / filteredData.length;
+        return { x: mismatchCount, y: meanFrequency };
+      }),
+      borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // random color
+      backgroundColor: "rgba(75, 192, 192, 0.2)",
+      borderWidth: 1,
+      fill: false,
+      tension: 0.1,
+    }));
+
+    return { labels, datasets };
+  };
 
   // Process data for "Mean Frequency per Mismatch" chart
   const processMeanFrequencyPerMismatchData = (data) => {
@@ -156,6 +189,7 @@ const Statistics = () => {
         freqPerScaffold: { data: processFreqPerScaffoldData(rawData), loading: false },
         dataCountPerStudy: { data: processDataCountPerStudy(rawData), loading: false },
         meanFrequencyPerMismatch: { data: processMeanFrequencyPerMismatchData(rawData), loading: false },
+        meanFrequencyPerVariant: { data: processMeanFrequencyPerVariantData(rawData), loading: false },
       }));
     } else {
       setChartStates((prevState) => ({
@@ -164,6 +198,7 @@ const Statistics = () => {
         freqPerScaffold: { ...prevState.freqPerScaffold, loading: false },
         dataCountPerStudy: { ...prevState.dataCountPerStudy, loading: false },
         meanFrequencyPerMismatch: { ...prevState.meanFrequencyPerMismatch, loading: false },
+        meanFrequencyPerVariant: { ...prevState.meanFrequencyPerVariant, loading: false },
       }));
     }
   };
@@ -220,11 +255,20 @@ const Statistics = () => {
         )}
       </div>
 
-      <div id="mean_frequency_per_mismatch_chart" style={{ position: "relative", width: "60%", height: "500px", margin: "0px auto 100px auto" }}>
+      <div id="mean_frequency_per_mismatch_chart" style={{ position: "relative", width: "60%", height: "500px", margin: "0px auto 50px auto" }}>
         {chartStates.meanFrequencyPerMismatch.loading ? (
           <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches Chart...</div>
         ) : (
           <Chart type="line" data={chartStates.meanFrequencyPerMismatch.data} options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches")} />
+        )}
+      </div>
+
+      {/* Mean Frequency vs Number of Mismatches for each Variant */}
+      <div id="mean_frequency_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 100px auto" }}>
+        {chartStates.meanFrequencyPerVariant.loading ? (
+          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches for each Variant...</div>
+        ) : (
+          <Chart type="line" data={chartStates.meanFrequencyPerVariant.data} options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant")} />
         )}
       </div>
     </div>

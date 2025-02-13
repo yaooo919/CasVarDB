@@ -152,7 +152,7 @@ const columnDescriptions = {
     short: "Number of mismatches between spacer and target sequences",
     full: (
       <>
-        <p>Number of mismatches between spacer and target sequences</p>
+        <p>Number of mismatches between spacer and target sequences. Mismatches are highlighted in red.</p>
       </>
     )
   },

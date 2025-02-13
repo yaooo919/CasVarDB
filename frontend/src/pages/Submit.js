@@ -84,6 +84,7 @@ const SubmitPage = () => {
                 <li>n_data</li>
                 <li>Partition</li>
                 <li>Barcode</li>
+                <li>Number of mismatches</li>
                 <li>Background subtracted indel frequencies (%)</li>
                 <li>Mean background subtracted indel frequency (source, %)</li>
                 <li>Mean background subtracted indel frequency</li>
