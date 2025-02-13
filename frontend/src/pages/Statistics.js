@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend, Title } from "chart.js";
+import { Chart as ChartJS, CategoryScale, LinearScale,  BarElement, LineElement, PointElement, Tooltip, Legend, Title } from "chart.js";
 import { BoxPlotController, BoxAndWiskers } from "@sgratzl/chartjs-chart-boxplot";
 import { Chart } from "react-chartjs-2";
 
-ChartJS.register(BoxPlotController, BoxAndWiskers, CategoryScale, LinearScale, BarElement, Tooltip, Legend, Title);
+ChartJS.register(BoxPlotController, BoxAndWiskers, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend, Title);
 
 const Statistics = () => {
   const [chartStates, setChartStates] = useState({
     freqPerVariant: { data: null, loading: true },
     freqPerScaffold: { data: null, loading: true },
     dataCountPerStudy: { data: null, loading: true },
+    meanFrequencyPerMismatch: { data: null, loading: true },
   });
 
   // Fetch data function
@@ -30,6 +31,37 @@ const Statistics = () => {
     const mid = Math.floor(sorted.length / 2);
     return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
   }
+
+  // Process data for "Mean Frequency per Mismatch" chart
+  const processMeanFrequencyPerMismatchData = (data) => {
+    const mismatchGroups = data.reduce((acc, item) => {
+      const { number_of_mismatches, mean_background_subtracted_indel_frequency } = item;
+      if (!acc[number_of_mismatches]) {
+        acc[number_of_mismatches] = [];
+      }
+      acc[number_of_mismatches].push(mean_background_subtracted_indel_frequency);
+      return acc;
+    }, {});
+
+    const labels = Object.keys(mismatchGroups).sort((a, b) => a - b);
+    const datasets = [
+      {
+        label: "Mean Background Subtracted Indel Frequency vs Number of Mismatches",
+        data: labels.map((key) => ({
+          x: parseFloat(key),
+          y: mismatchGroups[key].reduce((sum, val) => sum + val, 0) / mismatchGroups[key].length, // average of mean frequency
+        })),
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1,
+        fill: false,
+        tension: 0.1,
+      },
+    ];
+
+    return { labels, datasets };
+  };
+
 
   // Process data for "Frequency Per Variant" chart
   const processFreqPerVariantData = (data) => {
@@ -123,6 +155,7 @@ const Statistics = () => {
         freqPerVariant: { data: processFreqPerVariantData(rawData), loading: false },
         freqPerScaffold: { data: processFreqPerScaffoldData(rawData), loading: false },
         dataCountPerStudy: { data: processDataCountPerStudy(rawData), loading: false },
+        meanFrequencyPerMismatch: { data: processMeanFrequencyPerMismatchData(rawData), loading: false },
       }));
     } else {
       setChartStates((prevState) => ({
@@ -130,6 +163,7 @@ const Statistics = () => {
         freqPerVariant: { ...prevState.freqPerVariant, loading: false },
         freqPerScaffold: { ...prevState.freqPerScaffold, loading: false },
         dataCountPerStudy: { ...prevState.dataCountPerStudy, loading: false },
+        meanFrequencyPerMismatch: { ...prevState.meanFrequencyPerMismatch, loading: false },
       }));
     }
   };
@@ -178,11 +212,19 @@ const Statistics = () => {
       </div>
 
       {/* Data Count Per Study Chart */}
-      <div id="data_count_per_study_chart" style={{ position: "relative", width: "60%", height: "400px", margin: "0px auto 100px auto" }}>
+      <div id="data_count_per_study_chart" style={{ position: "relative", width: "60%", height: "400px", margin: "0px auto 50px auto" }}>
         {chartStates.dataCountPerStudy.loading ? (
           <div>Loading Data Count Per Study Chart...</div>
         ) : (
           <Chart type="bar" data={chartStates.dataCountPerStudy.data} options={chartOptions("Number of Data per Study")} />
+        )}
+      </div>
+
+      <div id="mean_frequency_per_mismatch_chart" style={{ position: "relative", width: "60%", height: "500px", margin: "0px auto 100px auto" }}>
+        {chartStates.meanFrequencyPerMismatch.loading ? (
+          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches Chart...</div>
+        ) : (
+          <Chart type="line" data={chartStates.meanFrequencyPerMismatch.data} options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches")} />
         )}
       </div>
     </div>

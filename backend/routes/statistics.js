@@ -4,7 +4,7 @@ const db = require('../config/db');
 
 router.get('/', (req, res) => {
   const query = `
-    SELECT variant, gRNA_scaffold, mean_background_subtracted_indel_frequency, study 
+    SELECT variant, gRNA_scaffold, mean_background_subtracted_indel_frequency, study, number_of_mismatches 
     FROM cas9
   `;
 
