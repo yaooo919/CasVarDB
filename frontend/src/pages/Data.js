@@ -375,6 +375,12 @@ function Data() {
         </div>
       </div>
 
+      <div className="legend">
+          <span className="color-box" style={{ backgroundColor: "#bfee90" }}></span> Matched bases
+          <span className="color-box" style={{ backgroundColor: "#BF2C34" }}></span> Mismatched bases
+          <span className="color-box" style={{ backgroundColor: "#43A5BE" }}></span> PAM
+      </div>
+
       <div className="data-table-container">
         <table> 
           <thead>
@@ -413,7 +419,66 @@ function Data() {
                 </td>
               </tr>
             ) : (
-              items.map((item) => (
+              items.map((item) => {
+                const highlightSequence = (targetContextSequenceRaw, bestMatchingSubstring, spacerSequenceRaw) => {
+                  const cleanBestMatch = bestMatchingSubstring.replace(/\r/g, "");                
+                  const matchIndex = targetContextSequenceRaw.indexOf(cleanBestMatch);
+                
+                  if (matchIndex === -1) {
+                    return targetContextSequenceRaw;
+                  }
+                
+                  let highlightedSubstring = '';
+                  for (let i = 0; i < cleanBestMatch.length; i++) {
+                    if (cleanBestMatch[i] !== spacerSequenceRaw[i]) {
+                      highlightedSubstring += `<span style="color: #BF2C34;">${cleanBestMatch[i]}</span>`;
+                    } else {
+                      highlightedSubstring += `<span style="color: #bfee90;">${cleanBestMatch[i]}</span>`;
+                    }
+                  }
+
+                  let highlightedExtra = '';
+                  for (let i = 0; i < 3; i++) {
+                    const nextChar = targetContextSequenceRaw[matchIndex + cleanBestMatch.length + i];
+                    highlightedExtra += `<span style="color: #43A5BE;">${nextChar}</span>`;
+                  }
+
+                  const highlightedSequence = 
+                    targetContextSequenceRaw.slice(0, matchIndex) +
+                    highlightedSubstring +
+                    highlightedExtra +
+                    targetContextSequenceRaw.slice(matchIndex + cleanBestMatch.length + 3);
+
+                  return highlightedSequence;
+                };
+                
+                const highlightSpacerSequence = (spacerSequence, spacerSequenceRaw) => {
+                  if (!spacerSequenceRaw) return spacerSequence;
+                
+                  const regex = new RegExp(spacerSequenceRaw, "g");
+                
+                  return spacerSequence.replace(regex, `<span style="color: #bfee90;">${spacerSequenceRaw}</span>`);
+                };
+
+                const highlightTargetContext = (targetContextSequence, targetContextSequenceRaw) => {
+                  if (!targetContextSequenceRaw) return targetContextSequence;
+                
+                  const matchIndex = targetContextSequence.indexOf(targetContextSequenceRaw);
+                
+                  if (matchIndex === -1) {
+                    return targetContextSequence; 
+                  }
+                
+                  return (
+                    targetContextSequence.substring(0, matchIndex) +
+                    highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.spacer_sequence_raw) +
+                    targetContextSequence.substring(matchIndex + targetContextSequenceRaw.length)
+                  );
+                };
+                
+                
+                
+               return (
                 <tr key={item.id}>
                   <td>
                       <input
@@ -423,9 +488,9 @@ function Data() {
                       />
                   </td>
                   <td>{item.spacer_sequence_raw}</td>
-                  <td>{item.target_context_sequence_raw}</td>
-                  <td>{item.spacer_sequence}</td>
-                  <td>{item.target_context_sequence}</td>
+                  <td dangerouslySetInnerHTML={{ __html: highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.spacer_sequence_raw) }}></td>
+                  <td dangerouslySetInnerHTML={{ __html: highlightSpacerSequence(item.spacer_sequence, item.spacer_sequence_raw) }}></td>
+                  <td dangerouslySetInnerHTML={{ __html: highlightTargetContext(item.target_context_sequence, item.target_context_sequence_raw) }}></td>
                   <td>{item.variant}</td>
                   <td>{item.nuclease}</td>
                   <td>{item.gRNA_scaffold}</td>
@@ -444,8 +509,9 @@ function Data() {
                   <td>{item.mean_background_subtracted_indel_frequency_source}</td>
                   <td>{item.mean_background_subtracted_indel_frequency}</td>
                 </tr>
-              ))
-            )}
+              );
+            })
+          )}
           </tbody>
         </table>
       </div>

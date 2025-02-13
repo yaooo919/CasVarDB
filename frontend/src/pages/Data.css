@@ -112,3 +112,22 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
+/* Legend */
+.legend {
+  display: flex;
+  justify-content: flex-end;
+  max-width: 95%;
+  align-items: center;
+  color: #141e27;
+  font-size: 15px;
+}
+
+.color-box {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  vertical-align: middle;
+  margin-right: 5px;
+  margin-left: 10px;
+}
