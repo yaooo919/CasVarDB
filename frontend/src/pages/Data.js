@@ -420,17 +420,20 @@ function Data() {
               </tr>
             ) : (
               items.map((item) => {
-                const highlightSequence = (targetContextSequenceRaw, bestMatchingSubstring, spacerSequenceRaw) => {
+                const highlightSequence = (targetContextSequenceRaw, bestMatchingSubstring, mismatchIndexes) => {
                   const cleanBestMatch = bestMatchingSubstring.replace(/\r/g, "");                
                   const matchIndex = targetContextSequenceRaw.indexOf(cleanBestMatch);
                 
                   if (matchIndex === -1) {
                     return targetContextSequenceRaw;
                   }
+
+                  const mismatchPositions = mismatchIndexes ? mismatchIndexes.split("|").map(num => parseInt(num)) : [];
                 
                   let highlightedSubstring = '';
                   for (let i = 0; i < cleanBestMatch.length; i++) {
-                    if (cleanBestMatch[i] !== spacerSequenceRaw[i]) {
+                    const globalIndex = matchIndex + i;
+                    if (mismatchPositions.includes(globalIndex)) {
                       highlightedSubstring += `<span style="color: #BF2C34;">${cleanBestMatch[i]}</span>`;
                     } else {
                       highlightedSubstring += `<span style="color: #bfee90;">${cleanBestMatch[i]}</span>`;
@@ -471,7 +474,7 @@ function Data() {
                 
                   return (
                     targetContextSequence.substring(0, matchIndex) +
-                    highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.spacer_sequence_raw) +
+                    highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.mismatch_indexes) +
                     targetContextSequence.substring(matchIndex + targetContextSequenceRaw.length)
                   );
                 };
@@ -488,7 +491,7 @@ function Data() {
                       />
                   </td>
                   <td>{item.spacer_sequence_raw}</td>
-                  <td dangerouslySetInnerHTML={{ __html: highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.spacer_sequence_raw) }}></td>
+                  <td dangerouslySetInnerHTML={{ __html: highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.mismatch_indexes) }}></td>
                   <td dangerouslySetInnerHTML={{ __html: highlightSpacerSequence(item.spacer_sequence, item.spacer_sequence_raw) }}></td>
                   <td dangerouslySetInnerHTML={{ __html: highlightTargetContext(item.target_context_sequence, item.target_context_sequence_raw) }}></td>
                   <td>{item.variant}</td>

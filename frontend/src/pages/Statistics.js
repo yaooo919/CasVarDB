@@ -15,196 +15,30 @@ const Statistics = () => {
     meanFrequencyPerVariant: { data: null, loading: true },
   });
 
-  // Fetch data function
-  const fetchData = async (url) => {
+  const fetchProcessedData = async () => {
     try {
-      const response = await axios.get(url);
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching data from:", url, error);
-      return null;
-    }
-  };
-
-  const median = (arr) => {
-    if (arr.length === 0) return 0;
-    const sorted = [...arr].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-  }
-
-  // Process data for "Mean Frequency per Variant" chart
-  const processMeanFrequencyPerVariantData = (data) => {
-    const variantData = data.reduce((acc, item) => {
-      const { variant, number_of_mismatches, mean_background_subtracted_indel_frequency } = item;
-      if (!acc[variant]) {
-        acc[variant] = [];
-      }
-      acc[variant].push({ number_of_mismatches, mean_background_subtracted_indel_frequency });
-      return acc;
-    }, {});
-
-    const labels = [...new Set(data.map((item) => item.number_of_mismatches))].sort((a, b) => a - b);
-
-    const datasets = Object.keys(variantData).map((variant) => ({
-      label: `Variant ${variant}`,
-      data: labels.map((mismatchCount) => {
-        const filteredData = variantData[variant].filter(
-          (item) => item.number_of_mismatches === mismatchCount
-        );
-        const meanFrequency = filteredData.reduce((sum, item) => sum + item.mean_background_subtracted_indel_frequency, 0) / filteredData.length;
-        return { x: mismatchCount, y: meanFrequency };
-      }),
-      borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // random color
-      backgroundColor: "rgba(75, 192, 192, 0.2)",
-      borderWidth: 1,
-      fill: false,
-      tension: 0.1,
-    }));
-
-    return { labels, datasets };
-  };
-
-  // Process data for "Mean Frequency per Mismatch" chart
-  const processMeanFrequencyPerMismatchData = (data) => {
-    const mismatchGroups = data.reduce((acc, item) => {
-      const { number_of_mismatches, mean_background_subtracted_indel_frequency } = item;
-      if (!acc[number_of_mismatches]) {
-        acc[number_of_mismatches] = [];
-      }
-      acc[number_of_mismatches].push(mean_background_subtracted_indel_frequency);
-      return acc;
-    }, {});
-
-    const labels = Object.keys(mismatchGroups).sort((a, b) => a - b);
-    const datasets = [
-      {
-        label: "Mean Background Subtracted Indel Frequency vs Number of Mismatches",
-        data: labels.map((key) => ({
-          x: parseFloat(key),
-          y: mismatchGroups[key].reduce((sum, val) => sum + val, 0) / mismatchGroups[key].length, // average of mean frequency
-        })),
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
-        fill: false,
-        tension: 0.1,
-      },
-    ];
-
-    return { labels, datasets };
-  };
-
-
-  // Process data for "Frequency Per Variant" chart
-  const processFreqPerVariantData = (data) => {
-    const groupedData = data.reduce((acc, item) => {
-      const { variant, mean_background_subtracted_indel_frequency } = item;
-      if (!acc[variant]) {
-        acc[variant] = [];
-      }
-      acc[variant].push(mean_background_subtracted_indel_frequency);
-      return acc;
-    }, {});
-
-    const sortedVariants = Object.entries(groupedData)
-      .map(([variant, values]) => ({ variant, values, median: median(values) }))
-      .sort((a, b) => b.median - a.median);
-
-    return {
-      labels: sortedVariants.map((item) => item.variant),
-      datasets: [
-        {
-          label: "Mean Background Subtracted Indel Frequency",
-          data: sortedVariants.map((item) => item.values),
-          backgroundColor: "rgba(75, 192, 192, 0.2)",
-          borderColor: "rgba(75, 192, 192, 1)",
-          borderWidth: 1,
-        },
-      ],
-    };
-  };
-
-  // Process data for "Frequency Per gRNA Scaffold" chart
-  const processFreqPerScaffoldData = (data) => {
-    const groupedData = data.reduce((acc, item) => {
-      const { gRNA_scaffold, mean_background_subtracted_indel_frequency } = item;
-      if (!acc[gRNA_scaffold]) acc[gRNA_scaffold] = [];
-      acc[gRNA_scaffold].push(mean_background_subtracted_indel_frequency);
-      return acc;
-    }, {});
-
-    const sortedScaffolds = Object.entries(groupedData)
-      .map(([scaffold, values]) => ({ scaffold, values, median: median(values) }))
-      .sort((a, b) => b.median - a.median);
-
-    return {
-      labels: sortedScaffolds.map((item) => item.scaffold),
-      datasets: [
-        {
-          label: "Mean Background Subtracted Indel Frequency",
-          data: sortedScaffolds.map((item) => item.values),
-          backgroundColor: "rgba(75, 192, 192, 0.2)",
-          borderColor: "rgba(75, 192, 192, 1)",
-          borderWidth: 1,
-        },
-      ],
-    };
-  };
-    
-  // Process data for "Data Count Per Study" chart
-  const processDataCountPerStudy = (data) => {
-    const studyCounts = data.reduce((acc, item) => {
-      let study = JSON.stringify(item.study).replace(/"\['xCas9_NG', 'xCas9_NG'\]"/, "\"['xCas9_NG']\"");
-      if (!acc[study]) {
-        acc[study] = 0;
-      }
-      acc[study] += 1;
-      return acc;
-    }, {});
-
-    const labels = Object.keys(studyCounts);
-    const datasets = [
-      {
-        label: "Number of Data per Study",
-        data: Object.values(studyCounts),
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
-      },
-    ];
-
-    return { labels, datasets };
-  };
-
-  // Load and process data for charts
-  const loadChartData = async () => {
-    const url = "http://localhost:5000/statistics";
-    const rawData = await fetchData(url);
-
-    if (rawData) {
-      setChartStates((prevState) => ({
-        ...prevState,
-        freqPerVariant: { data: processFreqPerVariantData(rawData), loading: false },
-        freqPerScaffold: { data: processFreqPerScaffoldData(rawData), loading: false },
-        dataCountPerStudy: { data: processDataCountPerStudy(rawData), loading: false },
-        meanFrequencyPerMismatch: { data: processMeanFrequencyPerMismatchData(rawData), loading: false },
-        meanFrequencyPerVariant: { data: processMeanFrequencyPerVariantData(rawData), loading: false },
-      }));
-    } else {
-      setChartStates((prevState) => ({
-        ...prevState,
-        freqPerVariant: { ...prevState.freqPerVariant, loading: false },
-        freqPerScaffold: { ...prevState.freqPerScaffold, loading: false },
-        dataCountPerStudy: { ...prevState.dataCountPerStudy, loading: false },
-        meanFrequencyPerMismatch: { ...prevState.meanFrequencyPerMismatch, loading: false },
-        meanFrequencyPerVariant: { ...prevState.meanFrequencyPerVariant, loading: false },
-      }));
+      const response = await axios.get("http://localhost:5000/statistics");
+      setChartStates({
+        freqPerVariant: { data: response.data.freqPerVariant, loading: false },
+        freqPerScaffold: { data: response.data.freqPerScaffold, loading: false },
+        dataCountPerStudy: { data: response.data.dataCountPerStudy, loading: false },
+        meanFrequencyPerMismatch: { data: response.data.meanFrequencyPerMismatch, loading: false },
+        meanFrequencyPerVariant: { data: response.data.meanFrequencyPerVariant, loading: false },
+    });
+   } catch (error) {
+      console.error("Error fetching data:", error);
+      setChartStates({
+        freqPerVariant: { data: null, loading: false },
+        freqPerScaffold: { data: null, loading: false },
+        dataCountPerStudy: { data: null, loading: false },
+        meanFrequencyPerMismatch: { data: null, loading: false },
+        meanFrequencyPerVariant: { data: null, loading: false },
+      });
     }
   };
 
   useEffect(() => {
-    loadChartData();
+    fetchProcessedData();
   }, []);
 
   const chartOptions = (title) => ({
@@ -217,6 +51,26 @@ const Statistics = () => {
         font: { size: 16, weight: "bold" },
         padding: { top: 10, bottom: 10 },
       },
+      tooltip: {
+        enabled: true,
+        mode: "nearest",
+        intersect: false,
+      },
+      legend: {
+        labels: {
+          usePointStyle: true,
+          pointStyle: 'rect',
+          generateLabels: (chart) => {
+            const labels = ChartJS.defaults.plugins.legend.labels.generateLabels(chart);
+            labels.forEach(label => {
+              if (chart.data.datasets[label.datasetIndex]) {
+                label.fillStyle = chart.data.datasets[label.datasetIndex].borderColor;
+              }
+            });
+            return labels;
+          }
+        }
+      }
     },
   });
 
@@ -231,27 +85,38 @@ const Statistics = () => {
       {/* Frequency Per Variant Chart */}
       <div id="freq_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
         {chartStates.freqPerVariant.loading ? (
-          <div>Loading Frequency Per Variant Chart...</div>
+          <div>Loading Mean Background Subtracted Indel Frequency per Variant Chart...</div>
         ) : (
-          <Chart type="boxplot" data={chartStates.freqPerVariant.data} options={chartOptions("Mean Background Subtracted Indel Frequency per Variant")} />
+          <Chart 
+            type="boxplot"
+            data={chartStates.freqPerVariant.data} 
+            options={chartOptions("Mean Background Subtracted Indel Frequency per Variant")} 
+          />
         )}
       </div>
 
       {/* Frequency Per gRNA Scaffold Chart */}
       <div id="freq_per_scaffold_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
         {chartStates.freqPerScaffold.loading ? (
-          <div>Loading Frequency Per gRNA Scaffold Chart...</div>
+          <div>Loading Mean Background Subtracted Indel Frequency per gRNA Scaffold Chart...</div>
         ) : (
-          <Chart type="boxplot" data={chartStates.freqPerScaffold.data} options={chartOptions("Mean Background Subtracted Indel Frequency per gRNA Scaffold")} />
+          <Chart 
+            type="boxplot" 
+            data={chartStates.freqPerScaffold.data} 
+            options={chartOptions("Mean Background Subtracted Indel Frequency per gRNA Scaffold")} 
+          />
         )}
       </div>
 
       {/* Data Count Per Study Chart */}
       <div id="data_count_per_study_chart" style={{ position: "relative", width: "60%", height: "400px", margin: "0px auto 50px auto" }}>
         {chartStates.dataCountPerStudy.loading ? (
-          <div>Loading Data Count Per Study Chart...</div>
+          <div>Loading Number of Data per Study Chart...</div>
         ) : (
-          <Chart type="bar" data={chartStates.dataCountPerStudy.data} options={chartOptions("Number of Data per Study")} />
+          <Chart type="bar" 
+            data={chartStates.dataCountPerStudy.data} 
+            options={chartOptions("Number of Data per Study")}
+          />
         )}
       </div>
 
@@ -259,16 +124,24 @@ const Statistics = () => {
         {chartStates.meanFrequencyPerMismatch.loading ? (
           <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches Chart...</div>
         ) : (
-          <Chart type="line" data={chartStates.meanFrequencyPerMismatch.data} options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches")} />
+          <Chart 
+            type="line" 
+            data={chartStates.meanFrequencyPerMismatch.data} 
+            options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches")}
+          />
         )}
       </div>
 
       {/* Mean Frequency vs Number of Mismatches for each Variant */}
       <div id="mean_frequency_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 100px auto" }}>
         {chartStates.meanFrequencyPerVariant.loading ? (
-          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches for each Variant...</div>
+          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant Chart...</div>
         ) : (
-          <Chart type="line" data={chartStates.meanFrequencyPerVariant.data} options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant")} />
+            <Chart 
+              type="line" 
+              data={chartStates.meanFrequencyPerVariant.data} 
+              options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant")}
+            />
         )}
       </div>
     </div>
