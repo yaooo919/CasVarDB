@@ -378,7 +378,7 @@ function Data() {
       <div className="legend">
           <span className="color-box" style={{ backgroundColor: "#bfee90" }}></span> Matched bases
           <span className="color-box" style={{ backgroundColor: "#BF2C34" }}></span> Mismatched bases
-          <span className="color-box" style={{ backgroundColor: "#43A5BE" }}></span> PAM
+          {/* <span className="color-box" style={{ backgroundColor: "#43A5BE" }}></span> PAM */}
       </div>
 
       <div className="data-table-container">
@@ -440,17 +440,17 @@ function Data() {
                     }
                   }
 
-                  let highlightedExtra = '';
-                  for (let i = 0; i < 3; i++) {
-                    const nextChar = targetContextSequenceRaw[matchIndex + cleanBestMatch.length + i];
-                    highlightedExtra += `<span style="color: #43A5BE;">${nextChar}</span>`;
-                  }
+                  // let highlightedExtra = '';
+                  // for (let i = 0; i < 3; i++) {
+                  //   const nextChar = targetContextSequenceRaw[matchIndex + cleanBestMatch.length + i];
+                  //   highlightedExtra += `<span style="color: #43A5BE;">${nextChar}</span>`;
+                  // }
 
                   const highlightedSequence = 
                     targetContextSequenceRaw.slice(0, matchIndex) +
                     highlightedSubstring +
-                    highlightedExtra +
-                    targetContextSequenceRaw.slice(matchIndex + cleanBestMatch.length + 3);
+                    // highlightedExtra +
+                    targetContextSequenceRaw.slice(matchIndex + cleanBestMatch.length);
 
                   return highlightedSequence;
                 };

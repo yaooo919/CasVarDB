@@ -153,12 +153,60 @@ const processData = (data) => {
     return { labels, datasets };
   };
 
+  const processHeatmapData = (data) => {
+    const heatmapData = {};
+  
+    data.forEach((item) => {
+      const { number_of_mismatches, variant, mismatch_indexes, target_context_sequence_raw, best_matching_substring, mean_background_subtracted_indel_frequency } = item;
+
+      if (number_of_mismatches === 0) return;
+  
+      if (!heatmapData[number_of_mismatches]) {
+        heatmapData[number_of_mismatches] = {};
+      }
+  
+      if (!heatmapData[number_of_mismatches][variant]) {
+        heatmapData[number_of_mismatches][variant] = Array(25).fill(null); 
+      }
+  
+      const bestMatchIndex = target_context_sequence_raw.indexOf(best_matching_substring);
+      const mismatchPositions = mismatch_indexes.split('|').map(Number);
+  
+      mismatchPositions.forEach((pos) => {
+        const x = pos - bestMatchIndex;
+        const newValue = parseFloat(mean_background_subtracted_indel_frequency);
+
+        if (!heatmapData[number_of_mismatches][variant][x]) {
+          heatmapData[number_of_mismatches][variant][x] = [];
+        }
+        heatmapData[number_of_mismatches][variant][x].push(newValue);
+      });
+    });
+    
+    Object.keys(heatmapData).forEach((mismatch) => {
+      Object.keys(heatmapData[mismatch]).forEach((variant) => {
+        heatmapData[mismatch][variant] = heatmapData[mismatch][variant].map((values) => {
+          if (Array.isArray(values) && values.length > 0) {
+            const average = values.reduce((acc, val) => acc + val, 0) / values.length;
+            return average;
+          }
+          return 0; 
+        });
+      });
+    });
+
+    console.log(heatmapData);
+  
+    return heatmapData;
+  };
+
   return {
     freqPerVariant: processFreqPerVariantData(data),
     freqPerScaffold: processFreqPerScaffoldData(data),
     dataCountPerStudy: processDataCountPerStudy(data),
     meanFrequencyPerMismatch: processMeanFrequencyPerMismatchData(data),
     meanFrequencyPerVariant: processMeanFrequencyPerVariantData(data),
+    heatmapData: processHeatmapData(data),
   };
 };
 

@@ -3,6 +3,8 @@ import axios from "axios";
 import { Chart as ChartJS, CategoryScale, LinearScale,  BarElement, LineElement, PointElement, Tooltip, Legend, Title } from "chart.js";
 import { BoxPlotController, BoxAndWiskers } from "@sgratzl/chartjs-chart-boxplot";
 import { Chart } from "react-chartjs-2";
+import Heatmap from 'react-heatmap-grid';
+import './Statistics.css';
 
 ChartJS.register(BoxPlotController, BoxAndWiskers, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend, Title);
 
@@ -15,6 +17,9 @@ const Statistics = () => {
     meanFrequencyPerVariant: { data: null, loading: true },
   });
 
+  const [heatmapData, setHeatmapData] = useState(null);
+  const [selectedMismatch, setSelectedMismatch] = useState(1);
+
   const fetchProcessedData = async () => {
     try {
       const response = await axios.get("http://localhost:5000/statistics");
@@ -25,6 +30,7 @@ const Statistics = () => {
         meanFrequencyPerMismatch: { data: response.data.meanFrequencyPerMismatch, loading: false },
         meanFrequencyPerVariant: { data: response.data.meanFrequencyPerVariant, loading: false },
     });
+    setHeatmapData(response.data.heatmapData);
    } catch (error) {
       console.error("Error fetching data:", error);
       setChartStates({
@@ -34,6 +40,7 @@ const Statistics = () => {
         meanFrequencyPerMismatch: { data: null, loading: false },
         meanFrequencyPerVariant: { data: null, loading: false },
       });
+      setHeatmapData(null); 
     }
   };
 
@@ -74,6 +81,23 @@ const Statistics = () => {
     },
   });
 
+  const getHeatmapDataForMismatch = (mismatch) => {
+    if (!heatmapData || !heatmapData[mismatch]) return null;
+    const variants = Object.keys(heatmapData[mismatch]);
+    const positions = Array.from({ length: 25 }, (_, i) => i + 1);
+
+    const data = variants.map(variant => heatmapData[mismatch][variant]);
+
+    return {
+      positions,
+      variants,
+      data
+    };
+  };
+
+  const heatmapDataForMismatch = getHeatmapDataForMismatch(selectedMismatch);
+
+  
   return (
     <div>
       <div className="header-container">
@@ -133,7 +157,7 @@ const Statistics = () => {
       </div>
 
       {/* Mean Frequency vs Number of Mismatches for each Variant */}
-      <div id="mean_frequency_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 100px auto" }}>
+      <div id="mean_frequency_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
         {chartStates.meanFrequencyPerVariant.loading ? (
           <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant Chart...</div>
         ) : (
@@ -144,6 +168,57 @@ const Statistics = () => {
             />
         )}
       </div>
+
+      <div id="heatmap" style={{ position: "relative", width: "95%", margin: "0px auto 100px auto" }}>
+        {!heatmapDataForMismatch ? (
+          <div>Loading Heatmap...</div>
+        ) : (
+          <div>
+            <div style={{ marginBottom: "20px" }}>
+              <label htmlFor="mismatch-select">Select Mismatch: </label>
+              <select
+                id="mismatch-select"
+                value={selectedMismatch}
+                onChange={(e) => setSelectedMismatch(Number(e.target.value))}
+              >
+                {Object.keys(heatmapData).map(mismatch => (
+                  <option key={mismatch} value={mismatch}>
+                    {mismatch} Mismatch(es)
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+
+            <Heatmap
+              xLabels={heatmapDataForMismatch.positions}
+              yLabels={heatmapDataForMismatch.variants}
+              data={heatmapDataForMismatch.data}
+              xLabelWidth={60}
+              yLabelWidth={200}
+              xLabelsLocation="bottom"
+              // xLabelsVisibility="false"
+              cellStyle={(background, value, min, max, data, x, y) => ({
+                background: `rgb(0, 151, 230, ${1 - (max - value) / (max - min)})`,
+                fontSize: "11px",
+                color: "#444",
+              })}
+              labelStyle={{ fontSize: "5px" }}
+              cellRender={(value) => value && value.toFixed(2)}
+            />
+
+            {/* <div style={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%", marginTop: "5px" }}>
+              <div style={{ flex: 1, textAlign: "center" }}>
+                {heatmapDataForMismatch.positions.map((pos, index) => (
+                  <span key={index} style={{ margin: "0 10px", fontSize: "12px" }}>{pos}</span>
+                ))}
+              </div>
+              <span style={{ fontSize: "12px", fontWeight: "bold", marginLeft: "10px" }}>PAM</span>
+            </div> */}
+          </div>
+        )}
+      </div>
+      
     </div>
   );
 };

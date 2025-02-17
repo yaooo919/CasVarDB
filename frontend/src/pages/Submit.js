@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import './Submit.css';
-import { Tooltip, OverlayTrigger, Modal, Button } from 'react-bootstrap';
+import { Modal, Button } from 'react-bootstrap';
 
 const SubmitPage = () => {
   const [file, setFile] = useState(null); 
