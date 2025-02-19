@@ -6,3 +6,25 @@
 #x-labels-list {
   font-size: 14px;
 }
+
+#heatmap-container {
+  display: flex;
+  gap: 10px;
+}
+
+#heatmap-left {
+  width: 100%;
+}
+
+#heatmap-right {
+  margin-top: 30px;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+}
+
+#PAM {
+  margin-top: auto;
+  margin-bottom: 0px;
+  font: black;
+}

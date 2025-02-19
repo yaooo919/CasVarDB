@@ -216,7 +216,6 @@ const Statistics = () => {
         </div>
       </div>
 
-      {/* Frequency Per Variant Chart */}
       <div id="freq_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
         {chartStates.freqPerVariant.loading ? (
           <div>Loading Mean Background Subtracted Indel Frequency per Variant Chart...</div>
@@ -229,7 +228,6 @@ const Statistics = () => {
         )}
       </div>
 
-      {/* Frequency Per gRNA Scaffold Chart */}
       <div id="freq_per_scaffold_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
         {chartStates.freqPerScaffold.loading ? (
           <div>Loading Mean Background Subtracted Indel Frequency per gRNA Scaffold Chart...</div>
@@ -242,7 +240,6 @@ const Statistics = () => {
         )}
       </div>
 
-      {/* Data Count Per Study Chart */}
       <div id="data_count_per_study_chart" style={{ position: "relative", width: "60%", height: "400px", margin: "0px auto 50px auto" }}>
         {chartStates.dataCountPerStudy.loading ? (
           <div>Loading Number of Data per Study Chart...</div>
@@ -265,8 +262,7 @@ const Statistics = () => {
           />
         )}
       </div>
-
-      {/* Mean Frequency vs Number of Mismatches for each Variant */}
+  
       <div id="freq_mismatch_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
         {chartStates.freqMismatchPerVariant.loading ? (
           <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant Chart...</div>
@@ -278,48 +274,45 @@ const Statistics = () => {
             />
         )}
       </div>
-
+  
       <div id="heatmap" style={{ position: "relative", width: "95%", margin: "0px auto 100px auto" }}>
         {chartStates.heatmapData.loading ? (
           <div>Loading Heatmap...</div>
         ) : heatmapDataForMismatch ? (
-          <div>
-            <div style={{ marginBottom: "20px" }}>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={isNormalized}
-                  onChange={(e) => setIsNormalized(e.target.checked)}
-                />
-                Normalize relative to on-target activity
-              </label>
-            </div>
-            <Heatmap
-              xLabels={heatmapDataForMismatch.positions}
-              yLabels={heatmapDataForMismatch.variants}
-              data={heatmapDataForMismatch.data}
-              xLabelWidth={50}
-              yLabelWidth={200}
-              xLabelsLocation="bottom"
-              // xLabelsVisibility="false"
-              cellStyle={(background, value, min, max, data, x, y) => ({
-                background: `rgb(0, 151, 230, ${1 - (max - value) / (max - min)})`,
-                fontSize: "11px",
-                color: "#444",
-              })}
-              labelStyle={{ fontSize: "5px" }}
-              cellRender={(value) => value && value.toFixed(2)}
-            />
-
-            {/* <div style={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%", marginTop: "5px" }}>
-              <div style={{ flex: 1, textAlign: "center" }}>
-                {heatmapDataForMismatch.positions.map((pos, index) => (
-                  <span key={index} style={{ margin: "0 10px", fontSize: "12px" }}>{pos}</span>
-                ))}
+          <div id="heatmap-container">
+            <div id="heatmap-left">
+              <div style={{ marginBottom: "10px", marginLeft: "20px", fontSize: "14px" }}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={isNormalized}
+                    onChange={(e) => setIsNormalized(e.target.checked)}
+                  />
+                  Normalize relative to on-target activity
+                </label>
               </div>
-              <span style={{ fontSize: "12px", fontWeight: "bold", marginLeft: "10px" }}>PAM</span>
-            </div> */}
-            <ColorLegend min={heatmapDataForMismatch.minValue} max={heatmapDataForMismatch.maxValue} />
+              <Heatmap
+                xLabels={heatmapDataForMismatch.positions}
+                yLabels={heatmapDataForMismatch.variants}
+                data={heatmapDataForMismatch.data}
+                xLabelWidth={50}
+                yLabelWidth={200}
+                xLabelsLocation="bottom"
+                cellStyle={(background, value, min, max, data, x, y) => ({
+                  background: `rgb(0, 151, 230, ${1 - (max - value) / (max - min)})`,
+                  fontSize: "11px",
+                  color: "#444",
+                })}
+                labelStyle={{ fontSize: "5px" }}
+                cellRender={(value) => value && value.toFixed(2)}
+              />
+            </div>
+
+            <div id="heatmap-right">
+              <ColorLegend min={heatmapDataForMismatch.minValue} max={heatmapDataForMismatch.maxValue}/>
+              <p id="PAM">PAM</p>
+            </div>
+            
           </div>
         ) : (
           <div>No heatmap data available.</div>

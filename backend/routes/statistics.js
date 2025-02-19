@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+// const fs = require("fs").promises;
 
 const median = (arr) => {
   if (arr.length === 0) return 0;
@@ -294,5 +295,15 @@ router.get('/heatmap-data', (req, res) => {
     res.json(processHeatmapData(rows));
   });
 });
+
+// router.get("/heatmap-data", async (req, res) => {
+//   try {
+//     const data = await fs.readFile("data.txt", "utf-8");
+//     res.json(JSON.parse(data));
+//   } catch (error) {
+//     console.error("Error reading file:", error);
+//     res.status(500).json({ error: "Failed to read data file" });
+//   }
+// });
 
 module.exports = router;
