@@ -149,47 +149,50 @@ const processFreqMismatchPerVariantData = (data) => {
 
 const processHeatmapData = (data) => {
   const heatmapData = {};
+  const activityOn = {};
 
-  data.forEach((item) => {
-    const { number_of_mismatches, variant, mismatch_indexes, target_context_sequence_raw, best_matching_substring, mean_background_subtracted_indel_frequency } = item;
+  data.forEach(({ number_of_mismatches, variant, mean_background_subtracted_indel_frequency }) => {
+    if (number_of_mismatches === 0) {
+      if (!activityOn[variant]) {
+        activityOn[variant] = [];
+      }
+      activityOn[variant].push(mean_background_subtracted_indel_frequency);
+    }
+  });
 
+  Object.keys(activityOn).forEach((variant) => {
+    const values = activityOn[variant];
+    activityOn[variant] = values.reduce((sum, val) => sum + val, 0) / values.length;
+  });
+
+  data.forEach(({ number_of_mismatches, variant, mismatch_indexes, target_context_sequence_raw, best_matching_substring, mean_background_subtracted_indel_frequency }) => {
     if (number_of_mismatches === 0) return;
 
-    if (!heatmapData[number_of_mismatches]) {
-      heatmapData[number_of_mismatches] = {};
-    }
-
-    if (!heatmapData[number_of_mismatches][variant]) {
-      heatmapData[number_of_mismatches][variant] = Array(25).fill(null); 
-    }
-
     const bestMatchIndex = target_context_sequence_raw.indexOf(best_matching_substring);
-    const mismatchPositions = mismatch_indexes.split('|').map(Number);
+    const mismatchPosition = Number(mismatch_indexes);
+    const normalizedValue = mean_background_subtracted_indel_frequency / activityOn[variant];
 
-    mismatchPositions.forEach((pos) => {
-      const x = pos - bestMatchIndex;
-      const newValue = parseFloat(mean_background_subtracted_indel_frequency);
+    if (!heatmapData[variant]) {
+      heatmapData[variant] = {};
+    }
 
-      if (!heatmapData[number_of_mismatches][variant][x]) {
-        heatmapData[number_of_mismatches][variant][x] = [];
-      }
-      heatmapData[number_of_mismatches][variant][x].push(newValue);
-    });
-  });
-  
-  Object.keys(heatmapData).forEach((mismatch) => {
-    Object.keys(heatmapData[mismatch]).forEach((variant) => {
-      heatmapData[mismatch][variant] = heatmapData[mismatch][variant].map((values) => {
-        if (Array.isArray(values) && values.length > 0) {
-          const average = values.reduce((acc, val) => acc + val, 0) / values.length;
-          return average;
-        }
-        return 0; 
-      });
-    });
+    const x = mismatchPosition - bestMatchIndex;
+    if (!heatmapData[variant][x]) {
+      heatmapData[variant][x] = { raw: [], normalized: [] };
+    }
+    heatmapData[variant][x].raw.push(mean_background_subtracted_indel_frequency);
+    heatmapData[variant][x].normalized.push(normalizedValue);
   });
 
-  console.log(heatmapData);
+  Object.keys(heatmapData).forEach((variant) => {
+    Object.keys(heatmapData[variant]).forEach((x) => {
+      const rawValues = heatmapData[variant][x].raw;
+      const normalizedValues = heatmapData[variant][x].normalized;
+
+      heatmapData[variant][x].raw = rawValues.reduce((sum, val) => sum + val, 0) / rawValues.length;
+      heatmapData[variant][x].normalized = normalizedValues.reduce((sum, val) => sum + val, 0) / normalizedValues.length;
+    });
+  });
 
   return heatmapData;
 };
@@ -279,6 +282,7 @@ router.get('/heatmap-data', (req, res) => {
   const query = `
     SELECT number_of_mismatches, variant, mismatch_indexes, target_context_sequence_raw, best_matching_substring, mean_background_subtracted_indel_frequency 
     FROM cas9
+    WHERE number_of_mismatches = 0 OR number_of_mismatches = 1
   `;
 
   db.query(query, (err, rows) => {

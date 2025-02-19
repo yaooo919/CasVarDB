@@ -9,18 +9,17 @@ import './Statistics.css';
 ChartJS.register(BoxPlotController, BoxAndWiskers, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend, Title);
 
 const Statistics = () => {
+  const BASE_URL = "http://localhost:5000";
+  const [isNormalized, setIsNormalized] = useState(false);
+  
   const [chartStates, setChartStates] = useState({
     freqPerVariant: { data: null, loading: true },
     freqPerScaffold: { data: null, loading: true },
     dataCountPerStudy: { data: null, loading: true },
     freqPerMismatch: { data: null, loading: true },
     freqMismatchPerVariant: { data: null, loading: true },
+    heatmapData: { data: null, loading: true },
   });
-
-  const [heatmapData, setHeatmapData] = useState(null);
-  const [selectedMismatch, setSelectedMismatch] = useState(1);
-
-  const BASE_URL = "http://localhost:5000";
 
   const fetchFreqPerVariant = async () => {
     try {
@@ -105,10 +104,17 @@ const Statistics = () => {
   const fetchHeatmapData = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/statistics/heatmap-data`);
-      setHeatmapData(response.data);
+
+      setChartStates((prev) => ({
+        ...prev,
+        heatmapData: { data: response.data, loading: false },
+      }));
     } catch (error) {
       console.error("Error fetching heatmap data:", error);
-      setHeatmapData(null);
+      setChartStates((prev) => ({
+        ...prev,
+        heatmapData: { data: null, loading: false },
+      }));
     }
   };
 
@@ -154,13 +160,21 @@ const Statistics = () => {
     },
   });
 
-  const getHeatmapDataForMismatch = (mismatch) => {
-    if (!heatmapData || !heatmapData[mismatch]) return null;
-    const variants = Object.keys(heatmapData[mismatch]);
+  const getHeatmapDataForMismatch = () => {
+    const heatmapData = chartStates.heatmapData.data;
+    if (!heatmapData) return null;
+
+    const variants = Object.keys(heatmapData);
     const positions = Array.from({ length: 25 }, (_, i) => i + 1);
-
-    const data = variants.map(variant => heatmapData[mismatch][variant]);
-
+  
+    const data = variants.map((variant) =>
+       positions.map((pos) => {
+        const value = heatmapData[variant][pos];
+        if (!value) return 0;
+        return isNormalized ? value.normalized : value.raw;
+       })
+    );
+  
     return {
       positions,
       variants,
@@ -168,8 +182,7 @@ const Statistics = () => {
     };
   };
 
-  const heatmapDataForMismatch = getHeatmapDataForMismatch(selectedMismatch);
-
+  const heatmapDataForMismatch = getHeatmapDataForMismatch();
   
   return (
     <div>
@@ -243,31 +256,25 @@ const Statistics = () => {
       </div>
 
       <div id="heatmap" style={{ position: "relative", width: "95%", margin: "0px auto 100px auto" }}>
-        {!heatmapDataForMismatch ? (
+        {chartStates.heatmapData.loading ? (
           <div>Loading Heatmap...</div>
-        ) : (
+        ) : heatmapDataForMismatch ? (
           <div>
             <div style={{ marginBottom: "20px" }}>
-              <label htmlFor="mismatch-select">Select Mismatch: </label>
-              <select
-                id="mismatch-select"
-                value={selectedMismatch}
-                onChange={(e) => setSelectedMismatch(Number(e.target.value))}
-              >
-                {Object.keys(heatmapData).map(mismatch => (
-                  <option key={mismatch} value={mismatch}>
-                    {mismatch} Mismatch(es)
-                  </option>
-                ))}
-              </select>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={isNormalized}
+                  onChange={(e) => setIsNormalized(e.target.checked)}
+                />
+                Normalize relative to on-target activity
+              </label>
             </div>
-            
-
             <Heatmap
               xLabels={heatmapDataForMismatch.positions}
               yLabels={heatmapDataForMismatch.variants}
               data={heatmapDataForMismatch.data}
-              xLabelWidth={60}
+              xLabelWidth={50}
               yLabelWidth={200}
               xLabelsLocation="bottom"
               // xLabelsVisibility="false"
@@ -289,11 +296,15 @@ const Statistics = () => {
               <span style={{ fontSize: "12px", fontWeight: "bold", marginLeft: "10px" }}>PAM</span>
             </div> */}
           </div>
+        ) : (
+          <div>No heatmap data available.</div>
         )}
       </div>
       
     </div>
   );
 };
+
+
 
 export default Statistics;
