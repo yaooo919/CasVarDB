@@ -13,39 +13,112 @@ const Statistics = () => {
     freqPerVariant: { data: null, loading: true },
     freqPerScaffold: { data: null, loading: true },
     dataCountPerStudy: { data: null, loading: true },
-    meanFrequencyPerMismatch: { data: null, loading: true },
-    meanFrequencyPerVariant: { data: null, loading: true },
+    freqPerMismatch: { data: null, loading: true },
+    freqMismatchPerVariant: { data: null, loading: true },
   });
 
   const [heatmapData, setHeatmapData] = useState(null);
   const [selectedMismatch, setSelectedMismatch] = useState(1);
 
-  const fetchProcessedData = async () => {
+  const BASE_URL = "http://localhost:5000";
+
+  const fetchFreqPerVariant = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/statistics");
-      setChartStates({
-        freqPerVariant: { data: response.data.freqPerVariant, loading: false },
-        freqPerScaffold: { data: response.data.freqPerScaffold, loading: false },
-        dataCountPerStudy: { data: response.data.dataCountPerStudy, loading: false },
-        meanFrequencyPerMismatch: { data: response.data.meanFrequencyPerMismatch, loading: false },
-        meanFrequencyPerVariant: { data: response.data.meanFrequencyPerVariant, loading: false },
-    });
-    setHeatmapData(response.data.heatmapData);
-   } catch (error) {
-      console.error("Error fetching data:", error);
-      setChartStates({
+      const response = await axios.get(`${BASE_URL}/statistics/freq-per-variant`);
+      setChartStates((prev) => ({
+        ...prev,
+        freqPerVariant: { data: response.data, loading: false },
+      }));
+    } catch (error) {
+      console.error("Error fetching freqPerVariant data:", error);
+      setChartStates((prev) => ({
+        ...prev,
         freqPerVariant: { data: null, loading: false },
+      }));
+    }
+  };
+  
+  const fetchFreqPerScaffold = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/statistics/freq-per-scaffold`);
+      setChartStates((prev) => ({
+        ...prev,
+        freqPerScaffold: { data: response.data, loading: false },
+      }));
+    } catch (error) {
+      console.error("Error fetching freqPerScaffold data:", error);
+      setChartStates((prev) => ({
+        ...prev,
         freqPerScaffold: { data: null, loading: false },
+      }));
+    }
+  };
+  
+  const fetchDataCountPerStudy = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/statistics/data-count-per-study`);
+      setChartStates((prev) => ({
+        ...prev,
+        dataCountPerStudy: { data: response.data, loading: false },
+      }));
+    } catch (error) {
+      console.error("Error fetching dataCountPerStudy data:", error);
+      setChartStates((prev) => ({
+        ...prev,
         dataCountPerStudy: { data: null, loading: false },
-        meanFrequencyPerMismatch: { data: null, loading: false },
-        meanFrequencyPerVariant: { data: null, loading: false },
-      });
-      setHeatmapData(null); 
+      }));
+    }
+  };
+  
+  const fetchFreqPerMismatch = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/statistics/freq-per-mismatch`);
+      setChartStates((prev) => ({
+        ...prev,
+        freqPerMismatch: { data: response.data, loading: false },
+      }));
+    } catch (error) {
+      console.error("Error fetching freqPerMismatch data:", error);
+      setChartStates((prev) => ({
+        ...prev,
+        freqPerMismatch: { data: null, loading: false },
+      }));
+    }
+  };
+  
+  const fetchFreqMismatchPerVariant = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/statistics/freq-mismatch-per-variant`);
+      setChartStates((prev) => ({
+        ...prev,
+        freqMismatchPerVariant: { data: response.data, loading: false },
+      }));
+    } catch (error) {
+      console.error("Error fetching freqMismatchPerVariant data:", error);
+      setChartStates((prev) => ({
+        ...prev,
+        freqMismatchPerVariant: { data: null, loading: false },
+      }));
+    }
+  };
+  
+  const fetchHeatmapData = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/statistics/heatmap-data`);
+      setHeatmapData(response.data);
+    } catch (error) {
+      console.error("Error fetching heatmap data:", error);
+      setHeatmapData(null);
     }
   };
 
   useEffect(() => {
-    fetchProcessedData();
+    fetchFreqPerVariant();
+    fetchFreqPerScaffold();
+    fetchDataCountPerStudy();
+    fetchFreqPerMismatch();
+    fetchFreqMismatchPerVariant();
+    fetchHeatmapData();
   }, []);
 
   const chartOptions = (title) => ({
@@ -144,26 +217,26 @@ const Statistics = () => {
         )}
       </div>
 
-      <div id="mean_frequency_per_mismatch_chart" style={{ position: "relative", width: "60%", height: "500px", margin: "0px auto 50px auto" }}>
-        {chartStates.meanFrequencyPerMismatch.loading ? (
+      <div id="freq_per_mismatch_chart" style={{ position: "relative", width: "60%", height: "500px", margin: "0px auto 50px auto" }}>
+        {chartStates.freqPerMismatch.loading ? (
           <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches Chart...</div>
         ) : (
           <Chart 
             type="line" 
-            data={chartStates.meanFrequencyPerMismatch.data} 
+            data={chartStates.freqPerMismatch.data} 
             options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches")}
           />
         )}
       </div>
 
       {/* Mean Frequency vs Number of Mismatches for each Variant */}
-      <div id="mean_frequency_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
-        {chartStates.meanFrequencyPerVariant.loading ? (
+      <div id="freq_mismatch_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
+        {chartStates.freqMismatchPerVariant.loading ? (
           <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant Chart...</div>
         ) : (
             <Chart 
               type="line" 
-              data={chartStates.meanFrequencyPerVariant.data} 
+              data={chartStates.freqMismatchPerVariant.data} 
               options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant")}
             />
         )}
