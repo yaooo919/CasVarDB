@@ -160,6 +160,25 @@ const Statistics = () => {
     },
   });
 
+  const ColorLegend = ({ min, max }) => {
+    return (
+      <div style={{ display: "flex", alignItems: "center", marginTop: "10px" }}>
+        <div
+          style={{
+            width: "20px",
+            height: "200px",
+            background: "linear-gradient(to bottom, rgba(0, 151, 230, 1), rgba(0, 151, 230, 0))",
+            marginRight: "10px",
+          }}
+        />
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "200px" }}>
+          <span>{max.toFixed(2)}</span>
+          <span>{min.toFixed(2)}</span>
+        </div>
+      </div>
+    );
+  };
+
   const getHeatmapDataForMismatch = () => {
     const heatmapData = chartStates.heatmapData.data;
     if (!heatmapData) return null;
@@ -174,16 +193,21 @@ const Statistics = () => {
         return isNormalized ? value.normalized : value.raw;
        })
     );
+
+    const flatData = data.flat();
+    const minValue = Math.min(...flatData);
+    const maxValue = Math.max(...flatData);
   
     return {
       positions,
       variants,
-      data
+      data,
+      minValue,
+      maxValue,
     };
   };
 
   const heatmapDataForMismatch = getHeatmapDataForMismatch();
-  
   return (
     <div>
       <div className="header-container">
@@ -295,6 +319,7 @@ const Statistics = () => {
               </div>
               <span style={{ fontSize: "12px", fontWeight: "bold", marginLeft: "10px" }}>PAM</span>
             </div> */}
+            <ColorLegend min={heatmapDataForMismatch.minValue} max={heatmapDataForMismatch.maxValue} />
           </div>
         ) : (
           <div>No heatmap data available.</div>
