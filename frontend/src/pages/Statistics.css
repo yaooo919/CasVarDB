@@ -28,3 +28,29 @@
   margin-bottom: 0px;
   font: black;
 }
+
+.input-group {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 10px;
+  justify-content: center;
+
+}
+
+.input-group select {
+  margin-left: 5px;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+.graph-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+}
+

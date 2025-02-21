@@ -210,7 +210,6 @@ router.get('/freq-per-variant', (req, res) => {
       console.error('Error fetching data:', err);
       return res.status(500).json({ error: 'Failed to fetch data from database' });
     }
-
     res.json(processFreqPerVariantData(rows));
   });
 });
@@ -305,5 +304,60 @@ router.get('/heatmap-data', (req, res) => {
 //     res.status(500).json({ error: "Failed to read data file" });
 //   }
 // });
+
+const IUPAC_REGEX_MAP = {
+  'A': 'A',
+  'T': 'T',
+  'C': 'C',
+  'G': 'G',
+  'R': '[AG]',   
+  'Y': '[CT]', 
+  'S': '[GC]',    
+  'W': '[AT]',   
+  'K': '[GT]',   
+  'M': '[AC]', 
+  'B': '[CGT]',  
+  'D': '[AGT]', 
+  'H': '[ACT]',  
+  'V': '[ACG]',   
+  'N': '[ATCG]',  
+};
+
+const convertIUPACtoRegex = (pam) => {
+  return pam
+    .toUpperCase()
+    .split('')
+    .map(char => IUPAC_REGEX_MAP[char])
+    .join('');
+};
+
+router.get('/activity-graph', (req, res) => {
+  const { pam, numberOfMismatches, variant } = req.query;
+  const pamLength = pam.length;
+
+  const regexPattern = convertIUPACtoRegex(pam);
+
+  const query = `
+    SELECT mean_background_subtracted_indel_frequency
+    FROM cas9
+    WHERE
+      SUBSTRING(target_context_sequence FROM 28 FOR ?) REGEXP ?
+      AND number_of_mismatches = ?
+      AND variant = ?
+  `;
+
+  db.query(query, [pamLength, `^${regexPattern}$`, numberOfMismatches, variant], (err, rows) => {
+    if (err) {
+      console.error('Error fetching activity graph data:', err);
+      return res.status(500).json({ error: 'Failed to fetch activity graph data' });
+    }
+
+    const frequencies = rows.map(row => row.mean_background_subtracted_indel_frequency);
+    return res.json({
+      frequencies,
+      datapoints: frequencies.length,
+    });
+  });
+});
 
 module.exports = router;
