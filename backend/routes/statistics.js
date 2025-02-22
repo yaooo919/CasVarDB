@@ -171,7 +171,6 @@ const processHeatmapData = (data) => {
 
     const bestMatchIndex = target_context_sequence_raw.indexOf(best_matching_substring);
     const mismatchPosition = Number(mismatch_indexes);
-    const normalizedValue = mean_background_subtracted_indel_frequency / activityOn[variant];
 
     if (!heatmapData[variant]) {
       heatmapData[variant] = {};
@@ -182,16 +181,17 @@ const processHeatmapData = (data) => {
       heatmapData[variant][x] = { raw: [], normalized: [] };
     }
     heatmapData[variant][x].raw.push(mean_background_subtracted_indel_frequency);
-    heatmapData[variant][x].normalized.push(normalizedValue);
   });
 
   Object.keys(heatmapData).forEach((variant) => {
     Object.keys(heatmapData[variant]).forEach((x) => {
       const rawValues = heatmapData[variant][x].raw;
-      const normalizedValues = heatmapData[variant][x].normalized;
 
-      heatmapData[variant][x].raw = rawValues.reduce((sum, val) => sum + val, 0) / rawValues.length;
-      heatmapData[variant][x].normalized = normalizedValues.reduce((sum, val) => sum + val, 0) / normalizedValues.length;
+      const rawMean = rawValues.reduce((sum, val) => sum + val, 0) / rawValues.length;
+      const normalizedValue = rawMean / activityOn[variant];
+
+      heatmapData[variant][x].raw = rawMean;
+      heatmapData[variant][x].normalized = normalizedValue;
     });
   });
 

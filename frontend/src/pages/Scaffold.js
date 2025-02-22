@@ -96,7 +96,7 @@ function Scaffold() {
     <div>
       <div className="header-container">
         <div className="header">
-          <h1>gRNA Scaffold Data</h1>
+          <h1>gRNA Scaffolds</h1>
         </div>
       </div>  
 
@@ -108,7 +108,7 @@ function Scaffold() {
           <div className="search-field">
             <input
               type="text"
-              placeholder="Search by scaffold name..."
+              placeholder="Search by scaffold name... (e.g., SaCas9 scaffold 1)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

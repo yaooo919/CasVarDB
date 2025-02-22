@@ -67,15 +67,15 @@ const SubmitPage = () => {
                 We welcome submissions of comma separated text files containing the following columns, to be included in the database:
             </p>
             <ul>
-                <li>Spacer sequence (raw)</li>
-                <li>Target sequence (raw)</li>
-                <li>Spacer sequence</li>
-                <li>Target context sequence</li>
+                <li>Spacer Sequence (Raw)</li>
+                <li>Target Sequence (Raw)</li>
+                <li>Spacer Sequence</li>
+                <li>Target Context Sequence</li>
                 <li>Variant</li>
                 <li>Nuclease</li>
-                <li>gRNA scaffold</li>
+                <li>gRNA Scaffold</li>
                 <li>Day</li>
-                <li>tRNA feature</li>
+                <li>tRNA Feature</li>
                 <li>Study</li>
                 <li>Library</li>
                 <li>Table</li>
@@ -84,10 +84,10 @@ const SubmitPage = () => {
                 <li>n_data</li>
                 <li>Partition</li>
                 <li>Barcode</li>
-                <li>Number of mismatches</li>
-                <li>Background subtracted indel frequencies (%)</li>
-                <li>Mean background subtracted indel frequency (source, %)</li>
-                <li>Mean background subtracted indel frequency</li>
+                <li>Number of Mismatches</li>
+                <li>Background Subtracted Indel Frequencies (%)</li>
+                <li>Mean Background Subtracted Indel Frequency (Source, %)</li>
+                <li>Mean Background Subtracted Indel Frequency</li>
             </ul>
         </div>
         <div id="flex-right">

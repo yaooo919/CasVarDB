@@ -18,33 +18,35 @@ const studyURLs = {
 
 const columnDescriptions = {
   "spacer_sequence_raw": {
-    title: "Spacer sequence (raw)",
+    title: "Spacer Sequence (Raw)",
     short: "The DNA representation of the sgRNA's spacer region",
     full: (
       <>
-        <p>The DNA representation of the sgRNA's spacer region without any added padding. For SpCas9, the spacer sequence is typically 20 nt long, although other Cas9 variants may have different guide lengths. A 5’ guanosine (G) was added if it was missing (i.e., implied) in the raw sequences from the source data.</p>
+        <p>The DNA representation of the sgRNA's spacer region without any added padding. 
+        A 5' guanosine (G) was added if it was missing (i.e., implied) in the raw sequences from the source data. 
+        Different Cas9 variants may have different lengths, but the spacer sequence is typically 20 nt long for SpCas9.</p>
         <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
     )
   },
   "target_context_sequence_raw": {
-    title: "Target sequence (raw)",
+    title: "Target Sequence (Raw)",
     short: "Target context sequence taken from the non-target DNA strand",
     full: (
       <>
         <p>The original target context sequence taken directly from the non-target DNA strand in the source data. It includes</p>
         <ul>
-          <li><b>5' Context Sequence:</b> Optional nucleotides upstream of the target sequence</li>
-          <li><b>Target Sequence:</b> Main target sequence (e.g., 20 nt for SpCas9)</li>
-          <li><b>PAM Sequence:</b> Protospacer Adjacent Motif, specific to each Cas9 variant (e.g., 5'-NGG for SpCas9)</li>
-          <li><b>3' Context Sequence:</b> Optional nucleotides downstream of the PAM</li>
+          <li><b>5' context sequence:</b> Optional nucleotides upstream of the target sequence</li>
+          <li><b>target sequence:</b> Main target sequence (e.g., 20 nt for SpCas9)</li>
+          <li><b>PAM sequence:</b> Protospacer Adjacent Motif, specific to each Cas9 variant (e.g., 5'-NGG for SpCas9)</li>
+          <li><b>3' context sequence:</b> Optional nucleotides downstream of the PAM</li>
         </ul>
         <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
     ),
   },
   "spacer_sequence": {
-    title: "Spacer sequence",
+    title: "Spacer Sequence",
     short: "The padded version of the raw spacer sequence",
     full: (
       <>
@@ -54,11 +56,11 @@ const columnDescriptions = {
     ),
   },
   "target_context_sequence": {
-    title: "Target context sequence",
+    title: "Target Context Sequence",
     short: "The padded version of the raw target sequence",
     full: (
       <>
-        <p>Derived from the raw target context sequence with added 'N' padding on both the 5' and 3' ends to align the PAM with the 27th nucleotide position. The full padded sequence is 42 nt long and can be divided into</p>
+        <p>Derived from the raw target sequence with added 'N' padding on both the 5' and 3' ends to align the PAM with the 28th nucleotide position. The full padded sequence is 42 nt long and can be divided into</p>
         <ul>
           <li><b>5' context + target:</b> 27 nt</li>
           <li><b>PAM + 3' context:</b> 15 nt</li>
@@ -72,7 +74,7 @@ const columnDescriptions = {
     short: "The protein containing the Cas9 nuclease",
     full: (
       <>
-        <p>The protein containing the Cas9 nuclease. Variants come in two types</p>
+        <p>The protein containing the Cas9 nuclease. Variants come in two types, </p>
         <ul>
           <li><b>Cas9-NLS-FLAG-P2A:</b> for nucleases not from the "Small Cas9" paper. </li>
           <li><b>NLS-Cas9-NLS-FLAG-P2A:</b> for nucleases from the "Small Cas9" paper. </li>
@@ -87,19 +89,24 @@ const columnDescriptions = {
     full: "The Cas9 nuclease contained within each variant."
   },
   "gRNA_scaffold": {
-    title: "gRNA scaffold",
+    title: "gRNA Scaffold",
     short: "The scaffold of the sgRNA",
-    full: "The scaffold of the sgRNA, consisting of the repeat-anti-repeat loop and other stem loops."
+    full: (
+      <>
+        <p>The scaffold of the sgRNA, consisting of the repeat-anti-repeat loop and other stem loops.</p>
+        See <a href="/grna" style={{ color: 'blue', textDecoration: 'underline' }} target="_blank">gRNA Scaffold</a> for more details.
+      </>
+    )
   },
   "day": {
     title: "Day",
     short: "The timepoint at which indel frequencies were measured",
-    full: "The timepoint at which indel frequencies were measured. After introducing Cas9 into cells via transfection (for “Wild SpCas9,” “xCas9_NG,” and “DeepHF” studies) or transduction (for “SpCas9,” “Small Cas9,” “Base Editor,” and “Sniper” studies), cells were harvested and indel frequencies were analyzed by deep sequencing."
+    full: "The timepoint at which indel frequencies were measured. After introducing Cas9 into cells via transfection (for \"Wild SpCas9,\" \"xCas9_NG,\" and \"DeepHF\" studies) or transduction (for \"SpCas9,\" \"Small Cas9,\" \"Base Editor,\" and \"Sniper\" studies), cells were harvested and indel frequencies were analyzed by deep sequencing."
   },
   "tRNA_feature": {
-    title: "tRNA feature",
+    title: "tRNA Feature",
     short: "Whether tRNA-associated processing happened",
-    full: "Indicates whether tRNA-associated processing happened. If so, the tRNA-N20 sgRNA was cleaved to yield an N20 sgRNA (for more details, refer to Supplementary Figure 3 of the “SpCas9” study)."
+    full: "Indicates whether tRNA-associated processing happened. If so, the tRNA-N20 sgRNA was cleaved to yield an N20 sgRNA (for more details, refer to Supplementary Figure 3 of the \"SpCas9\" study)."
   },
   "study": {
     title: "Study",
@@ -148,34 +155,34 @@ const columnDescriptions = {
     full: "A unique identifier for each experiment, allowing identification of individual experiments, especially where some guide-target pairs were included multiple times for reliable data recovery. "
   },
   "number_of_mismatches": {
-    title: "Number of mismatches",
-    short: "Number of mismatches between spacer and target sequences",
+    title: "Number of Mismatches",
+    short: "Number of base mismatches between spacer and target sequences",
     full: (
       <>
-        <p>Number of mismatches between spacer and target sequences. Mismatches are highlighted in red.</p>
+        <p>Number of base mismatches between spacer and target sequences. Mismatches are highlighted in red.</p>
       </>
     )
   },
   "background_subtracted_indel_frequencies": {
-    title: "Background subtracted indel frequencies (%)",
+    title: "Background Subtracted Indel Frequencies (%)",
     short: "A list of lists of floats, where each inner list corresponds to data from a single study",
     full: "This is represented as a list of lists of floats, where each inner list corresponds to data from a single study. Each float in these lists is capped at 100 but may occasionally fall slightly below zero due to experimental error."
   },
   "mean_background_subtracted_indel_frequency_source": {
-    title: "Mean background subtracted indel frequency (source, %)",
-    short: "A list of floats, where each float represents the average value of the Background-subtracted indel frequencies (%) for a corresponding list",
+    title: "Mean Background Subtracted Indel Frequency (Source, %)",
+    short: "A list of floats, where each float represents the average value of the Background Subtracted Indel Frequencies (%) for a corresponding list",
     full: (
       <>
-        <p>A list of floats, where each float represents the average value of the <b> Background-subtracted indel frequencies (%)</b> for a corresponding list.</p>
+        <p>A list of floats, where each float represents the average value of the <b> Background Subtracted Indel Frequencies (%)</b> for a corresponding list.</p>
       </>
     )
   },
   "mean_background_subtracted_indel_frequency": {
-    title: "Mean background subtracted indel frequency",
+    title: "Mean Background Subtracted Indel Frequency",
     short: "A single float obtained through a weighted average",
     full: (
       <>
-        <p>This is a single float obtained through a weighted average. The weights are the integers in <b>n_data</b>, and the values are the floats in <b>Mean background-subtracted indel frequency (source, %)</b>. It is computed as the dot product of these two vectors divided by the sum of the weights.</p>
+        <p>This is a single float obtained through a weighted average. The weights are the number of floats in each list in <b>Background Subtracted Indel Frequencies (%)</b>, and the values are the floats in <b>Mean Background Subtracted Indel Frequency (Source, %)</b>. It is computed as the dot product of these two vectors divided by the sum of the weights.</p>
       </>
     )
   }
