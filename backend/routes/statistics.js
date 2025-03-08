@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
-// const fs = require("fs").promises;
+const fs = require("fs").promises;
 
 const median = (arr) => {
   if (arr.length === 0) return 0;
@@ -330,6 +330,16 @@ const convertIUPACtoRegex = (pam) => {
     .map(char => IUPAC_REGEX_MAP[char])
     .join('');
 };
+
+// router.get("/activity-graph", async (req, res) => {
+//     try {
+//       const data = await fs.readFile("sample_data_interactive_graph.txt", "utf-8");
+//       return res.json({ data: JSON.parse(data) });
+//     } catch (error) {
+//       console.error("Error reading file:", error);
+//       res.status(500).json({ error: "Failed to read data file" });
+//     }
+//   });
 
 router.get('/activity-graph', (req, res) => {
   const { pam, numberOfMismatches, variants, mismatchPosition } = req.query;

@@ -404,7 +404,7 @@ const Statistics = () => {
           )}
 
           <label>
-            Variant:
+            Variant(s):
             <select
               multiple
               value={selectedVariants}
@@ -427,7 +427,7 @@ const Statistics = () => {
         </div>
 
         <div className="selected-variants-container">
-          <strong>Selected variant(s):</strong>
+          <strong>Selected variant(s): </strong>
           {selectedVariants.length === 0 ? (
             <span>No variant selected</span>
           ) : (
@@ -455,7 +455,7 @@ const Statistics = () => {
                 <span> Variants:</span> <span style={{ fontWeight: "normal" }}>{graph.variants?.join(", ")}</span>  
                 {graph.mismatches === 1 && graph.position && (
                   <>
-                   | <span> Mismatch position:</span> <span style={{ fontWeight: "normal" }}>{graph.position}</span>
+                  <span> | Mismatch position:</span> <span style={{ fontWeight: "normal" }}>{graph.position}</span>
                   </>
                 )} 
               </h5>
@@ -479,7 +479,7 @@ const Statistics = () => {
           ))}
 
           {isActivityGraphLoading && (
-            <div style={{ textAlign: "center", margin: "20px 0", color: "#666" }}>
+            <div className="loading-container">
               <p>Generating graph, please wait...</p>
             </div>
           )}
