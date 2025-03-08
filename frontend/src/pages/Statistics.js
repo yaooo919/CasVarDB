@@ -30,7 +30,8 @@ const Statistics = () => {
 
   const [selectedPam, setSelectedPam] = useState("");
   const [selectedMismatches, setSelectedMismatches] = useState(0);
-  const [selectedVariant, setSelectedVariant] = useState("");
+  const [selectedMismatchPosition, setSelectedMismatchPosition] = useState(1);
+  const [selectedVariants, setSelectedVariants] = useState([]);
   const [activityGraphs, setActivityGraphs] = useState([]); // store individual graphs
   const [isActivityGraphLoading, setIsActivityGraphLoading] = useState(false);
   const [isFirstGraphGenerated, setIsFirstGraphGenerated] = useState(false);
@@ -233,7 +234,7 @@ const Statistics = () => {
   const heatmapDataForMismatch = getHeatmapDataForMismatch();
 
   const handleGenerateGraph = async () => {
-    if (!selectedPam || selectedMismatches === '' || !selectedVariant) {
+    if (!selectedPam || selectedMismatches === '' || selectedVariants.length === 0) {
       alert("Please select PAM, number of mismatches, and variant.");
       return;
     }
@@ -245,22 +246,32 @@ const Statistics = () => {
         params: {
           pam: selectedPam,
           numberOfMismatches: selectedMismatches,
-          variant: selectedVariant,
+          variants: selectedVariants,
+          mismatchPosition: selectedMismatches === 1 ? selectedMismatchPosition : undefined,
         },
       });
 
-      if (!response.data.frequencies || response.data.frequencies.length === 0) {
-        alert("No data available for the selected parameters.");
-        return;
-      }
-
+      const groupedData = response.data.data;
+      const datasets = Object.keys(groupedData).map(variant => {
+        const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+        return {
+          label: variant,
+          data: calculateDensity(groupedData[variant]),
+          borderColor: color,
+          backgroundColor: color,
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+        };
+      });
+      
       const newGraph = {
         id: Date.now(),
         pam: selectedPam,
         mismatches: selectedMismatches,
-        variant: selectedVariant,
-        data: response.data.frequencies,
-        datapoints: response.data.datapoints,
+        position: selectedMismatchPosition,
+        variants: selectedVariants,
+        datasets: datasets,
       };
 
       setActivityGraphs(prev => [...prev, newGraph]);
@@ -304,9 +315,13 @@ const Statistics = () => {
   //   }
   // };
   
-
   const handleClearGraphs = () => {
+    setSelectedPam("");
+    setSelectedMismatches(0);
+    setSelectedMismatchPosition(0);
+    setSelectedVariants([]);
     setActivityGraphs([]);
+    setIsActivityGraphLoading(false);
     setIsFirstGraphGenerated(false);
   }
 
@@ -317,6 +332,21 @@ const Statistics = () => {
     return points;
   };
 
+  const handleVariantSelect = (e) => {
+    const selectedVariant = e.target.value;
+    if (selectedVariant) {
+      if (selectedVariants.includes(selectedVariant)) {
+        setSelectedVariants(selectedVariants.filter(v => v !== selectedVariant));
+      } else {
+        setSelectedVariants([...selectedVariants, selectedVariant]);
+      }
+    }
+  };
+
+  const handleVariantRemove = (variant) => {
+    setSelectedVariants(selectedVariants.filter(v => v !== variant));
+  };
+
   return (
     <div>
       <div className="header-container">
@@ -325,6 +355,137 @@ const Statistics = () => {
         </div>
       </div>
 
+      <div style={{ position: "relative", width: "95%", margin: "0px auto 100px auto" }}>
+        <h4 style={{ textAlign: "center", color: "#444" }}>Mean Background Subtracted Indel Frequency Distribution</h4>
+        <div className="input-group">
+          <label>
+            PAM: 
+            <select
+              value={selectedPam}
+              onChange={(e) => setSelectedPam(e.target.value)}
+            >
+              <option value="">Select PAM</option>
+              {options.pams.map((pam, index) => (
+                <option key={index} value={pam}>
+                  {pam}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Number of mismatches:
+            <select
+              value={selectedMismatches}
+              onChange={(e) => setSelectedMismatches(Number(e.target.value))}
+            >
+              {options.mismatches.map((mismatch, index) => (
+                <option key={index} value={mismatch}>
+                  {mismatch}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {selectedMismatches === 1 && (
+            <label>
+              Mismatch position: 
+              <select
+                value={selectedMismatchPosition}
+                onChange={(e) => setSelectedMismatchPosition(Number(e.target.value))}
+              >
+                {Array.from({ length: 25 }, (_, i) => i + 1).map((pos) => (
+                  <option key={pos} value={pos}>
+                    {pos}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          <label>
+            Variant:
+            <select
+              multiple
+              value={selectedVariants}
+              onChange={handleVariantSelect}
+            >
+              {options.variants.map((variant, index) => (
+                <option key={index} value={variant}>
+                  {variant}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="button-group">
+            <button onClick={handleGenerateGraph}>{isFirstGraphGenerated ? "Add More" : "Generate"}</button>
+            {isFirstGraphGenerated && (
+              <button onClick={handleClearGraphs}>Clear</button>
+            )}
+          </div>
+        </div>
+
+        <div className="selected-variants-container">
+          <strong>Selected variant(s):</strong>
+          {selectedVariants.length === 0 ? (
+            <span>No variant selected</span>
+          ) : (
+            <div className="selected-variants">
+              {selectedVariants.map(variant => (
+                <div key={variant} className="variant-chip">
+                  {variant}
+                  <button onClick={() => handleVariantRemove(variant)}>×</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="graph-container">
+          {!isActivityGraphLoading && activityGraphs.length === 0 && (
+            <div style={{ textAlign: "center", color: "#666" }}>There is no chart yet. Select the parameters and click Generate.</div>
+          )}
+
+          {activityGraphs.map(graph => (
+            <div key={graph.id} style={{ width: "49%", border: "1px solid #ddd" }}>
+              <h5 style={{ textAlign: "center", margin: "5px 0px" }}>
+                <span>PAM:</span> <span style={{ fontWeight: "normal" }}>{graph.pam}</span> |
+                <span> Number of mismatches:</span> <span style={{ fontWeight: "normal" }}>{graph.mismatches}</span> |
+                <span> Variants:</span> <span style={{ fontWeight: "normal" }}>{graph.variants?.join(", ")}</span>  
+                {graph.mismatches === 1 && graph.position && (
+                  <>
+                   | <span> Mismatch position:</span> <span style={{ fontWeight: "normal" }}>{graph.position}</span>
+                  </>
+                )} 
+              </h5>
+              <div style={{ height: "400px" }}>
+                <Chart
+                  type="line"
+                  data={{
+                    datasets: graph.datasets,
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                      x: { type: 'linear', title: { display: true, text: "Mean Background Subtracted Indel Frequency" } },
+                      y: { title: { display: true, text: "Density" }, beginAtZero: true },
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+
+          {isActivityGraphLoading && (
+            <div style={{ textAlign: "center", margin: "20px 0", color: "#666" }}>
+              <p>Generating graph, please wait...</p>
+            </div>
+          )}
+        </div>
+      </div>
+{/* 
       <div id="freq_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
         {chartStates.freqPerVariant.loading ? (
           <div>Loading Mean Background Subtracted Indel Frequency per Variant Chart...</div>
@@ -427,113 +588,9 @@ const Statistics = () => {
         ) : (
           <div>No heatmap data available.</div>
         )}
-      </div>
+      </div> */}
 
-      <div style={{ position: "relative", width: "95%", margin: "0px auto 100px auto" }}>
-        <h4 style={{ textAlign: "center", color: "#444" }}>Mean Background Subtracted Indel Frequency Distribution</h4>
-        <div className="input-group">
-          <label>
-            PAM: 
-            <select
-              value={selectedPam}
-              onChange={(e) => setSelectedPam(e.target.value)}
-            >
-              <option value="">Select PAM</option>
-              {options.pams.map((pam, index) => (
-                <option key={index} value={pam}>
-                  {pam}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Number of mismatches:
-            <select
-              value={selectedMismatches}
-              onChange={(e) => setSelectedMismatches(Number(e.target.value))}
-            >
-              {options.mismatches.map((mismatch, index) => (
-                <option key={index} value={mismatch}>
-                  {mismatch}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Variant:
-            <select
-              value={selectedVariant}
-              onChange={(e) => setSelectedVariant(e.target.value)}
-            >
-              <option value="">Select variant</option>
-              {options.variants.map((variant, index) => (
-                <option key={index} value={variant}>
-                  {variant}
-                </option>
-              ))}
-            </select>
-          </label>
 
-          <div className="button-group">
-            <button onClick={handleGenerateGraph}>{isFirstGraphGenerated ? "Add More" : "Generate"}</button>
-            {isFirstGraphGenerated && (
-              <button onClick={handleClearGraphs}>Clear</button>
-            )}
-          </div>
-        </div>
-
-        <div className="graph-container">
-          {!isActivityGraphLoading && activityGraphs.length === 0 && (
-            <div style={{ textAlign: "center", color: "#666" }}>There is no chart yet. Select the parameters and click Generate.</div>
-          )}
-
-          {activityGraphs.map(graph => (
-            <div key={graph.id} style={{ width: "49%", border: "1px solid #ddd" }}>
-              <h5 style={{ textAlign: "center", margin: "5px 0px" }}>
-                <span>PAM:</span> <span style={{ fontWeight: "normal" }}>{graph.pam}</span> |
-                <span> Number of mismatches:</span> <span style={{ fontWeight: "normal" }}>{graph.mismatches}</span> |
-                <span> Variant:</span> <span style={{ fontWeight: "normal" }}>{graph.variant}</span>  
-              </h5>
-              <h5 style={{ textAlign: "center", margin: "0px"}}>
-                <span>Number of datapoints:</span> <span style={{ fontWeight: "normal" }}>{graph.datapoints}</span>
-              </h5>
-              <div style={{ height: "400px" }}>
-                <Chart
-                  type="line"
-                  data={{
-                    datasets: [
-                      {
-                        label: `density`,
-                        data: calculateDensity(graph.data),
-                        borderColor: "#4bc0c0",
-                        backgroundColor: "rgba(75, 192, 192, 0.2)",
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        fill: true
-                      },
-                    ],
-                  }}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                      x: { type: 'linear', title: { display: true, text: "Mean Background Subtracted Indel Frequency" } },
-                      y: { title: { display: true, text: "Density" }, beginAtZero: true },
-                    },
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-
-          {isActivityGraphLoading && (
-            <div style={{ textAlign: "center", margin: "20px 0", color: "#666" }}>
-              <div className="loading-spinner"></div>
-              <p>Generating graph, please wait...</p>
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

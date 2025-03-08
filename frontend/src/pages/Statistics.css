@@ -54,3 +54,96 @@
   justify-content: center;
 }
 
+/* .variant-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.selected-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.variant-chip {
+  display: flex;
+  align-items: center;
+  background-color: #e0e0e0;
+  padding: 5px 10px;
+  border-radius: 20px;
+}
+
+.variant-chip button {
+  margin-left: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+}
+
+.variant-dropdown {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ddd;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  width: 100%;
+}
+
+.variant-option {
+  padding: 10px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.variant-option:hover {
+  background-color: #f0f0f0;
+} */
+
+/* 下拉框样式 */
+select[multiple] {
+  height: auto;
+  min-height: 100px;
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+/* 已选择的 variant 容器 */
+.selected-variants-container {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+/* 已选择的 variant 列表 */
+.selected-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+/* 单个 variant chip */
+.variant-chip {
+  display: flex;
+  align-items: center;
+  background-color: #e0e0e0;
+  padding: 5px 10px;
+  border-radius: 20px;
+}
+
+/* 移除按钮 */
+.variant-chip button {
+  margin-left: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+}
