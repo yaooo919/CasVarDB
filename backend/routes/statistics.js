@@ -331,65 +331,65 @@ const convertIUPACtoRegex = (pam) => {
     .join('');
 };
 
-// router.get("/activity-graph", async (req, res) => {
-//     try {
-//       const data = await fs.readFile("sample_data_interactive_graph.txt", "utf-8");
-//       return res.json({ data: JSON.parse(data) });
-//     } catch (error) {
-//       console.error("Error reading file:", error);
-//       res.status(500).json({ error: "Failed to read data file" });
-//     }
-//   });
-
-router.get('/activity-graph', (req, res) => {
-  const { pam, numberOfMismatches, variants, mismatchPosition } = req.query;
-
-  const variantList = Array.isArray(variants) ? variants : [variants];
-
-  if (variantList.length === 0) {
-    return res.status(400).json({ error: 'At least one variant must be selected' });
-  }
-
-  const pamLength = pam.length;
-  const regexPattern = convertIUPACtoRegex(pam);
-  
-  let query = `
-    SELECT variant, mean_background_subtracted_indel_frequency
-    FROM cas9
-    WHERE
-      SUBSTRING(target_context_sequence FROM 28 FOR ?) REGEXP ?
-      AND number_of_mismatches = ?
-      AND variant IN (${variantList.map(() => '?').join(',')})
-  `;
-
-  const queryParams = [pamLength, `^${regexPattern}$`, numberOfMismatches, ...variantList];
-
-  if (numberOfMismatches == 1 && mismatchPosition) {
-    query += `AND mismatch_position = ?`;
-    queryParams.push(mismatchPosition);
-  }
-
-  console.log('SQL:', query);
-  console.log('Params:', queryParams);
-
-  db.query(query, queryParams, (err, rows) => {
-    console.log(query);
-    if (err) {
-      console.error('Error fetching activity graph data:', err);
-      return res.status(500).json({ error: 'Failed to fetch activity graph data' });
+router.get("/activity-graph", async (req, res) => {
+    try {
+      const data = await fs.readFile("sample_data_interactive_graph.txt", "utf-8");
+      return res.json({ data: JSON.parse(data) });
+    } catch (error) {
+      console.error("Error reading file:", error);
+      res.status(500).json({ error: "Failed to read data file" });
     }
-
-    const groupedData = rows.reduce((acc, row) => {
-      const { variant, mean_background_subtracted_indel_frequency } = row;
-      if (!acc[variant]) acc[variant] = [];
-      acc[variant].push(mean_background_subtracted_indel_frequency);
-      return acc;
-    }, {});
-
-    console.log('Grouped Data:', groupedData);
-
-    return res.json({ data: groupedData });
   });
-});
+
+// router.get('/activity-graph', (req, res) => {
+//   const { pam, numberOfMismatches, variants, mismatchPosition } = req.query;
+
+//   const variantList = Array.isArray(variants) ? variants : [variants];
+
+//   if (variantList.length === 0) {
+//     return res.status(400).json({ error: 'At least one variant must be selected' });
+//   }
+
+//   const pamLength = pam.length;
+//   const regexPattern = convertIUPACtoRegex(pam);
+  
+//   let query = `
+//     SELECT variant, mean_background_subtracted_indel_frequency
+//     FROM cas9
+//     WHERE
+//       SUBSTRING(target_context_sequence FROM 28 FOR ?) REGEXP ?
+//       AND number_of_mismatches = ?
+//       AND variant IN (${variantList.map(() => '?').join(',')})
+//   `;
+
+//   const queryParams = [pamLength, `^${regexPattern}$`, numberOfMismatches, ...variantList];
+
+//   if (numberOfMismatches == 1 && mismatchPosition) {
+//     query += `AND mismatch_position = ?`;
+//     queryParams.push(mismatchPosition);
+//   }
+
+//   console.log('SQL:', query);
+//   console.log('Params:', queryParams);
+
+//   db.query(query, queryParams, (err, rows) => {
+//     console.log(query);
+//     if (err) {
+//       console.error('Error fetching activity graph data:', err);
+//       return res.status(500).json({ error: 'Failed to fetch activity graph data' });
+//     }
+
+//     const groupedData = rows.reduce((acc, row) => {
+//       const { variant, mean_background_subtracted_indel_frequency } = row;
+//       if (!acc[variant]) acc[variant] = [];
+//       acc[variant].push(mean_background_subtracted_indel_frequency);
+//       return acc;
+//     }, {});
+
+//     console.log('Grouped Data:', groupedData);
+
+//     return res.json({ data: groupedData });
+//   });
+// });
 
 module.exports = router;

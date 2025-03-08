@@ -6,6 +6,11 @@ import { Chart } from "react-chartjs-2";
 import Heatmap from 'react-heatmap-grid';
 import { density1d } from 'fast-kde';
 import './Statistics.css';
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 
 ChartJS.register(BoxPlotController, BoxAndWiskers, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend, Title);
 
@@ -29,8 +34,8 @@ const Statistics = () => {
   };
 
   const [selectedPam, setSelectedPam] = useState("");
-  const [selectedMismatches, setSelectedMismatches] = useState(0);
-  const [selectedMismatchPosition, setSelectedMismatchPosition] = useState(1);
+  const [selectedMismatches, setSelectedMismatches] = useState(null);
+  const [selectedMismatchPosition, setSelectedMismatchPosition] = useState(null);
   const [selectedVariants, setSelectedVariants] = useState([]);
   const [activityGraphs, setActivityGraphs] = useState([]); // store individual graphs
   const [isActivityGraphLoading, setIsActivityGraphLoading] = useState(false);
@@ -282,43 +287,11 @@ const Statistics = () => {
       setIsActivityGraphLoading(false);
     }
   };
-
-  // const handleGenerateGraph = async () => {
-  //   if (!selectedPam || !selectedMismatches || !selectedVariant) {
-  //     alert("Please select PAM, number of mismatches, and variant.");
-  //     return;
-  //   }
-  
-  //   setIsActivityGraphLoading(true);
-  
-  //   try {
-  //     const mockResponse = {
-  //       frequencies: Array.from({ length: 50 }, () => Math.random()),
-  //       datapoints: 50,
-  //     };
-  
-  //     const newGraph = {
-  //       id: Date.now(),
-  //       pam: selectedPam,
-  //       mismatches: selectedMismatches,
-  //       variant: selectedVariant,
-  //       data: mockResponse.frequencies,
-  //       datapoints: mockResponse.datapoints,
-  //     };
-  
-  //     setActivityGraphs(prev => [...prev, newGraph]);
-  //     setIsFirstGraphGenerated(true);
-  //   } catch (error) {
-  //     console.error("Error in fetching data:", error);
-  //   } finally {
-  //     setIsActivityGraphLoading(false);
-  //   }
-  // };
   
   const handleClearGraphs = () => {
     setSelectedPam("");
-    setSelectedMismatches(0);
-    setSelectedMismatchPosition(0);
+    setSelectedMismatches(null);
+    setSelectedMismatchPosition(null);
     setSelectedVariants([]);
     setActivityGraphs([]);
     setIsActivityGraphLoading(false);
@@ -330,17 +303,6 @@ const Statistics = () => {
     const d1 = density1d(data, { bandwidth });
     const points = Array.from(d1);
     return points;
-  };
-
-  const handleVariantSelect = (e) => {
-    const selectedVariant = e.target.value;
-    if (selectedVariant) {
-      if (selectedVariants.includes(selectedVariant)) {
-        setSelectedVariants(selectedVariants.filter(v => v !== selectedVariant));
-      } else {
-        setSelectedVariants([...selectedVariants, selectedVariant]);
-      }
-    }
   };
 
   const handleVariantRemove = (variant) => {
@@ -358,65 +320,80 @@ const Statistics = () => {
       <div style={{ position: "relative", width: "95%", margin: "0px auto 100px auto" }}>
         <h4 style={{ textAlign: "center", color: "#444" }}>Mean Background Subtracted Indel Frequency Distribution</h4>
         <div className="input-group">
-          <label>
-            PAM: 
-            <select
-              value={selectedPam}
-              onChange={(e) => setSelectedPam(e.target.value)}
-            >
-              <option value="">Select PAM</option>
-              {options.pams.map((pam, index) => (
-                <option key={index} value={pam}>
-                  {pam}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Number of mismatches:
-            <select
-              value={selectedMismatches}
-              onChange={(e) => setSelectedMismatches(Number(e.target.value))}
-            >
-              {options.mismatches.map((mismatch, index) => (
-                <option key={index} value={mismatch}>
-                  {mismatch}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          {selectedMismatches === 1 && (
-            <label>
-              Mismatch position: 
-              <select
-                value={selectedMismatchPosition}
-                onChange={(e) => setSelectedMismatchPosition(Number(e.target.value))}
+          <Box sx={{ minWidth: 100 }}>
+            <FormControl fullWidth>
+              <InputLabel sx={{ fontSize:'15px'}}>PAM</InputLabel>
+              <Select
+                label="PAM"
+                value={selectedPam}
+                onChange={(e) => setSelectedPam(e.target.value)}
+                sx={{ fontSize: '15px' }}
               >
-                {Array.from({ length: 25 }, (_, i) => i + 1).map((pos) => (
-                  <option key={pos} value={pos}>
-                    {pos}
-                  </option>
+                {options.pams.map((pam, index) => (
+                  <MenuItem key={index} value={pam}>
+                    {pam}
+                  </MenuItem>
                 ))}
-              </select>
-            </label>
+              </Select>
+            </FormControl>
+          </Box>
+         
+          <Box sx={{ minWidth: 220 }}>
+            <FormControl fullWidth>
+              <InputLabel sx={{ fontSize:'15px' }}>Number of mismatches</InputLabel>
+              <Select
+                label="Number of mismatches"
+                value={selectedMismatches}
+                onChange={(e) => setSelectedMismatches(Number(e.target.value))}
+                sx={{ fontSize: '15px' }}
+              >
+                {options.mismatches.map((mismatch, index) => (
+                  <MenuItem key={index} value={mismatch}>
+                    {mismatch}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+          
+          {selectedMismatches === 1 && (
+            <Box sx={{ minWidth: 180 }}>
+              <FormControl fullWidth>
+                <InputLabel sx={{ fontSize:'15px' }}>Mismatch position</InputLabel>
+                <Select
+                  label="Mismatch position"
+                  value={selectedMismatchPosition}
+                  onChange={(e) => setSelectedMismatchPosition(Number(e.target.value))}
+                  sx={{ fontSize: '15px' }}
+                >
+                {Array.from({ length: 25 }, (_, i) => i + 1).map((pos) => (
+                  <MenuItem key={pos} value={pos}>
+                    {pos}
+                  </MenuItem>
+                ))}
+                </Select>
+              </FormControl>
+            </Box>
           )}
 
-          <label>
-            Variant(s):
-            <select
-              multiple
-              value={selectedVariants}
-              onChange={handleVariantSelect}
-            >
-              {options.variants.map((variant, index) => (
-                <option key={index} value={variant}>
-                  {variant}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Box sx={{ minWidth: 200 }}>
+            <FormControl fullWidth>
+              <InputLabel sx={{ fontSize:'15px' }}>Variant(s)</InputLabel>
+              <Select
+                multiple
+                label="Variant(s)"
+                value={selectedVariants}
+                onChange={(e) => setSelectedVariants(e.target.value)}
+                sx={{ fontSize: '15px' }}
+              >
+                {options.variants.map((variant, index) => (
+                  <MenuItem key={index} value={variant}>
+                    {variant}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
 
           <div className="button-group">
             <button onClick={handleGenerateGraph}>{isFirstGraphGenerated ? "Add More" : "Generate"}</button>

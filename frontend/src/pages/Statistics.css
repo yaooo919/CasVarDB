@@ -31,20 +31,23 @@
 
 .input-group {
   display: flex;
+  max-width: 70%;
+  margin: auto;
   gap: 15px;
   align-items: center;
   margin-bottom: 10px;
   justify-content: center;
-
-}
-
-.input-group select {
-  margin-left: 5px;
 }
 
 .button-group {
   display: flex;
   gap: 10px;
+}
+
+.button-group button {
+  height: 55px;
+  width: 120px;
+  padding: 0px;
 }
 
 .graph-container {
