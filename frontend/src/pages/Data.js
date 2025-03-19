@@ -216,7 +216,7 @@ function Data() {
 
   const fetchData = async() => {
     try {
-      const response = await axios.get(`http://localhost:5000/data`, {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/data`, {
         params: {
           page: currentPage,
           pageSize,
@@ -276,7 +276,7 @@ function Data() {
     }
 
     try {
-      const response = await axios.post(`http://localhost:5000/download`, {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/download`, {
         selectedIds: selectedItems,
       }, {
         responseType: 'blob',

@@ -15,7 +15,7 @@ import Select from '@mui/material/Select';
 ChartJS.register(BoxPlotController, BoxAndWiskers, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend, Title);
 
 const Statistics = () => {
-  const BASE_URL = "http://localhost:5000";
+  const BASE_URL = `${process.env.REACT_APP_API_URL}`;
   const [isNormalized, setIsNormalized] = useState(false);
 
   const options = {

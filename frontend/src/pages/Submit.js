@@ -36,7 +36,7 @@ const SubmitPage = () => {
     formData.append("metadata", metadata);
 
     try {
-        const response = await axios.post("http://localhost:5000/submit", formData, {
+        const response = await axios.post(`${process.env.REACT_APP_API_URL}/submit`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
