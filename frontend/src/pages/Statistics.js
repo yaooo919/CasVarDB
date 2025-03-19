@@ -317,7 +317,7 @@ const Statistics = () => {
         </div>
       </div>
 
-      <div style={{ position: "relative", width: "95%", margin: "0px auto 100px auto" }}>
+      <div style={{ position: "relative", width: "95%", margin: "0px auto 50px auto" }}>
         <h4 style={{ textAlign: "center", color: "#444" }}>Mean Background Subtracted Indel Frequency Distribution</h4>
         <div className="input-group">
           <Box sx={{ minWidth: 100 }}>
@@ -462,66 +462,7 @@ const Statistics = () => {
           )}
         </div>
       </div>
-{/* 
-      <div id="freq_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
-        {chartStates.freqPerVariant.loading ? (
-          <div>Loading Mean Background Subtracted Indel Frequency per Variant Chart...</div>
-        ) : (
-          <Chart 
-            type="boxplot"
-            data={chartStates.freqPerVariant.data} 
-            options={chartOptions("Mean Background Subtracted Indel Frequency per Variant")} 
-          />
-        )}
-      </div>
 
-      <div id="freq_per_scaffold_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
-        {chartStates.freqPerScaffold.loading ? (
-          <div>Loading Mean Background Subtracted Indel Frequency per gRNA Scaffold Chart...</div>
-        ) : (
-          <Chart 
-            type="boxplot" 
-            data={chartStates.freqPerScaffold.data} 
-            options={chartOptions("Mean Background Subtracted Indel Frequency per gRNA Scaffold")} 
-          />
-        )}
-      </div>
-
-      <div id="data_count_per_study_chart" style={{ position: "relative", width: "60%", height: "400px", margin: "0px auto 50px auto" }}>
-        {chartStates.dataCountPerStudy.loading ? (
-          <div>Loading Number of Data per Study Chart...</div>
-        ) : (
-          <Chart type="bar" 
-            data={chartStates.dataCountPerStudy.data} 
-            options={chartOptions("Number of Data per Study")}
-          />
-        )}
-      </div>
-
-      <div id="freq_per_mismatch_chart" style={{ position: "relative", width: "60%", height: "500px", margin: "0px auto 50px auto" }}>
-        {chartStates.freqPerMismatch.loading ? (
-          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches Chart...</div>
-        ) : (
-          <Chart 
-            type="line" 
-            data={chartStates.freqPerMismatch.data} 
-            options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches")}
-          />
-        )}
-      </div>
-  
-      <div id="freq_mismatch_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
-        {chartStates.freqMismatchPerVariant.loading ? (
-          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant Chart...</div>
-        ) : (
-            <Chart 
-              type="line" 
-              data={chartStates.freqMismatchPerVariant.data} 
-              options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant")}
-            />
-        )}
-      </div>
-  
       <div id="heatmap" style={{ position: "relative", width: "95%", margin: "0px auto 50px auto" }}>
         <h4 style={{ textAlign: "center", color: "#444" }}>Mean Background Subtracted Intel Frequency Heatmap for Single Mismatch</h4>
         {chartStates.heatmapData.loading ? (
@@ -565,13 +506,68 @@ const Statistics = () => {
         ) : (
           <div>No heatmap data available.</div>
         )}
-      </div> */}
+      </div>
 
+      <div id="freq_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
+        {chartStates.freqPerVariant.loading ? (
+          <div>Loading Mean Background Subtracted Indel Frequency per Variant Chart...</div>
+        ) : (
+          <Chart 
+            type="boxplot"
+            data={chartStates.freqPerVariant.data} 
+            options={chartOptions("Mean Background Subtracted Indel Frequency per Variant")} 
+          />
+        )}
+      </div>
 
+      <div id="freq_per_scaffold_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
+        {chartStates.freqPerScaffold.loading ? (
+          <div>Loading Mean Background Subtracted Indel Frequency per gRNA Scaffold Chart...</div>
+        ) : (
+          <Chart 
+            type="boxplot" 
+            data={chartStates.freqPerScaffold.data} 
+            options={chartOptions("Mean Background Subtracted Indel Frequency per gRNA Scaffold")} 
+          />
+        )}
+      </div>
+
+      <div id="data_count_per_study_chart" style={{ position: "relative", width: "60%", height: "400px", margin: "0px auto 50px auto" }}>
+        {chartStates.dataCountPerStudy.loading ? (
+          <div>Loading Number of Data per Study Chart...</div>
+        ) : (
+          <Chart type="bar" 
+            data={chartStates.dataCountPerStudy.data} 
+            options={chartOptions("Number of Data per Study")}
+          />
+        )}
+      </div>
+
+      <div id="freq_per_mismatch_chart" style={{ position: "relative", width: "60%", height: "500px", margin: "0px auto 100px auto" }}>
+        {chartStates.freqPerMismatch.loading ? (
+          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches Chart...</div>
+        ) : (
+          <Chart 
+            type="line" 
+            data={chartStates.freqPerMismatch.data} 
+            options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches")}
+          />
+        )}
+      </div>
+  
+      <div id="freq_mismatch_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
+        {chartStates.freqMismatchPerVariant.loading ? (
+          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant Chart...</div>
+        ) : (
+            <Chart 
+              type="line" 
+              data={chartStates.freqMismatchPerVariant.data} 
+              options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant")}
+            />
+        )}
+      </div>
     </div>
   );
 };
-
-
 
 export default Statistics;
