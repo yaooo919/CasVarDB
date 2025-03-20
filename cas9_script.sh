@@ -46,7 +46,7 @@ CREATE TABLE `cas9` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1607023 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-sudo cp /home/ubuntu/Cas9_with_mismatches_and_substring_and_indexes_fixed.csv /var/lib/mysql-files/
+sudo cp /home/yym/Cas9_with_mismatches_and_substring_and_indexes_fixed.csv /var/lib/mysql-files/
 
 LOAD DATA INFILE '/var/lib/mysql-files/Cas9_with_mismatches_and_substring_and_indexes_fixed.csv'
 INTO TABLE cas9
@@ -79,7 +79,7 @@ CREATE TABLE `grna_scaffold` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-sudo cp /home/ubuntu/gRNA_scaffolds.csv /var/lib/mysql-files/
+sudo cp /home/yym/gRNA_scaffolds.csv /var/lib/mysql-files/
 
 LOAD DATA INFILE '/var/lib/mysql-files/gRNA_scaffolds.csv'
 INTO TABLE grna_scaffold

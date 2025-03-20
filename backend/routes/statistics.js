@@ -275,32 +275,33 @@ router.get('/freq-mismatch-per-variant', (req, res) => {
   });
 });
 
-// router.get('/heatmap-data', (req, res) => {
-//   const query = `
-//     SELECT number_of_mismatches, variant, mismatch_indexes, target_context_sequence_raw, best_matching_substring, mean_background_subtracted_indel_frequency 
-//     FROM cas9
-//     WHERE number_of_mismatches = 0 OR number_of_mismatches = 1
-//   `;
+router.get('/heatmap-data', (req, res) => {
+  const query = `
+    SELECT number_of_mismatches, variant, mean_background_subtracted_indel_frequency, mismatch_position 
+    FROM cas9
+    WHERE number_of_mismatches = 0 OR number_of_mismatches = 1
+  `;
 
-//   db.query(query, (err, rows) => {
-//     if (err) {
-//       console.error('Error fetching data:', err);
-//       return res.status(500).json({ error: 'Failed to fetch data from database' });
-//     }
+  db.query(query, (err, rows) => {
+    if (err) {
+      console.error('Error fetching data:', err);
+      return res.status(500).json({ error: 'Failed to fetch data from database' });
+    }
 
-//     res.json(processHeatmapData(rows));
-//   });
-// });
-
-router.get("/heatmap-data", async (req, res) => {
-  try {
-    const data = await fs.readFile("data.txt", "utf-8");
-    res.json(JSON.parse(data));
-  } catch (error) {
-    console.error("Error reading file:", error);
-    res.status(500).json({ error: "Failed to read data file" });
-  }
+    res.json(processHeatmapData(rows));
+  });
 });
+
+// router.get("/heatmap-data", async (req, res) => {
+//   try {
+//     const data = await fs.readFile("data.txt", "utf-8");
+//     res.json(JSON.parse(data));
+//     console.log(data);
+//   } catch (error) {
+//     console.error("Error reading file:", error);
+//     res.status(500).json({ error: "Failed to read data file" });
+//   }
+// });
 
 const IUPAC_REGEX_MAP = {
   'A': 'A',
