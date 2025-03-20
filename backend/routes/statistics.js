@@ -166,7 +166,7 @@ const processHeatmapData = (data) => {
     activityOn[variant] = values.reduce((sum, val) => sum + val, 0) / values.length;
   });
 
-  data.forEach(({ number_of_mismatches, variant, mismatch_indexes, target_context_sequence_raw, best_matching_substring, mean_background_subtracted_indel_frequency, mismatch_position }) => {
+  data.forEach(({ number_of_mismatches, variant, mean_background_subtracted_indel_frequency, mismatch_position }) => {
     if (number_of_mismatches === 0) return;
 
     if (!heatmapData[variant]) {
@@ -191,7 +191,7 @@ const processHeatmapData = (data) => {
       heatmapData[variant][x].normalized = normalizedValue;
     });
   });
-
+  console.log(heatmapData);
   return heatmapData;
 };
 
