@@ -6,7 +6,7 @@ sudo npx n stable
 
 
 sudo apt install mysql-server-y
-sudo systemctl enable –now mysql
+sudo systemctl enable -now mysql
 sudo mysql_secure_installation
 systemctl status mysql
 sudo mysql -u root -p
