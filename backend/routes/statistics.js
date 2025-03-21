@@ -24,15 +24,7 @@ const processFreqPerVariantData = (rows) => {
   const result = {};
 
   Object.keys(groupedData).forEach((variant) => {
-    const frequencies = groupedData[variant];
-    // console.log(variant);
-    const stats = calculateStats(frequencies);
-    const sampledData = stratifiedSampleData(frequencies, 1000);
-
-    result[variant] = {
-      data: sampledData, 
-      stats: stats,
-    };
+    result[variant] = calculateStats(groupedData[variant]);
   });
 
   return result;
@@ -62,35 +54,6 @@ const calculatePercentile = (sortedData, percentile) => {
   return sortedData[lower] + (sortedData[upper] - sortedData[lower]) * (index - lower);
 };
 
-const stratifiedSampleData = (data, maxSamples) => {
-  if (data.length <= maxSamples) {
-    return data;
-  }
-
-  const sortedData = [...data].sort((a, b) => a - b);
-  const numStrata = 10;
-  const samplesPerStratum = Math.floor(maxSamples / numStrata);
-
-  const sampledData = [];
-  for (let i = 0; i < numStrata; i++) {
-    const start = Math.floor((i / numStrata) * sortedData.length);
-    const end = Math.floor(((i + 1) / numStrata) * sortedData.length);
-    const stratumData = sortedData.slice(start, end);
-
-    for (let j = 0; j < samplesPerStratum; j++) {
-      const randomIndex = Math.floor(Math.random() * stratumData.length);
-      sampledData.push(stratumData[randomIndex]);
-    }
-  }
-
-  while (sampledData.length < maxSamples) {
-    const randomIndex = Math.floor(Math.random() * sortedData.length);
-    sampledData.push(sortedData[randomIndex]);
-  }
-
-  return sampledData;
-};
-
 const processFreqPerScaffoldData = (rows) => {
   const groupedData = {};
 
@@ -104,15 +67,8 @@ const processFreqPerScaffoldData = (rows) => {
 
   const result = {};
 
-  Object.keys(groupedData).forEach((variant) => {
-    const frequencies = groupedData[variant];
-    const stats = calculateStats(frequencies);
-    const sampledData = stratifiedSampleData(frequencies, 1000);
-
-    result[variant] = {
-      data: sampledData, 
-      stats: stats,
-    };
+  Object.keys(groupedData).forEach((gRNA_scaffold) => {
+    result[gRNA_scaffold] = calculateStats(groupedData[gRNA_scaffold]);
   });
 
   return result;
@@ -349,7 +305,7 @@ router.get('/heatmap-data', (req, res) => {
 // mock data for testing
 // router.get("/heatmap-data", async (req, res) => {
 //   try {
-//     const data = await fs.readFile("data.txt", "utf-8");
+//     const data = await fs.readFile("heatmap_data.txt", "utf-8");
 //     res.json(JSON.parse(data));
 //     console.log(data);
 //   } catch (error) {
@@ -387,7 +343,7 @@ const convertIUPACtoRegex = (pam) => {
 // mock data for testing
 // router.get("/activity-graph", async (req, res) => {
 //     try {
-//       const data = await fs.readFile("sample_data_interactive_graph.txt", "utf-8");
+//       const data = await fs.readFile("nteractive_graph_data.txt", "utf-8");
 //       return res.json({ data: JSON.parse(data) });
 //     } catch (error) {
 //       console.error("Error reading file:", error);
@@ -423,11 +379,11 @@ router.get('/activity-graph', (req, res) => {
     queryParams.push(mismatchPosition);
   }
 
-  console.log('SQL:', query);
-  console.log('Params:', queryParams);
+  // console.log('SQL:', query);
+  // console.log('Params:', queryParams);
 
   db.query(query, queryParams, (err, rows) => {
-    console.log(query);
+    // console.log(query);
     if (err) {
       console.error('Error fetching activity graph data:', err);
       return res.status(500).json({ error: 'Failed to fetch activity graph data' });
