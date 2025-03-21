@@ -10,58 +10,112 @@ const median = (arr) => {
   return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 };
 
-const processFreqPerVariantData = (data) => {
-  const groupedData = data.reduce((acc, item) => {
-    const { variant, mean_background_subtracted_indel_frequency } = item;
-    if (!acc[variant]) {
-      acc[variant] = [];
+const processFreqPerVariantData = (rows) => {
+  const groupedData = {};
+
+  rows.forEach((row) => {
+    const { variant, mean_background_subtracted_indel_frequency } = row;
+    if (!groupedData[variant]) {
+      groupedData[variant] = [];
     }
-    acc[variant].push(mean_background_subtracted_indel_frequency);
-    return acc;
-  }, {});
+    groupedData[variant].push(mean_background_subtracted_indel_frequency);
+  });
 
-  const sortedVariants = Object.entries(groupedData)
-    .map(([variant, values]) => ({ variant, values, median: median(values) }))
-    .sort((a, b) => b.median - a.median);
+  const result = {};
 
-  return {
-    labels: sortedVariants.map((item) => item.variant),
-    datasets: [
-      {
-        label: "Mean Background Subtracted Indel Frequency",
-        data: sortedVariants.map((item) => item.values),
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
+  Object.keys(groupedData).forEach((variant) => {
+    const frequencies = groupedData[variant];
+    // console.log(variant);
+    const stats = calculateStats(frequencies);
+    const sampledData = stratifiedSampleData(frequencies, 1000);
+
+    result[variant] = {
+      data: sampledData, 
+      stats: stats,
+    };
+  });
+
+  return result;
 };
 
-const processFreqPerScaffoldData = (data) => {
-  const groupedData = data.reduce((acc, item) => {
-    const { gRNA_scaffold, mean_background_subtracted_indel_frequency } = item;
-    if (!acc[gRNA_scaffold]) acc[gRNA_scaffold] = [];
-    acc[gRNA_scaffold].push(mean_background_subtracted_indel_frequency);
-    return acc;
-  }, {});
+// stats for boxplot
+const calculateStats = (data) => {
+  const sortedData = data.slice().sort((a, b) => a - b);
+  const min = sortedData[0];
+  const max = sortedData[sortedData.length - 1];
+  const mean = sortedData.reduce((sum, val) => sum + val, 0) / sortedData.length;
+  const median = calculatePercentile(sortedData, 0.5);
+  const q1 = calculatePercentile(sortedData, 0.25);
+  const q3 = calculatePercentile(sortedData, 0.75);
+  // console.log(median, min, max, mean, q1, q3);
 
-  const sortedScaffolds = Object.entries(groupedData)
-    .map(([scaffold, values]) => ({ scaffold, values, median: median(values) }))
-    .sort((a, b) => b.median - a.median);
+  return { min, max, mean, median, q1, q3 };
+};
 
-  return {
-    labels: sortedScaffolds.map((item) => item.scaffold),
-    datasets: [
-      {
-        label: "Mean Background Subtracted Indel Frequency",
-        data: sortedScaffolds.map((item) => item.values),
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
+const calculatePercentile = (sortedData, percentile) => {
+  const index = percentile * (sortedData.length - 1);
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+  if (lower === upper) {
+    return sortedData[lower];
+  }
+  return sortedData[lower] + (sortedData[upper] - sortedData[lower]) * (index - lower);
+};
+
+const stratifiedSampleData = (data, maxSamples) => {
+  if (data.length <= maxSamples) {
+    return data;
+  }
+
+  const sortedData = [...data].sort((a, b) => a - b);
+  const numStrata = 10;
+  const samplesPerStratum = Math.floor(maxSamples / numStrata);
+
+  const sampledData = [];
+  for (let i = 0; i < numStrata; i++) {
+    const start = Math.floor((i / numStrata) * sortedData.length);
+    const end = Math.floor(((i + 1) / numStrata) * sortedData.length);
+    const stratumData = sortedData.slice(start, end);
+
+    for (let j = 0; j < samplesPerStratum; j++) {
+      const randomIndex = Math.floor(Math.random() * stratumData.length);
+      sampledData.push(stratumData[randomIndex]);
+    }
+  }
+
+  while (sampledData.length < maxSamples) {
+    const randomIndex = Math.floor(Math.random() * sortedData.length);
+    sampledData.push(sortedData[randomIndex]);
+  }
+
+  return sampledData;
+};
+
+const processFreqPerScaffoldData = (rows) => {
+  const groupedData = {};
+
+  rows.forEach((row) => {
+    const { gRNA_scaffold, mean_background_subtracted_indel_frequency } = row;
+    if (!groupedData[gRNA_scaffold]) {
+      groupedData[gRNA_scaffold] = [];
+    }
+    groupedData[gRNA_scaffold].push(mean_background_subtracted_indel_frequency);
+  });
+
+  const result = {};
+
+  Object.keys(groupedData).forEach((variant) => {
+    const frequencies = groupedData[variant];
+    const stats = calculateStats(frequencies);
+    const sampledData = stratifiedSampleData(frequencies, 1000);
+
+    result[variant] = {
+      data: sampledData, 
+      stats: stats,
+    };
+  });
+
+  return result;
 };
 
 const processDataCountPerStudy = (data) => {
@@ -191,7 +245,7 @@ const processHeatmapData = (data) => {
       heatmapData[variant][x].normalized = normalizedValue;
     });
   });
-  console.log(heatmapData);
+  // console.log(heatmapData);
   return heatmapData;
 };
 
@@ -292,6 +346,7 @@ router.get('/heatmap-data', (req, res) => {
   });
 });
 
+// mock data for testing
 // router.get("/heatmap-data", async (req, res) => {
 //   try {
 //     const data = await fs.readFile("data.txt", "utf-8");
@@ -329,6 +384,7 @@ const convertIUPACtoRegex = (pam) => {
     .join('');
 };
 
+// mock data for testing
 // router.get("/activity-graph", async (req, res) => {
 //     try {
 //       const data = await fs.readFile("sample_data_interactive_graph.txt", "utf-8");

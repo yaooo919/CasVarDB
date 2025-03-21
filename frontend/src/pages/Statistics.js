@@ -514,8 +514,41 @@ const Statistics = () => {
         ) : (
           <Chart 
             type="boxplot"
-            data={chartStates.freqPerVariant.data} 
-            options={chartOptions("Mean Background Subtracted Indel Frequency per Variant")} 
+            data={{
+              labels: Object.keys(chartStates.freqPerVariant.data) 
+                .map(variant => ({
+                  variant,
+                  median: chartStates.freqPerVariant.data[variant].stats.median, 
+                }))
+                .sort((a, b) => b.median - a.median) 
+                .map(item => item.variant), 
+              datasets: [
+                {
+                  label: 'Mean Background Subtracted Indel Frequency',
+                  data: Object.entries(chartStates.freqPerVariant.data)
+                    .map(([variant, info]) => ({
+                      variant,
+                      stats: info.stats,
+                      data: info.data
+                    }))
+                    .sort((a, b) => b.stats.median - a.stats.median) 
+                    .map(item => ({
+                      x: item.variant,
+                      y: item.data, 
+                      min: item.stats.min,
+                      max: item.stats.max,
+                      mean: item.stats.mean,
+                      median: item.stats.median,
+                      q1: item.stats.q1,
+                      q3: item.stats.q3,
+                    })),
+                  backgroundColor: "rgba(75, 192, 192, 0.2)", 
+                  borderColor: "rgba(75, 192, 192, 1)", 
+                  borderWidth: 1, 
+                },
+              ],
+            }}
+            options={chartOptions("Mean Background Subtracted Indel Frequency per Variant")}
           />
         )}
       </div>
@@ -525,9 +558,42 @@ const Statistics = () => {
           <div>Loading Mean Background Subtracted Indel Frequency per gRNA Scaffold Chart...</div>
         ) : (
           <Chart 
-            type="boxplot" 
-            data={chartStates.freqPerScaffold.data} 
-            options={chartOptions("Mean Background Subtracted Indel Frequency per gRNA Scaffold")} 
+            type="boxplot"
+            data={{
+              labels: Object.keys(chartStates.freqPerScaffold.data) 
+                .map(gRNA_scaffold => ({
+                  gRNA_scaffold,
+                  median: chartStates.freqPerScaffold.data[gRNA_scaffold].stats.median, 
+                }))
+                .sort((a, b) => b.median - a.median) 
+                .map(item => item.gRNA_scaffold), 
+              datasets: [
+                {
+                  label: 'Mean Background Subtracted Indel Frequency',
+                  data: Object.entries(chartStates.freqPerScaffold.data)
+                    .map(([gRNA_scaffold, info]) => ({
+                      gRNA_scaffold,
+                      stats: info.stats,
+                      data: info.data
+                    }))
+                    .sort((a, b) => b.stats.median - a.stats.median) 
+                    .map(item => ({
+                      x: item.gRNA_scaffold,
+                      y: item.data, 
+                      min: item.stats.min,
+                      max: item.stats.max,
+                      mean: item.stats.mean,
+                      median: item.stats.median,
+                      q1: item.stats.q1,
+                      q3: item.stats.q3,
+                    })),
+                  backgroundColor: "rgba(75, 192, 192, 0.2)", 
+                  borderColor: "rgba(75, 192, 192, 1)", 
+                  borderWidth: 1, 
+                },
+              ],
+            }}
+            options={chartOptions("Mean Background Subtracted Indel Frequency per gRNA Scaffold")}
           />
         )}
       </div>
