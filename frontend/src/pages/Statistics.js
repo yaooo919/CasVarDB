@@ -52,7 +52,10 @@ const Statistics = () => {
 
   const fetchFreqPerVariant = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/freq-per-variant`);
+      const response = await axios.post(`${BASE_URL}/forward`, {
+        endpoint: "/statistics/freq-per-variant",
+        method: "GET"
+      });
       setChartStates((prev) => ({
         ...prev,
         freqPerVariant: { data: response.data, loading: false },
@@ -68,7 +71,10 @@ const Statistics = () => {
   
   const fetchFreqPerScaffold = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/freq-per-scaffold`);
+      const response = await axios.post(`${BASE_URL}/forward`, {
+        endpoint: "/statistics/freq-per-scaffold",
+        method: "GET"
+      });
       setChartStates((prev) => ({
         ...prev,
         freqPerScaffold: { data: response.data, loading: false },
@@ -84,7 +90,10 @@ const Statistics = () => {
   
   const fetchDataCountPerStudy = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/data-count-per-study`);
+      const response = await axios.post(`${BASE_URL}/forward`, {
+        endpoint: "/statistics/data-count-per-study",
+        method: "GET"
+      });
       setChartStates((prev) => ({
         ...prev,
         dataCountPerStudy: { data: response.data, loading: false },
@@ -100,7 +109,10 @@ const Statistics = () => {
   
   const fetchFreqPerMismatch = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/freq-per-mismatch`);
+      const response = await axios.post(`${BASE_URL}/forward`, {
+        endpoint: "/statistics/freq-per-mismatch",
+        method: "GET"
+      });
       setChartStates((prev) => ({
         ...prev,
         freqPerMismatch: { data: response.data, loading: false },
@@ -116,7 +128,10 @@ const Statistics = () => {
   
   const fetchFreqMismatchPerVariant = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/freq-mismatch-per-variant`);
+      const response = await axios.post(`${BASE_URL}/forward`, {
+        endpoint: "/statistics/freq-mismatch-per-variant",
+        method: "GET"
+      });
       setChartStates((prev) => ({
         ...prev,
         freqMismatchPerVariant: { data: response.data, loading: false },
@@ -132,8 +147,11 @@ const Statistics = () => {
   
   const fetchHeatmapData = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/heatmap-data`);
-
+      const response = await axios.post(`${BASE_URL}/forward`, {
+        endpoint: "/statistics/heatmap-data",
+        method: "GET"
+      });
+      
       setChartStates((prev) => ({
         ...prev,
         heatmapData: { data: response.data, loading: false },
@@ -247,7 +265,9 @@ const Statistics = () => {
     setIsActivityGraphLoading(true);
 
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/activity-graph`, {
+      const response = await axios.post(`${BASE_URL}/forward`, {
+        endpoint: "/statistics/activity-graph",
+        method: "GET", 
         params: {
           pam: selectedPam,
           numberOfMismatches: selectedMismatches,
