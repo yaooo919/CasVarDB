@@ -11,6 +11,9 @@ router.post('/', upload.single('file'), async (req, res) => {
   const file = req.file;
   const metadata = req.body.metadata;
 
+  console.log("File buffer length:", file.buffer.length);
+  console.log("File buffer content (first 100 bytes):", file.buffer.slice(0, 100).toString())
+
   if (!file || !metadata) {
     return res.status(400).json({ message: 'File and metadata are required.' });
   }
