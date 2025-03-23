@@ -19,7 +19,6 @@ router.post('/', (req, res) => {
   
   const query = `SELECT ${downloadField} FROM cas9 WHERE id IN (${selectedIds.join(',')});`;
 
-  console.log(query);
 
   db.query(query, (err, results) => {
     if (err) {
@@ -31,8 +30,6 @@ router.post('/', (req, res) => {
       return res.status(404).send('No data found for the provided IDs');
     }
 
-    console.log('Query executed successfully');
-    console.log(results); 
     
     const csvData = convertToCSV(results);
     
