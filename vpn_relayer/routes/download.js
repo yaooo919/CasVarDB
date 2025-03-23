@@ -19,7 +19,7 @@ router.post('/', async (req, res) => {
 
   try {
     const response = await axios.post(`${process.env.VPN_RELAYER_URL}/download`, {selectedIds});
-    const csvData = convertToCSV(results);
+    const csvData = convertToCSV(response);
     res.header('Content-Type', 'text/csv');
     res.attachment('selected_data.csv');
     res.send(csvData);
