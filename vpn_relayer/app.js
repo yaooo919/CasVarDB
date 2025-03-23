@@ -3,12 +3,13 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-const cors = require('cors');
+var cors = require('cors');
 
 require("dotenv").config();
 
 
 var dataRouter = require('./routes/data');
+var grnaRouter = require('./routes/grna');
 
 
 var app = express();
@@ -25,6 +26,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/data', dataRouter);
+app.use('/grna', grnaRouter);
 
 
 // catch 404 and forward to error handler

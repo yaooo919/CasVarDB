@@ -1,19 +1,15 @@
 const express = require('express');
-const router = express.Router();
-const db = require('../config/db');
+const axios = require("axios");
 
-router.get('/', (req, res) => {
+const router = express.Router();
+
+router.get('/', async(req, res) => {
   const sortField = req.query.sortField || "id";
   const sortDirection = req.query.sortDirection || "ASC";
 
-  const query = `SELECT * FROM grna_scaffold ORDER BY ?? ${sortDirection}`;
-
-  db.query(query, [sortField], (err, results) => {
-    if (err) {
-        return res.status(500).json({ error: err.message });
-    }
-    res.json(results);
-  });
+  const url = `${process.env.VPN_RELAYER_URL}/grna?sortField=${sortField}&sortDirection=${sortDirection}`;
+  const response = await axios.get(url);
+  res.json(response.data);
 });
 
 module.exports = router;
