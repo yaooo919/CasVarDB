@@ -13,8 +13,9 @@ router.post('/', async (req, res) => {
   try {
     const response = await axios.post(`${process.env.VPN_RELAYER_URL}/download`, {selectedIds});
     let csvData = response.data;
+    console.log(csvData);
     csvData = csvData
-        .split('\n') 
+        .split('\n')
         .map(line => line.trim())
         .filter(line => line.length > 0);
     csvData = csvData.join('\n');
