@@ -20,7 +20,7 @@ router.post('/', upload.single('file'), async (req, res) => {
 
   try {
     const formData = new FormData();
-    formData.append('file', fs.createReadStream(file.path), file.originalname);
+    formData.append('file', file.buffer, file.originalname);
     formData.append('metadata', metadata);
 
     const response = await axios.post(`${process.env.VPN_RELAYER_URL}/submit`, formData, {
