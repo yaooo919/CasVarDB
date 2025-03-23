@@ -19,6 +19,8 @@ router.post('/', (req, res) => {
   
   const query = `SELECT ${downloadField} FROM cas9 WHERE id IN (${selectedIds.join(',')});`;
 
+  console.log(query);
+
   db.query(query, (err, results) => {
     if (err) {
     console.error('Error executing query:', err);
