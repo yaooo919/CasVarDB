@@ -1,11 +1,13 @@
 const express = require('express');
+const multer = require('multer');
 const axios = require('axios');
 const fs = require('fs');
 const FormData = require('form-data');
 
 const router = express.Router();
+const upload = multer();
 
-router.post('/', async (req, res) => {
+router.post('/', upload.single('file'), async (req, res) => {
   const file = req.file;
   const metadata = req.body.metadata;
 
