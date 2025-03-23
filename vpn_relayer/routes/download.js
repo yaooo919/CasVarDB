@@ -11,7 +11,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const response = await axios.post(`${process.env.VPN_RELAYER_URL}/download`, {selectedIds});
+    const response = await axios.post(`${process.env.BACKEND_URL}/download`, {selectedIds});
     res.send(response.data);
   } catch (err) {
     console.error("Error redirecting request:", err);

@@ -1,10 +1,15 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
 const axios = require('axios');
-const fs = require('fs');
+const FormData = require('form-data');
 
 const router = express.Router();
 
-router.post('/', async (req, res) => {
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+router.post('/', upload.single('file'), async (req, res) => {
   const file = req.file;
   const metadata = req.body.metadata;
 
@@ -23,7 +28,7 @@ router.post('/', async (req, res) => {
     formData.append('file', file.buffer, file.originalname);
     formData.append('metadata', metadata);
 
-    const response = await axios.post(`${process.env.VPN_RELAYER_URL}/submit`, formData, {
+    const response = await axios.post(`${process.env.BACKEND_URL}/submit`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
