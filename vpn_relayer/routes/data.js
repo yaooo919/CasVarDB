@@ -17,7 +17,7 @@ const allowedSearchFields = [
 ];
 
 router.get("/", async (req, res) => {
-  res.send(await axios.get('10.8.0.2/data'));
+  res.send(await axios.get('http://10.8.0.2/data'));
 });
 
 module.exports = router;
