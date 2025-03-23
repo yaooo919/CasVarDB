@@ -317,7 +317,7 @@ const Statistics = () => {
         </div>
       </div>
 
-      {/* <div style={{ position: "relative", width: "95%", margin: "0px auto 50px auto" }}>
+      <div style={{ position: "relative", width: "95%", margin: "0px auto 50px auto" }}>
         <h4 style={{ textAlign: "center", color: "#444" }}>Mean Background Subtracted Indel Frequency Distribution</h4>
         <div className="input-group">
           <Box sx={{ minWidth: 100 }}>
@@ -461,7 +461,7 @@ const Statistics = () => {
             </div>
           )}
         </div>
-      </div> */}
+      </div>
 
       <div id="heatmap" style={{ position: "relative", width: "95%", margin: "0px auto 50px auto" }}>
         <h4 style={{ textAlign: "center", color: "#444" }}>Mean Background Subtracted Intel Frequency Heatmap for Single Mismatch</h4>
@@ -547,7 +547,7 @@ const Statistics = () => {
         )}
       </div>
 
-      {/* <div id="freq_per_scaffold_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
+      <div id="freq_per_scaffold_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
         {chartStates.freqPerScaffold.loading ? (
           <div>Loading Mean Background Subtracted Indel Frequency per gRNA Scaffold Chart...</div>
         ) : (
@@ -584,7 +584,7 @@ const Statistics = () => {
             options={chartOptions("Mean Background Subtracted Indel Frequency per gRNA Scaffold")}
           />
         )}
-      </div> */}
+      </div>
 
       <div id="data_count_per_study_chart" style={{ position: "relative", width: "60%", height: "400px", margin: "0px auto 50px auto" }}>
         {chartStates.dataCountPerStudy.loading ? (
