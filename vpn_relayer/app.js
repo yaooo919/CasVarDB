@@ -9,7 +9,7 @@ require("dotenv").config();
 
 
 var dataRouter = require('./routes/data');
-var grnaRouter = require('./routes/grna');
+var grnaRouter = require('./routes/gRNA_scaffold');
 
 
 var app = express();
