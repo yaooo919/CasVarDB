@@ -12,6 +12,9 @@ router.post('/', upload.single('file'), (req, res) => {
   const file = req.file; 
   const metadata = req.body.metadata; 
 
+  console.log(file);
+  console.log(metadata);
+
   if (!file || !metadata) {
     return res.status(400).json({ message: 'File and metadata are required.' });
   }
