@@ -3,13 +3,6 @@ const axios = require("axios");
 
 const router = express.Router();
 
-const convertToCSV = (data) => {
-  if (data.length === 0) return '';
-  const headers = Object.keys(data[0]);
-  const rows = data.map((row) => headers.map((header) => row[header]).join(','));
-  return [headers.join(','), ...rows].join('\n');
-};
-
 router.post('/', async (req, res) => {
   const { selectedIds } = req.body;
   
@@ -19,7 +12,8 @@ router.post('/', async (req, res) => {
 
   try {
     const response = await axios.post(`${process.env.VPN_RELAYER_URL}/download`, {selectedIds});
-    const csvData = convertToCSV(response.data);
+    let csvData = response.data;
+    csvData = csvData.split('\n').filter(line => line.trim() !== '').join('\n');
     res.header('Content-Type', 'text/csv');
     res.attachment('selected_data.csv');
     res.send(csvData);
