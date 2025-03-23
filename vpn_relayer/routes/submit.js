@@ -9,12 +9,15 @@ const router = express.Router();
 const upload = multer({ dest: path.join(__dirname, '../uploads') });
 
 router.post('/', upload.single('file'), async (req, res) => {
-  const file = req.file; 
-  const metadata = req.body.metadata; 
+  const file = req.file;
+  const metadata = req.body.metadata;
 
   if (!file || !metadata) {
     return res.status(400).json({ message: 'File and metadata are required.' });
   }
+
+  console.log('Received file in vpn_relayer:', file);
+  console.log('Received metadata:', metadata);
 
   try {
     const formData = new FormData();
@@ -22,32 +25,14 @@ router.post('/', upload.single('file'), async (req, res) => {
     formData.append('metadata', metadata);
 
     const response = await axios.post(`${process.env.VPN_RELAYER_URL}/submit`, formData, {
-      headers: {
-        ...formData.getHeaders(),
-      }
+      headers: formData.getHeaders(),
     });
 
-    res.status(200).json(response.data);
+    return res.status(200).json(response.data);
   } catch (err) {
-    console.error("Error redirecting file upload:", err);
+    console.error('Error redirecting file upload:', err);
     return res.status(500).json({ error: err.message });
   }
 });
 
 module.exports = router;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
