@@ -317,7 +317,7 @@ const Statistics = () => {
         </div>
       </div>
 
-      <div style={{ position: "relative", width: "95%", margin: "0px auto 50px auto" }}>
+      {/* <div style={{ position: "relative", width: "95%", margin: "0px auto 50px auto" }}>
         <h4 style={{ textAlign: "center", color: "#444" }}>Mean Background Subtracted Indel Frequency Distribution</h4>
         <div className="input-group">
           <Box sx={{ minWidth: 100 }}>
@@ -461,7 +461,7 @@ const Statistics = () => {
             </div>
           )}
         </div>
-      </div>
+      </div> */}
 
       <div id="heatmap" style={{ position: "relative", width: "95%", margin: "0px auto 50px auto" }}>
         <h4 style={{ textAlign: "center", color: "#444" }}>Mean Background Subtracted Intel Frequency Heatmap for Single Mismatch</h4>
