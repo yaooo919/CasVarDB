@@ -11,6 +11,7 @@ var dataRouter = require('./routes/data');
 var gRNARouter = require('./routes/gRNA_scaffold');
 var statisticsRouter = require('./routes/statistics');
 var downloadsRouter = require('./routes/download');
+var submitRouter = require('./routes/submit');
 
 var app = express();
 
@@ -29,6 +30,7 @@ app.use('/data', dataRouter);
 app.use('/grna', gRNARouter);
 app.use('/statistics', statisticsRouter);
 app.use('/download', downloadsRouter);
+app.use('/submit', submitRouter);
 
 
 // catch 404 and forward to error handler
