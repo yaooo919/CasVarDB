@@ -24,7 +24,9 @@ router.post('/', upload.single('file'), async (req, res) => {
     formData.append('metadata', metadata);
 
     const response = await axios.post(`${process.env.VPN_RELAYER_URL}/submit`, formData, {
-      headers: formData.getHeaders(),
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
 
     return res.status(200).json(response.data);

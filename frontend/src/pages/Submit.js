@@ -36,7 +36,11 @@ const SubmitPage = () => {
     formData.append("metadata", metadata);
 
     try {
-        const response = await axios.post(`${process.env.REACT_APP_API_URL}/submit`, formData);
+        const response = await axios.post(`${process.env.REACT_APP_API_URL}/submit`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
         setMessage(response.data.message);
       } catch (error) {
         console.error("Error uploading file:", error);
