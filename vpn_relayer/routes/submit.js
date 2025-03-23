@@ -1,14 +1,11 @@
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
 const axios = require('axios');
 const fs = require('fs');
 const FormData = require('form-data');
 
 const router = express.Router();
-const upload = multer({ dest: path.join(__dirname, '../uploads') });
 
-router.post('/', upload.single('file'), async (req, res) => {
+router.post('/', async (req, res) => {
   const file = req.file;
   const metadata = req.body.metadata;
 
