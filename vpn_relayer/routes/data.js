@@ -17,7 +17,7 @@ const allowedSearchFields = [
 ];
 
 router.get("/", async (req, res) => {
-  res.send(await axios.get('http://10.8.0.2/data?page=1&pageSize=50&searchField=spacer_sequence_raw&searchTerm=&sortField=id&sortDirection=ASC'));
+  res.send(await axios.get('http://10.8.0.2:5000/data?page=1&pageSize=50&searchField=spacer_sequence_raw&searchTerm=&sortField=id&sortDirection=ASC'));
 });
 
 module.exports = router;
