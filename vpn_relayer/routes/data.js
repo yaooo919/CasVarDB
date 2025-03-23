@@ -1,24 +1,12 @@
 const express = require('express');
-const router = express.Router();
 const axios = require('axios');
 
-
-const allowedSearchFields = [
-  'spacer_sequence_raw',
-  'target_context_sequence_raw',
-  'spacer_sequence',
-  'target_context_sequence',
-  'variant',
-  'nuclease',
-  'gRNA_scaffold',
-  'day',
-  'tRNA_feature',
-  'study',
-  'number_of_mismatches'
-];
+const router = express.Router();
 
 router.get("/", async (req, res) => {
-  const response = await axios.get('http://10.8.0.2:5000/data?page=1&pageSize=50&searchField=spacer_sequence_raw&searchTerm=&sortField=id&sortDirection=ASC');
+  const {page, pageSize, searchField, searchTerm, sortField, sortDirection} = req.query;
+  const url = `${process.env.VPN_RELAYER_URL}/data?page=${page}&pageSize=${pageSize}&searchField=${searchField}&searchTerm=${searchTerm}&sortField=${sortField}&sortDirection=${sortDirection}`;
+  const response = await axios.get(url);
   res.send(response.data);
 });
 
