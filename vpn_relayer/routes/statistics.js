@@ -15,13 +15,13 @@ router.get('/freq-per-scaffold', async (req, res) => {
   res.send(response.data);
 });
 
-router.get('/data-count-per-study', async(req, res) => {
+router.get('/data-count-per-study', async (req, res) => {
   const url = `${process.env.VPN_RELAYER_URL}/data-count-per-study`;
   const response = await axios.get(url);
   res.send(response.data);
 });
 
-router.get('/freq-per-mismatch', async(req, res) => {
+router.get('/freq-per-mismatch', async (req, res) => {
   const url = `${process.env.VPN_RELAYER_URL}/freq-per-mismatch`;
   const response = await axios.get(url);
   res.send(response.data);
@@ -33,13 +33,13 @@ router.get('/freq-mismatch-per-variant', async (req, res) => {
   res.send(response.data);
 });
 
-router.get('/heatmap-data', async(req, res) => {
+router.get('/heatmap-data', async (req, res) => {
   const url = `${process.env.VPN_RELAYER_URL}/heatmap-data`;
   const response = await axios.get(url);
   res.send(response.data);
 });
 
-router.get('/activity-graph', async(req, res) => {
+router.get('/activity-graph', async (req, res) => {
   const { pam, numberOfMismatches, variants, mismatchPosition } = req.query;
   const url = `${process.env.VPN_RELAYER_URL}/activity-graph?pam=${pam}&numberOfMismatches=${numberOfMismatches}&variants=${variants}&mismatchPosition=${mismatchPosition}`;
   const response = await axios.get(url);
