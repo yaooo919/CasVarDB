@@ -23,13 +23,16 @@ router.post('/', (req, res) => {
 
   db.query(query, (err, results) => {
     if (err) {
-    console.error('Error executing query:', err);
-    return res.status(500).json({ error: err.message });
+      console.error('Error executing query:', err);
+      return res.status(500).json({ error: err.message });
     }
 
     if (results.length === 0) {
-    return res.status(404).send('No data found for the provided IDs');
+      return res.status(404).send('No data found for the provided IDs');
     }
+
+    console.log('Query executed successfully');
+    console.log(results); 
     
     const csvData = convertToCSV(results);
     
