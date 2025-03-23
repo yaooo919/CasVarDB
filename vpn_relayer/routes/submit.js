@@ -3,12 +3,10 @@ const multer = require('multer');
 const path = require('path');
 const axios = require('axios');
 const fs = require('fs');
+const FormData = require('form-data');
 
 const router = express.Router();
-
-const upload = multer({
-  dest: path.join(__dirname, '../uploads'),
-});
+const upload = multer({ dest: path.join(__dirname, '../uploads') });
 
 router.post('/', upload.single('file'), async (req, res) => {
   const file = req.file; 
@@ -21,16 +19,15 @@ router.post('/', upload.single('file'), async (req, res) => {
   try {
     const formData = new FormData();
     formData.append('file', fs.createReadStream(file.path), file.originalname);
-    formData.append('metadata', JSON.stringify(metadata));
+    formData.append('metadata', metadata);
 
     const response = await axios.post(`${process.env.VPN_RELAYER_URL}/upload`, formData, {
-      headers: formData.getHeaders(),
+      headers: {
+        ...formData.getHeaders(),
+      }
     });
 
-    res.status(200).json({
-      message: 'File uploaded successfully.',
-      targetServerResponse: response.data,
-    });
+    res.status(200).json(response.data);
   } catch (err) {
     console.error("Error redirecting file upload:", err);
     return res.status(500).json({ error: err.message });
