@@ -41,8 +41,8 @@ router.get('/heatmap-data', async (req, res) => {
 
 router.get('/activity-graph', async (req, res) => {
   const { pam, numberOfMismatches, variants, mismatchPosition } = req.query;
-  // const encodedVariants = Array.isArray(variants) ? variants.map(v => encodeURIComponent(v)).join(',') : encodeURIComponent(variants);
-  const url = `${process.env.VPN_RELAYER_URL}/statistics/activity-graph?pam=${pam}&numberOfMismatches=${numberOfMismatches}&variants=${variants}&mismatchPosition=${mismatchPosition}`;
+  const variantsString = Array.isArray(variants) ? variants.join(',') : variants;
+  const url = `${process.env.VPN_RELAYER_URL}/statistics/activity-graph?pam=${pam}&numberOfMismatches=${numberOfMismatches}&variants=${variantsString}&mismatchPosition=${mismatchPosition}`;
   const response = await axios.get(url);
   res.json(response.data);
 });
