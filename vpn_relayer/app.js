@@ -9,8 +9,8 @@ require("dotenv").config();
 
 
 var dataRouter = require('./routes/data');
-var grnaRouter = require('./routes/gRNA_scaffold');
-
+var gRNARouter = require('./routes/gRNA_scaffold');
+var statisticsRouter = require('./routes/statistics');
 
 var app = express();
 
@@ -26,7 +26,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/data', dataRouter);
-app.use('/grna', grnaRouter);
+app.use('/grna', gRNARouter);
+app.use('/statistics', statisticsRouter);
 
 
 // catch 404 and forward to error handler
