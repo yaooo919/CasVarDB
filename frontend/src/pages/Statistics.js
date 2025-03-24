@@ -337,7 +337,6 @@ const Statistics = () => {
               </Select>
             </FormControl>
           </Box>
-         
           <Box sx={{ minWidth: 220 }}>
             <FormControl fullWidth>
               <InputLabel sx={{ fontSize:'15px' }}>Number of mismatches</InputLabel>
@@ -402,6 +401,8 @@ const Statistics = () => {
             )}
           </div>
         </div>
+
+        <p className="explaination">*Mismatch position is the location of a mismatch counted from the start of the raw spacer sequence (numbered starting from 1)</p>
 
         <div className="selected-variants-container">
           <strong>Selected variant(s): </strong>
@@ -495,6 +496,15 @@ const Statistics = () => {
                 labelStyle={{ fontSize: "5px" }}
                 cellRender={(value) => value && value.toFixed(2)}
               />
+              <div style={{
+                textAlign: "left",
+                fontSize: "12px",
+                color: "#666",
+                fontStyle: "italic",
+                padding: "10px 0px 10px 220px",
+              }}>
+                *These numbers represent mismatch positions (same definition as above)
+              </div>
             </div>
 
             <div id="heatmap-right">
