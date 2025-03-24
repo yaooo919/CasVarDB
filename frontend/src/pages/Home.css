@@ -34,7 +34,7 @@
   /* main content */
   .main-content {
     color: #fff;
-    padding: 100px 20px 50px;
+    padding: 50px 20px 50px;
     margin-top: 60px;
     flex-grow: 1;
     width: 100%;
@@ -63,26 +63,29 @@
   }
   
   .text-column h1 {
-    font-size: 34px;
+    font-size: 2.5rem;
+    font-weight: 700;
     text-align: left;
     letter-spacing: 1.3px;
   }
   
   .text-column p {
-    font-size: 18px;
+    font-size: 21px;
     text-align: left;
+    line-height: 1.6;
     letter-spacing: 1.3px;
     
   }
   
   .standout-text {
     color: #f2c74f;
+    font-weight: 600;
   }
   
   .text-column-buttons {
     display: flex;
-    gap: 10px;
-    width: 100%;
+    gap: 15px;
+    width: 95%;
   }
   
   .text-column-buttons a {
@@ -108,10 +111,13 @@
   
   .search-box {
     background: rgba(255, 255, 255, 0.1);
+    /* backdrop-filter: blur(10px); */
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 12px;
     border: 5px solid #9cc4e4;
     text-align: center;
+    margin-top: 50px;
+    height: 450px;
   }
   
   .search-box-top {
@@ -146,15 +152,18 @@
     background-repeat: no-repeat;
     background-position: right 10px center;
     background-size: 12px;
+    padding-left: 20px;
+    padding-right: 35px;
     color: #555;
   }
-  
+ 
   .search-box input {
     width: 80%;
-    padding: 20px 40px 20px 10px;
+    padding: 25px 40px 25px 20px;
     border-radius: 5px;
-    margin-bottom: 10px;
-    font-size: 14px;
+    margin: 10px;
+    margin-bottom: 20px;
+    font-size: 18px;
   }
   
   .search-box button {
@@ -162,10 +171,12 @@
     color: #fff;
     border: none;
     border-radius: 5px;
-    padding: 10px 20px;
+    width: 80%;
+    padding: 15px;
     cursor: pointer;
     font-size: 1.2rem;
     letter-spacing: 1.2px;
+    margin: 10px auto;
   }
   
   .search-box button:hover {
@@ -205,4 +216,50 @@
 
 .custom-modal-body a:hover {
   text-decoration: underline;
+}
+
+.search-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 15px 0 0;
+}
+
+.tag-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 6px 12px;
+  color: white;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+  user-select: none;
+}
+
+.tag-bubble:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.tag-bubble:active {
+  transform: scale(0.98);
+}
+
+.tag-bubble.active {
+  background: rgba(58, 137, 201, 0.3);
+  border-color: #3a89c9;
+  box-shadow: 0 0 0 2px rgba(58, 137, 201, 0.2);
+}
+
+.example-search {
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 5px;
 }
