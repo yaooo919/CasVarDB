@@ -22,7 +22,13 @@ function Navbar() {
                     <ul className="navbar-menu">
                         <li><Link to='/'>Home</Link></li>
                         <li><Link to='/data'>Data</Link></li>
-                        <li><Link to='/statistics'>Statistics</Link></li>
+                        <li>
+                            <Link to='/statistics'>Statistics <i className="bi bi-chevron-compact-down"></i></Link>
+                            <ul className="dropdown-menu">
+                                <li><Link to='/statistics/activity-graph'>Activity Graph</Link></li>
+                                <li><Link to='/statistics'>Other Statistics</Link></li>
+                            </ul>
+                        </li>
                         <li><Link to='/grna'>gRNA Scaffold</Link></li>
                         <li><Link to='/studies'>Studies</Link></li>
                         <li><Link to='/submit'>Submit</Link></li>

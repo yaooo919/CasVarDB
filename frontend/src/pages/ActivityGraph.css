@@ -1,0 +1,226 @@
+/* ActivityGraph.css */
+.activity-graph-page {
+    display: flex;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* parameter panel */
+.parameter-panel {
+    position: relative;
+    width: 320px;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    z-index: 100;
+    padding: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.parameter-panel.collapsed {
+    transform: translateX(-290px);
+    overflow-y: hidden;
+}
+
+.parameter-panel.collapsed .panel-content {
+    opacity: 0;
+    pointer-events: none; /* disable interaction */
+}
+
+/* sidebar toggle icon */
+.panel-toggle {
+    position: absolute;
+    right: -10px;
+    top: 10px;
+    background: none;
+    cursor: pointer;
+    z-index: 101;
+}
+
+.panel-toggle-icon {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+
+/* parameter title and add icon */
+.panel-content h3 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.add-parameter-btn {
+    background: #2ea44f;
+    border: 1px solid #2a9146;
+    color: white;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    padding: 3px 10px;
+    margin-left: 10px;
+}
+
+.add-parameter-btn:hover {
+    background-color: #2a9146;
+}
+
+/* parameter set */
+.parameter-set {
+    background-color: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.select-wrapper label {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 14px;
+    color: #555;
+}
+
+.select-wrapper:not(:first-child) label {
+    margin-top: 5px;
+}
+
+.select-wrapper select {
+    width: 100%;
+    padding: 7px 7px;
+    border: 1px solid #d1d5da;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #fff;
+}
+
+.remove-set-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 16px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.remove-set-button:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* buttons below panel */
+.panel-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.panel-actions button {
+    padding: 10px 25px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clear-btn {
+    background-color: #fafbfc;
+    border: 1px solid #d1d5da;
+    color: #24292e;
+}
+
+.clear-btn:hover {
+    background-color: #f3f4f6;
+}
+
+/* mismatch position note */
+.mismatch-note {
+    font-size: 12px;
+    color: #666;
+    margin-top: 3px;
+    font-style: italic;
+}
+
+/* no chart message*/
+.no-chart-message {
+    text-align: center;
+    color: #666;
+    padding: 40px;
+    font-size: 16px;
+    grid-column: 1 / -1;
+}
+
+/* loading message */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    color: #666;
+}
+
+/* main content */
+.activity-graph-main-content {
+    margin-right: 30px;
+    margin-top: 20px;
+    padding-left: 30px;
+    padding-bottom: 100px;
+    width: calc(100% - 320px);
+    transition: margin-left 0.3s ease;
+}
+
+.activity-graph-main-content.expanded {
+    margin-left: -300px;
+    width: calc(100% - 20px);
+}
+
+.activity-graph-main-content h1 {
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    margin: auto;
+    color: #333;
+    padding-bottom: 15px;
+}
+
+/* graph container */
+.graph-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 10px;
+    width: 100%;
+}
+
+.graph-card {
+    background-color: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.graph-title {
+    color: black;
+    padding: 12px 15px 0px 30px;
+    margin: 0;
+}
+
+.chart-container {
+    height: 400px;
+    padding: 0px 15px 15px 15px;
+}
+

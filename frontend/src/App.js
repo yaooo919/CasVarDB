@@ -8,6 +8,7 @@ import Data from './pages/Data';
 import Scaffold from './pages/Scaffold';
 import Studies from './pages/Studies';
 import Statistics from './pages/Statistics';
+import ActivityGraph from "./pages/ActivityGraph";
 import Submit from './pages/Submit';
 import Contact from './pages/Contact';
 
@@ -16,15 +17,19 @@ function App() {
     <div className="App">
       <Navbar />
 
-      <Routes>
-          <Route path='/' element={<Home />} />
-          <Route path='/data' element={<Data />} />
-          <Route path='/grna' element={<Scaffold />} />
-          <Route path='/studies' element={<Studies />} />
-          <Route path='/statistics' element={<Statistics />}/>
-          <Route path='/submit' element={<Submit />}/>
-          <Route path='/contact' element={<Contact />} />
-      </Routes>
+        <div className="App-container">
+            <Routes>
+                <Route path='/' element={<Home />} />
+                <Route path='/data' element={<Data />} />
+                <Route path='/grna' element={<Scaffold />} />
+                <Route path='/studies' element={<Studies />} />
+                <Route path='/statistics/activity-graph' element={<ActivityGraph />}/>
+                <Route path='/statistics/' element={<Statistics />}/>
+                <Route path='/submit' element={<Submit />}/>
+                <Route path='/contact' element={<Contact />} />
+            </Routes>
+        </div>
+
 
       <Footer />
     </div>

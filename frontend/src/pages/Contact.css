@@ -3,7 +3,6 @@
     flex-wrap: wrap;
     justify-content: space-around;
     padding: 20px;
-    min-height: 100vh;
 }
 
 .contact-card {
