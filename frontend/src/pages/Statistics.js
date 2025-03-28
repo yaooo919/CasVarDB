@@ -257,7 +257,7 @@ const Statistics = () => {
                 fontStyle: "italic",
                 padding: "10px 0px 10px 220px",
               }}>
-                *These numbers represent mismatch positions (same definition as above)
+                *These numbers represent mismatch positions counted from the start of the raw spacer sequence (numbered starting from 1)
               </div>
             </div>
 
