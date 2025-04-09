@@ -400,6 +400,10 @@ function Data() {
               />
               </th>
 
+              <th onClick={() => handleSort("id")} style={{ minWidth: "40px" }}>
+                ID {renderSortIcon("id")}
+              </th>
+
               {Object.keys(columnDescriptions).map((column) => (
                 <th
                   key={column}
@@ -427,61 +431,38 @@ function Data() {
               </tr>
             ) : (
               items.map((item) => {
-                const highlightSequence = (targetContextSequenceRaw, bestMatchingSubstring, mismatchIndexes) => {
-                  const cleanBestMatch = bestMatchingSubstring.replace(/\r/g, "");                
-                  const matchIndex = targetContextSequenceRaw.indexOf(cleanBestMatch);
-                
-                  if (matchIndex === -1) {
-                    return targetContextSequenceRaw;
-                  }
-
-                  const mismatchPositions = mismatchIndexes ? mismatchIndexes.split("|").map(num => parseInt(num)) : [];
+                const highlightSequence = (targetContextSequenceRaw, bestMatchingSubstring, bestMatchIndex, mismatchPositions) => {
+                  const positions = mismatchPositions !== "[]" ? JSON.parse(mismatchPositions) : [];
                 
                   let highlightedSubstring = '';
-                  for (let i = 0; i < cleanBestMatch.length; i++) {
-                    const globalIndex = matchIndex + i;
-                    if (mismatchPositions.includes(globalIndex)) {
-                      highlightedSubstring += `<span style="color: #BF2C34;">${cleanBestMatch[i]}</span>`;
+                  for (let i = 0; i < bestMatchingSubstring.length; i++) {
+                    if (positions.includes(i + 1)) {
+                      highlightedSubstring += `<span style="color: #BF2C34;">${bestMatchingSubstring[i]}</span>`;
                     } else {
-                      highlightedSubstring += `<span style="color: #bfee90;">${cleanBestMatch[i]}</span>`;
+                      highlightedSubstring += `<span style="color: #bfee90;">${bestMatchingSubstring[i]}</span>`;
                     }
                   }
 
-                  // let highlightedExtra = '';
-                  // for (let i = 0; i < 3; i++) {
-                  //   const nextChar = targetContextSequenceRaw[matchIndex + cleanBestMatch.length + i];
-                  //   highlightedExtra += `<span style="color: #43A5BE;">${nextChar}</span>`;
-                  // }
-
                   const highlightedSequence = 
-                    targetContextSequenceRaw.slice(0, matchIndex) +
+                    targetContextSequenceRaw.slice(0, bestMatchIndex-1) +
                     highlightedSubstring +
-                    // highlightedExtra +
-                    targetContextSequenceRaw.slice(matchIndex + cleanBestMatch.length);
+                    targetContextSequenceRaw.slice(bestMatchIndex +  bestMatchingSubstring.length - 1);
 
                   return highlightedSequence;
                 };
                 
-                const highlightSpacerSequence = (spacerSequence, spacerSequenceRaw) => {
-                  if (!spacerSequenceRaw) return spacerSequence;
-                
+                const highlightSpacerSequence = (spacerSequence, spacerSequenceRaw) => {                
                   const regex = new RegExp(spacerSequenceRaw, "g");
                 
                   return spacerSequence.replace(regex, `<span style="color: #bfee90;">${spacerSequenceRaw}</span>`);
                 };
 
-                const highlightTargetContext = (targetContextSequence, targetContextSequenceRaw) => {
-                  if (!targetContextSequenceRaw) return targetContextSequence;
-                
+                const highlightTargetContext = (targetContextSequence, targetContextSequenceRaw) => {                
                   const matchIndex = targetContextSequence.indexOf(targetContextSequenceRaw);
-                
-                  if (matchIndex === -1) {
-                    return targetContextSequence; 
-                  }
-                
+                                
                   return (
                     targetContextSequence.substring(0, matchIndex) +
-                    highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.mismatch_indexes) +
+                    highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.best_matching_index, item.mismatch_positions) +
                     targetContextSequence.substring(matchIndex + targetContextSequenceRaw.length)
                   );
                 };
@@ -497,8 +478,9 @@ function Data() {
                       onChange={() => handleSelect(item.id)}
                       />
                   </td>
+                  <td>{item.id}</td>
                   <td>{item.spacer_sequence_raw}</td>
-                  <td dangerouslySetInnerHTML={{ __html: highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.mismatch_indexes) }}></td>
+                  <td dangerouslySetInnerHTML={{ __html: highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.best_matching_index, item.mismatch_positions) }}></td>
                   <td dangerouslySetInnerHTML={{ __html: highlightSpacerSequence(item.spacer_sequence, item.spacer_sequence_raw) }}></td>
                   <td dangerouslySetInnerHTML={{ __html: highlightTargetContext(item.target_context_sequence, item.target_context_sequence_raw) }}></td>
                   <td>{item.variant}</td>
