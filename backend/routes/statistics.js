@@ -176,14 +176,14 @@ const processHeatmapData = (data) => {
     activityOn[variant] = values.reduce((sum, val) => sum + val, 0) / values.length;
   });
 
-  data.forEach(({ number_of_mismatches, variant, mean_background_subtracted_indel_frequency, mismatch_position }) => {
+  data.forEach(({ number_of_mismatches, variant, mean_background_subtracted_indel_frequency, mismatch_positions }) => {
     if (number_of_mismatches === 0) return;
 
     if (!heatmapData[variant]) {
       heatmapData[variant] = {};
     }
 
-    const x = Number(mismatch_position) - 1;
+    const x = JSON.parse(mismatch_positions)[0] - 1;
     if (!heatmapData[variant][x]) {
       heatmapData[variant][x] = { raw: [], normalized: [] };
     }
@@ -287,7 +287,7 @@ router.get('/freq-mismatch-per-variant', (req, res) => {
 
 router.get('/heatmap-data', (req, res) => {
   const query = `
-    SELECT number_of_mismatches, variant, mean_background_subtracted_indel_frequency, mismatch_position 
+    SELECT number_of_mismatches, variant, mean_background_subtracted_indel_frequency, mismatch_positions 
     FROM cas9
     WHERE number_of_mismatches = 0 OR number_of_mismatches = 1
   `;
@@ -375,7 +375,7 @@ router.get('/activity-graph', (req, res) => {
   const queryParams = [pamLength, `^${regexPattern}$`, numberOfMismatches, ...variantList];
 
   if (numberOfMismatches == 1 && mismatchPosition) {
-    query += `AND mismatch_position = ?`;
+    query += `AND mismatch_positions = ?`;
     queryParams.push(mismatchPosition);
   }
 
