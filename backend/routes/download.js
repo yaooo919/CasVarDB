@@ -11,13 +11,12 @@ const convertToCSV = (data) => {
 
 router.post('/', (req, res) => {
   const { selectedIds } = req.body;
-  const downloadField = "id, spacer_sequence_raw, target_context_sequence_raw, spacer_sequence, target_context_sequence, variant, nuclease, gRNA_scaffold, day, tRNA_feature, study, library, table_number, sheet_number, src_idx, n_data, `partition`, barcode, number_of_mismatches, background_subtracted_indel_frequencies, mean_background_subtracted_indel_frequency_source, mean_background_subtracted_indel_frequency"
   
   if (!selectedIds || selectedIds.length === 0) {
     return res.status(400).send('No IDs provided');
   }
   
-  const query = `SELECT ${downloadField} FROM cas9 WHERE id IN (${selectedIds.join(',')});`;
+  const query = `SELECT * FROM cas9 WHERE id IN (${selectedIds.join(',')});`;
 
   db.query(query, (err, results) => {
     if (err) {
