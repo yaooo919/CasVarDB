@@ -83,11 +83,11 @@ const ActivityGraph = () => {
                         params: {
                             pam: set.pam,
                             numberOfMismatches: set.mismatches,
-                            variants: [set.variant],
+                            variant: set.variant,
                             mismatchPosition: set.mismatches === 1 ? `[${set.mismatchPosition}]` : undefined,
                         },
                     });
-                    return response.data.data;
+                    return response.data;
                 })
             );
 

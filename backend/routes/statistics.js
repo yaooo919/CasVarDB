@@ -326,13 +326,7 @@ const convertIUPACtoRegex = (pam) => {
 //   });
 
 router.get('/activity-graph', (req, res) => {
-  const { pam, numberOfMismatches, variants, mismatchPosition } = req.query;
-
-  const variantList = Array.isArray(variants) ? variants : [variants];
-
-  if (variantList.length === 0) {
-    return res.status(400).json({ error: 'At least one variant must be selected' });
-  }
+  const { pam, numberOfMismatches, variant, mismatchPosition } = req.query;
 
   const pamLength = pam.length;
   const regexPattern = convertIUPACtoRegex(pam);
@@ -343,21 +337,17 @@ router.get('/activity-graph', (req, res) => {
     WHERE
       SUBSTRING(target_context_sequence FROM 28 FOR ?) REGEXP ?
       AND number_of_mismatches = ?
-      AND variant IN (${variantList.map(() => '?').join(',')})
+      AND variant = ?
   `;
 
-  const queryParams = [pamLength, `^${regexPattern}$`, numberOfMismatches, ...variantList];
+  const queryParams = [pamLength, `^${regexPattern}$`, numberOfMismatches, variant];
 
   if (numberOfMismatches == 1 && mismatchPosition) {
     query += `AND mismatch_positions = ?`;
     queryParams.push(mismatchPosition);
   }
 
-  // console.log('SQL:', query);
-  // console.log('Params:', queryParams);
-
   db.query(query, queryParams, (err, rows) => {
-    // console.log(query);
     if (err) {
       console.error('Error fetching activity graph data:', err);
       return res.status(500).json({ error: 'Failed to fetch activity graph data' });
@@ -370,7 +360,7 @@ router.get('/activity-graph', (req, res) => {
       return acc;
     }, {});
 
-    return res.json({ data: groupedData });
+    return res.json(groupedData);
   });
 });
 
