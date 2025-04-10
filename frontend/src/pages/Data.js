@@ -226,8 +226,8 @@ function Data() {
           sortDirection,
         },
       });
-      setItems(response.data.rows);
-      setTotalItems(response.data.total);
+      setItems(response.data.data);
+      setTotalItems(response.data.count);
     } catch (err) {
       console.error("Error fetching data:", err);
     }

@@ -78,7 +78,7 @@ router.get("/", (req, res) => {
           return res.status(500).json({ error: "Failed to fetch data" });
         }
 
-        res.json({ rows: results, total });
+        res.json({ data: results, count: total });
       }
     );
   });

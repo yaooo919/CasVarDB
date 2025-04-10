@@ -3,33 +3,6 @@ const router = express.Router();
 const db = require('../config/db');
 const fs = require("fs").promises;
 
-const median = (arr) => {
-  if (arr.length === 0) return 0;
-  const sorted = [...arr].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-};
-
-const processFreqPerVariantData = (rows) => {
-  const groupedData = {};
-
-  rows.forEach((row) => {
-    const { variant, mean_background_subtracted_indel_frequency } = row;
-    if (!groupedData[variant]) {
-      groupedData[variant] = [];
-    }
-    groupedData[variant].push(mean_background_subtracted_indel_frequency);
-  });
-
-  const result = {};
-
-  Object.keys(groupedData).forEach((variant) => {
-    result[variant] = calculateStats(groupedData[variant]);
-  });
-
-  return result;
-};
-
 // stats for boxplot
 const calculateStats = (data) => {
   const sortedData = data.slice().sort((a, b) => a - b);
@@ -52,6 +25,26 @@ const calculatePercentile = (sortedData, percentile) => {
     return sortedData[lower];
   }
   return sortedData[lower] + (sortedData[upper] - sortedData[lower]) * (index - lower);
+};
+
+const processFreqPerVariantData = (rows) => {
+  const groupedData = {};
+
+  rows.forEach((row) => {
+    const { variant, mean_background_subtracted_indel_frequency } = row;
+    if (!groupedData[variant]) {
+      groupedData[variant] = [];
+    }
+    groupedData[variant].push(mean_background_subtracted_indel_frequency);
+  });
+
+  const result = {};
+
+  Object.keys(groupedData).forEach((variant) => {
+    result[variant] = calculateStats(groupedData[variant]);
+  });
+
+  return result;
 };
 
 const processFreqPerScaffoldData = (rows) => {
@@ -84,18 +77,7 @@ const processDataCountPerStudy = (data) => {
     return acc;
   }, {});
 
-  const labels = Object.keys(studyCounts);
-  const datasets = [
-    {
-      label: "Number of Data per Study",
-      data: Object.values(studyCounts),
-      backgroundColor: "rgba(75, 192, 192, 0.2)",
-      borderColor: "rgba(75, 192, 192, 1)",
-      borderWidth: 1,
-    },
-  ];
-
-  return { labels, datasets };
+  return studyCounts;
 };
 
 const processFreqPerMismatchData = (data) => {
@@ -108,54 +90,46 @@ const processFreqPerMismatchData = (data) => {
     return acc;
   }, {});
 
-  const labels = Object.keys(mismatchGroups).sort((a, b) => a - b);
-  const datasets = [
-    {
-      label: "Mean Background Subtracted Indel Frequency vs Number of Mismatches",
-      data: labels.map((key) => ({
-        x: parseFloat(key),
-        y: mismatchGroups[key].reduce((sum, val) => sum + val, 0) / mismatchGroups[key].length, // average of mean frequency
-      })),
-      backgroundColor: "rgba(75, 192, 192, 0.2)",
-      borderColor: "rgba(75, 192, 192, 1)",
-      borderWidth: 1,
-      fill: false,
-      tension: 0.1,
-    },
-  ];
+  const processedData = Object.keys(mismatchGroups).reduce((acc, key) => {
+    const avgFrequency = mismatchGroups[key].reduce((sum, val) => sum + val, 0) / mismatchGroups[key].length;
+    acc[key] = avgFrequency;
+    return acc;
+  }, {});
 
-  return { labels, datasets };
+  return processedData;
 };
 
 const processFreqMismatchPerVariantData = (data) => {
   const variantData = data.reduce((acc, item) => {
     const { variant, number_of_mismatches, mean_background_subtracted_indel_frequency } = item;
     if (!acc[variant]) {
-      acc[variant] = [];
+      acc[variant] = {};
     }
-    acc[variant].push({ number_of_mismatches, mean_background_subtracted_indel_frequency });
+    if (!acc[variant][number_of_mismatches]) {
+      acc[variant][number_of_mismatches] = [];
+    }
+    acc[variant][number_of_mismatches].push(mean_background_subtracted_indel_frequency);
+
     return acc;
   }, {});
 
-  const labels = [...new Set(data.map((item) => item.number_of_mismatches))].sort((a, b) => a - b);
+  const processedData = Object.keys(variantData).map((variant) => {
+    const frequencyData = variantData[variant];
+    const averageFreqPerMismatch = {};
 
-  const datasets = Object.keys(variantData).map((variant) => ({
-    label: `${variant}`,
-    data: labels.map((mismatchCount) => {
-      const filteredData = variantData[variant].filter(
-        (item) => item.number_of_mismatches === mismatchCount
-      );
-      const meanFrequency = filteredData.reduce((sum, item) => sum + item.mean_background_subtracted_indel_frequency, 0) / filteredData.length;
-      return { x: mismatchCount, y: meanFrequency };
-    }),
-    borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // random color
-    backgroundColor: "rgba(75, 192, 192, 0.2)",
-    borderWidth: 1,
-    fill: false,
-    tension: 0.1,
-  }));
+    Object.keys(frequencyData).forEach((mismatchCount) => {
+      const frequencies = frequencyData[mismatchCount];
+      const averageFrequency = frequencies.reduce((sum, val) => sum + val, 0) / frequencies.length;
+      averageFreqPerMismatch[mismatchCount] = averageFrequency;
+    });
 
-  return { labels, datasets };
+    return {
+      variant,
+      ...averageFreqPerMismatch,
+    };
+  });
+
+  return processedData;
 };
 
 const processHeatmapData = (data) => {

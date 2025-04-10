@@ -26,7 +26,34 @@ const Statistics = () => {
       const response = await axios.get(`${BASE_URL}/statistics/freq-per-variant`);
       setChartStates((prev) => ({
         ...prev,
-        freqPerVariant: { data: response.data, loading: false },
+        freqPerVariant: { data: {
+          labels: Object.keys(response.data)
+                .map(variant => ({
+                  variant,
+                  median: response.data[variant].median,
+                }))
+                .sort((a, b) => b.median - a.median)
+                .map(item => item.variant),
+          datasets: [
+            {
+              label: 'Mean Background Subtracted Indel Frequency',
+              data: Object.entries(response.data)
+                .map(([variant, stats]) => ({
+                  x: variant,
+                  min: stats.min,
+                  max: stats.max,
+                  mean: stats.mean,
+                  median: stats.median,
+                  q1: stats.q1,
+                  q3: stats.q3,
+                }))
+                .sort((a, b) => b.median - a.median),
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1,
+            },
+          ],
+        }, loading: false },
       }));
     } catch (error) {
       console.error("Error fetching freqPerVariant data:", error);
@@ -42,7 +69,34 @@ const Statistics = () => {
       const response = await axios.get(`${BASE_URL}/statistics/freq-per-scaffold`);
       setChartStates((prev) => ({
         ...prev,
-        freqPerScaffold: { data: response.data, loading: false },
+        freqPerScaffold: { data: {
+          labels: Object.keys(response.data)
+                .map(gRNA_scaffold => ({
+                  gRNA_scaffold,
+                  median: response.data[gRNA_scaffold].median,
+                }))
+                .sort((a, b) => b.median - a.median)
+                .map(item => item.gRNA_scaffold),
+          datasets: [
+            {
+              label: 'Mean Background Subtracted Indel Frequency',
+              data: Object.entries(response.data)
+                .map(([gRNA_scaffold, stats]) => ({
+                  x: gRNA_scaffold,
+                  min: stats.min,
+                  max: stats.max,
+                  mean: stats.mean,
+                  median: stats.median,
+                  q1: stats.q1,
+                  q3: stats.q3,
+                }))
+                .sort((a, b) => b.median - a.median),
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1,
+            },
+          ],
+        }, loading: false },
       }));
     } catch (error) {
       console.error("Error fetching freqPerScaffold data:", error);
@@ -56,9 +110,24 @@ const Statistics = () => {
   const fetchDataCountPerStudy = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/statistics/data-count-per-study`);
+
+      const studyCounts = response.data;
+      const labels = Object.keys(studyCounts);
+      const data = Object.values(studyCounts);
       setChartStates((prev) => ({
         ...prev,
-        dataCountPerStudy: { data: response.data, loading: false },
+        dataCountPerStudy: { data: {
+          labels,
+          datasets: [
+            {
+              label: "Number of Data per Study",
+              data,
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1,
+            },
+          ],
+        }, loading: false },
       }));
     } catch (error) {
       console.error("Error fetching dataCountPerStudy data:", error);
@@ -72,9 +141,29 @@ const Statistics = () => {
   const fetchFreqPerMismatch = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/statistics/freq-per-mismatch`);
+
+      const labels = Object.keys(response.data);
+      const data = Object.values(response.data);
+
       setChartStates((prev) => ({
         ...prev,
-        freqPerMismatch: { data: response.data, loading: false },
+        freqPerMismatch: { data: {
+          labels,
+          datasets: [
+            {
+              label: "Mean Background Subtracted Indel Frequency vs Number of Mismatches",
+              data: labels.map((key, index) => ({
+                x: parseFloat(key),
+                y: data[index],
+              })),
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1,
+              fill: false,
+              tension: 0.1,
+            },
+          ],
+        }, loading: false },
       }));
     } catch (error) {
       console.error("Error fetching freqPerMismatch data:", error);
@@ -90,7 +179,23 @@ const Statistics = () => {
       const response = await axios.get(`${BASE_URL}/statistics/freq-mismatch-per-variant`);
       setChartStates((prev) => ({
         ...prev,
-        freqMismatchPerVariant: { data: response.data, loading: false },
+        freqMismatchPerVariant: { data: {
+          labels: [0, 1, 2, 3, 4],
+          datasets: response.data.map((variantData) => ({
+            label: variantData.variant,
+            data: Object.keys(variantData)
+              .filter((key) => key !== 'variant')  // Exclude the variant key
+              .map((key) => ({
+                x: parseInt(key),  // mismatch count (0, 1, 3, 4)
+                y: variantData[key], // frequency value
+              })),
+          borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // random color
+          backgroundColor: "rgba(75, 192, 192, 0.2)",
+          borderWidth: 1,
+          fill: false,
+          tension: 0.1,
+        })),
+        }, loading: false },
       }));
     } catch (error) {
       console.error("Error fetching freqMismatchPerVariant data:", error);
@@ -278,34 +383,7 @@ const Statistics = () => {
         ) : (
           <Chart
             type="boxplot"
-            data={{
-              labels: Object.keys(chartStates.freqPerVariant.data)
-                .map(variant => ({
-                  variant,
-                  median: chartStates.freqPerVariant.data[variant].median,
-                }))
-                .sort((a, b) => b.median - a.median)
-                .map(item => item.variant),
-              datasets: [
-                {
-                  label: 'Mean Background Subtracted Indel Frequency',
-                  data: Object.entries(chartStates.freqPerVariant.data)
-                    .map(([variant, stats]) => ({
-                      x: variant,
-                      min: stats.min,
-                      max: stats.max,
-                      mean: stats.mean,
-                      median: stats.median,
-                      q1: stats.q1,
-                      q3: stats.q3,
-                    }))
-                    .sort((a, b) => b.median - a.median),
-                  backgroundColor: "rgba(75, 192, 192, 0.2)",
-                  borderColor: "rgba(75, 192, 192, 1)",
-                  borderWidth: 1,
-                },
-              ],
-            }}
+            data={chartStates.freqPerVariant.data}
             options={chartOptions("Mean Background Subtracted Indel Frequency per Variant")}
           />
         )}
@@ -317,34 +395,7 @@ const Statistics = () => {
         ) : (
           <Chart
             type="boxplot"
-            data={{
-              labels: Object.keys(chartStates.freqPerScaffold.data)
-                .map(gRNA_scaffold => ({
-                  gRNA_scaffold,
-                  median: chartStates.freqPerScaffold.data[gRNA_scaffold].median,
-                }))
-                .sort((a, b) => b.median - a.median)
-                .map(item => item.gRNA_scaffold),
-              datasets: [
-                {
-                  label: 'Mean Background Subtracted Indel Frequency',
-                  data: Object.entries(chartStates.freqPerScaffold.data)
-                    .map(([gRNA_scaffold, stats]) => ({
-                      x: gRNA_scaffold,
-                      min: stats.min,
-                      max: stats.max,
-                      mean: stats.mean,
-                      median: stats.median,
-                      q1: stats.q1,
-                      q3: stats.q3,
-                    }))
-                    .sort((a, b) => b.median - a.median),
-                  backgroundColor: "rgba(75, 192, 192, 0.2)",
-                  borderColor: "rgba(75, 192, 192, 1)",
-                  borderWidth: 1,
-                },
-              ],
-            }}
+            data={chartStates.freqPerScaffold.data}
             options={chartOptions("Mean Background Subtracted Indel Frequency per gRNA Scaffold")}
           />
         )}
