@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 
 const allowedSearchFields = [
+  "id",
   'spacer_sequence_raw',
   'target_context_sequence_raw',
   'spacer_sequence',
@@ -30,15 +31,21 @@ router.get("/", (req, res) => {
 
   const offset = (page - 1) * pageSize;
 
+  // -------- Count Query --------
   let countQuery = "SELECT COUNT(*) AS total FROM cas9";
-  const queryParams = [];
+  const countParams = [];
 
   if (searchTerm) {
-    countQuery += ` WHERE ?? LIKE ?`;
-    queryParams.push(searchField, `%${searchTerm}%`);
+    if (searchField === "id") {
+      countQuery += ` WHERE ?? = ?`;
+      countParams.push(searchField, Number(searchTerm));
+    } else {
+      countQuery += ` WHERE ?? LIKE ?`;
+      countParams.push(searchField, `%${searchTerm}%`);
+    }
   }
 
-  db.query(countQuery, queryParams, (err, countResult) => {
+  db.query(countQuery, countParams, (err, countResult) => {
     if (err) {
       console.error("Error fetching total count:", err);
       return res.status(500).json({ error: "Failed to fetch total count" });
@@ -46,15 +53,25 @@ router.get("/", (req, res) => {
 
     const total = countResult[0].total;
 
+    // -------- Data Query --------
     let dataQuery = "SELECT * FROM cas9";
+    const dataParams = [];
+
     if (searchTerm) {
-      dataQuery += ` WHERE ?? LIKE ?`;
+      if (searchField === "id") {
+        dataQuery += ` WHERE ?? = ?`;
+        dataParams.push(searchField, Number(searchTerm));
+      } else {
+        dataQuery += ` WHERE ?? LIKE ?`;
+        dataParams.push(searchField, `%${searchTerm}%`);
+      }
     }
     dataQuery += ` ORDER BY ?? ${sortDirection} LIMIT ? OFFSET ?`;
+    dataParams.push(sortField, pageSize, offset);
 
     db.query(
       dataQuery,
-      [...queryParams, sortField, pageSize, offset],
+      dataParams,
       (err, results) => {
         if (err) {
           console.error("Error fetching data:", err);

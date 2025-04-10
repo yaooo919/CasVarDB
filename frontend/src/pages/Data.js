@@ -355,6 +355,7 @@ function Data() {
                 value={pendingSearchField}
                 onChange={(e) => setPendingSearchField(e.target.value)}
               >
+                <option value="id">ID</option>
                 <option value="spacer_sequence_raw">Spacer sequence (raw)</option>
                 <option value="target_context_sequence_raw">Target context sequence (raw)</option>
                 <option value="spacer_sequence">Spacer sequence</option>
