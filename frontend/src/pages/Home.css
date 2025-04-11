@@ -34,7 +34,7 @@
   /* main content */
   .main-content {
     color: #fff;
-    padding: 0px 20px 50px;
+    padding-bottom: 50px;
     margin-top: 60px;
     flex-grow: 1;
     width: 100%;
