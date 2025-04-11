@@ -29,6 +29,8 @@ router.get("/", (req, res) => {
   //   return res.status(400).json({ error: "Invalid search field" });
   // }
   if (!allowedSearchFields.includes(searchField)) {
+    console.log("received searchField", searchField);
+    console.log("allowed searchField", allowedSearchFields);
     return res.status(400).json({
       error: 'Invalid search field',
       received: searchField,
