@@ -17,10 +17,12 @@
 }
 
 #heatmap-right {
-  margin-top: 30px;
-  font-size: 13px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  margin-top: 30px;
+  font-size: 13px;
+  margin-bottom: 27px;
 }
 
 
