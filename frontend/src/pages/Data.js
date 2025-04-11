@@ -194,7 +194,7 @@ function Data() {
   const [totalItems, setTotalItems] = useState(0);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchField, setSearchField] = useState(searchParams.get("field") || "spacer_sequence_raw");
+  const [searchField, setSearchField] = useState(searchParams.get("field") || "id");
   const [searchTerm, setSearchTerm] = useState(searchParams.get("query") || "");
   const [pendingSearchField, setPendingSearchField] = useState(searchField);
   const [loading, setLoading] = useState(false);

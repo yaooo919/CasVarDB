@@ -32,6 +32,7 @@ function Navbar() {
                         <li><Link to='/grna'>gRNA Scaffold</Link></li>
                         <li><Link to='/studies'>Studies</Link></li>
                         <li><Link to='/submit'>Submit</Link></li>
+                        <li><Link to='https://app.theneo.io/9a4553cf-e503-44a2-974d-16e072f7143c/cas9-variant-database'>API</Link></li>
                         <li><Link to='/contact'>Contact</Link></li>
                     </ul>
                 </div>

@@ -21,7 +21,7 @@ router.get("/", (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.pageSize) || 50;
   const searchTerm = req.query.searchTerm || "";
-  const searchField = req.query.searchField || "spacer_sequence_raw";
+  const searchField = req.query.searchField || "id";
   const sortField = req.query.sortField || "id";
   const sortDirection = req.query.sortDirection || "ASC";
 
