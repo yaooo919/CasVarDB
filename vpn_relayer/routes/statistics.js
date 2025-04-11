@@ -40,8 +40,8 @@ router.get('/heatmap-data', async (req, res) => {
 });
 
 router.get('/activity-graph', async (req, res) => {
-  const { pam, numberOfMismatches, variants, mismatchPosition } = req.query;
-  const url = `${process.env.BACKEND_URL}/statistics/activity-graph?pam=${pam}&numberOfMismatches=${numberOfMismatches}&variants[]=${variants.join('&variants[]=')}&mismatchPosition=${mismatchPosition}`;
+  const { pam, numberOfMismatches, variant, mismatchPosition } = req.query;
+  const url = `${process.env.BACKEND_URL}/statistics/activity-graph?pam=${pam}&numberOfMismatches=${numberOfMismatches}&variant=${variant}&mismatchPosition=${mismatchPosition}`;
   const response = await axios.get(url);
   res.json(response.data);
 });
