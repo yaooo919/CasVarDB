@@ -25,8 +25,15 @@ router.get("/", (req, res) => {
   const sortField = req.query.sortField || "id";
   const sortDirection = req.query.sortDirection || "ASC";
 
+  // if (!allowedSearchFields.includes(searchField)) {
+  //   return res.status(400).json({ error: "Invalid search field" });
+  // }
   if (!allowedSearchFields.includes(searchField)) {
-    return res.status(400).json({ error: "Invalid search field" });
+    return res.status(400).json({
+      error: 'Invalid search field',
+      received: searchField,
+      allowed: allowedSearchFields
+    });
   }
 
   const offset = (page - 1) * pageSize;
