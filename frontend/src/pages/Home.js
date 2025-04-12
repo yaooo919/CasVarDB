@@ -111,9 +111,9 @@ function Home() {
                     <button className="close-button" onClick={() => setShow(false)}>×</button>
                     <p>Select the file you want to download:</p>
                     <ul>
-                        <li><a href="https://cas9-data.s3.eu-west-2.amazonaws.com/Cas9.csv" download="full_data.csv">Full Data</a></li>
+                        <li><a href="https://cas9-data.s3.eu-west-2.amazonaws.com/Cas9_new2.csv" download="full_data.csv">Full Data</a></li>
                         <li><a href="https://cas9-data.s3.eu-west-2.amazonaws.com/gRNA_scaffolds.csv" download="gRNA_scaffold.csv">gRNA Scaffold</a></li>
-                        <li><a href="https://cas9-data.s3.eu-west-2.amazonaws.com/column_description.pdf" download="data_description.pdf">Data Column Description</a></li>
+                        <li><a href="https://cas9-data.s3.eu-west-2.amazonaws.com/Cas9.csv+column+description+(Yongyao).pdf" download="data_description.pdf">Data Column Description</a></li>
                     </ul>
                 </Modal.Body>
             </Modal>
