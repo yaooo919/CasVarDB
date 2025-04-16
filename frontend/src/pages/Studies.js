@@ -20,6 +20,13 @@ function Studies() {
           </thead>
           <tbody>
             <tr>
+              <td><a href="https://www.nature.com/articles/nbt.4061">Deep learning improves prediction of CRISPR-Cpf1 guide RNA activity</a></td>
+              <td>Kim_2018</td>
+              <td>Kim et al.</td>
+              <td>Nature Biotechnology</td>
+              <td>2018</td>
+            </tr>
+            <tr>
               <td><a href="https://www.nature.com/articles/s41587-023-01792-x">Deep learning models to predict the editing efficiencies and outcomes of diverse base editors</a></td>
               <td>Base Editor</td>
               <td>Kim et al.</td>
@@ -27,11 +34,32 @@ function Studies() {
               <td>2023</td>
             </tr>
             <tr>
+              <td><a href="https://www.nature.com/articles/s41592-024-02418-z">Effective genome editing with an enhanced ISDra2 TnpB system and deep learning-predicted ωRNAs</a></td>
+              <td>Marquart_2024</td>
+              <td>Marquart et al.</td>
+              <td>Nature Methods</td>
+              <td>2024</td>
+            </tr>
+            <tr>
               <td><a href="https://www.nature.com/articles/s41551-019-0505-1">High-throughput analysis of the activities of xCas9, SpCas9-NG and SpCas9 at matched and mismatched target sequences in human cells</a></td>
               <td>xCas9_NG</td>
               <td>Kim et al.</td>
               <td>Nature Biomedical Engineering</td>
               <td>2020</td>
+            </tr>
+            <tr>
+              <td><a href="https://www.nature.com/articles/s41467-025-57150-9">Highly parallel profiling of the activities and specificities of Cas12a variants in human cells</a></td>
+              <td>Chen_2025</td>
+              <td>Chen et al.</td>
+              <td>Nature Communications</td>
+              <td>2025</td>
+            </tr>
+            <tr>
+              <td><a href="https://www.nature.com/articles/nmeth.4104">In vivo high-throughput profiling of CRISPR–Cpf1 activity</a></td>
+              <td>Kim_2017</td>
+              <td>Kim et al.</td>
+              <td>Nature Methods</td>
+              <td>2017</td>
             </tr>
             <tr>
               <td><a href="https://www.nature.com/articles/s41592-023-01875-2">Massively parallel evaluation and computational prediction of the activities and specificities of 17 small Cas9s</a></td>
