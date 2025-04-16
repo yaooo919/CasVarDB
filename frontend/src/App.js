@@ -4,7 +4,8 @@ import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
-import Data from './pages/Data';
+import Data_cas9 from './pages/Data_cas9';
+import Data_cas12 from './pages/Data_cas12';
 import Scaffold from './pages/Scaffold';
 import Studies from './pages/Studies';
 import Statistics from './pages/Statistics';
@@ -20,7 +21,8 @@ function App() {
         <div className="App-container">
             <Routes>
                 <Route path='/' element={<Home />} />
-                <Route path='/data' element={<Data />} />
+                <Route path='/data/cas9' element={<Data_cas9 />} />
+                <Route path='/data/cas12' element={<Data_cas12 />} />
                 <Route path='/grna' element={<Scaffold />} />
                 <Route path='/studies' element={<Studies />} />
                 <Route path='/statistics/activity-graph' element={<ActivityGraph />}/>

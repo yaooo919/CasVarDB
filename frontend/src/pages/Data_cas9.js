@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Tooltip, OverlayTrigger, Modal, Button } from 'react-bootstrap';
 import axios from "axios";
 import ReactPaginate from "react-paginate";
-import './Data.css';
+import './Data_cas9.css';
 import colDescriptionImg from "../assets/col-description.png";
 
 const studyURLs = {
@@ -188,7 +188,7 @@ const columnDescriptions = {
   }
 }
 
-function Data() {
+function Data_cas9() {
   const [items, setItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
@@ -216,7 +216,7 @@ function Data() {
 
   const fetchData = async() => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/data`, {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/data/cas9`, {
         params: {
           page: currentPage,
           pageSize,
@@ -560,4 +560,4 @@ function Data() {
   )
 }
 
-export default Data;
+export default Data_cas9;

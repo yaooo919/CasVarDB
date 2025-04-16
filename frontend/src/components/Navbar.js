@@ -21,7 +21,13 @@ function Navbar() {
         
                     <ul className="navbar-menu">
                         <li><Link to='/'>Home</Link></li>
-                        <li><Link to='/data'>Data</Link></li>
+                        <li>
+                            <Link to='/data/cas9'>Data <i className="bi bi-chevron-compact-down"></i></Link>
+                            <ul className="dropdown-menu">
+                                <li><Link to='/data/cas9'>Cas9 Data</Link></li>
+                                <li><Link to='/data/cas12'>Cas12 Data</Link></li>
+                            </ul>
+                        </li>
                         <li>
                             <Link to='/statistics'>Statistics <i className="bi bi-chevron-compact-down"></i></Link>
                             <ul className="dropdown-menu">

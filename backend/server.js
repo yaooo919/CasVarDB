@@ -10,8 +10,11 @@ app.use(express.json());
 const gRNARoutes = require('./routes/gRNA_scaffold');
 app.use('/grna', gRNARoutes);
 
-const dataRoutes = require('./routes/data');
-app.use('/data', dataRoutes);
+const cas9DataRoutes = require('./routes/data_cas9');
+app.use('/data/cas9', cas9DataRoutes);
+
+const cas12DataRoutes = require('./routes/data_cas12');
+app.use('/data/cas12', cas12DataRoutes);
 
 const downloadRoutes = require('./routes/download');
 app.use('/download', downloadRoutes);
