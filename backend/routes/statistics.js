@@ -264,6 +264,12 @@ router.get('/heatmap-data', (req, res) => {
     SELECT number_of_mismatches, variant, mean_background_subtracted_indel_frequency, mismatch_positions 
     FROM cas9
     WHERE number_of_mismatches = 0 OR number_of_mismatches = 1
+
+    UNION ALL
+
+    SELECT number_of_mismatches, variant, mean_background_subtracted_indel_frequency, mismatch_positions 
+    FROM cas12
+    WHERE number_of_mismatches = 0 OR number_of_mismatches = 1
   `;
 
   db.query(query, (err, rows) => {

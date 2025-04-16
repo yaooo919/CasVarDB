@@ -342,7 +342,7 @@ const Statistics = () => {
               </div>
               <Heatmap
                 xLabels={heatmapDataForMismatch.positions}
-                yLabels={heatmapDataForMismatch.variants}
+                yLabels={heatmapDataForMismatch.variants.map(v => v === 'AsCas12a-NLS-P2A' ? <span>AsCas12a-NLS-P2A<sup>†</sup></span> : v)}
                 data={heatmapDataForMismatch.data}
                 xLabelWidth={50}
                 yLabelWidth={200}
@@ -362,13 +362,14 @@ const Statistics = () => {
                 fontStyle: "italic",
                 padding: "10px 0px 10px 220px",
               }}>
-                *These numbers represent mismatch positions counted from the start of the raw spacer sequence (numbered starting from 1)
+                * These numbers represent mismatch positions counted from the start of the raw spacer sequence (numbered starting from 1)<br/>
+                <sup>†</sup> indicates data from Cas12
               </div>
             </div>
 
             <div id="heatmap-right">
               <ColorLegend min={heatmapDataForMismatch.minValue} max={heatmapDataForMismatch.maxValue}/>
-              <p id="PAM">PAM</p>
+              {/* <p id="PAM">PAM</p> */}
             </div>
 
           </div>
