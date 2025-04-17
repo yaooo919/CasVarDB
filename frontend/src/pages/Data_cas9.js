@@ -432,40 +432,72 @@ function Data_cas9() {
               </tr>
             ) : (
               items.map((item) => {
-                const highlightSequence = (targetContextSequenceRaw, bestMatchingSubstring, bestMatchIndex, mismatchPositions) => {
+                const highlightSpacer = (spacerSequence, spacerSequenceRaw, spacerIndex, mismatchPositions) => {
+                  const start = spacerIndex - 1;
+                  const end = start + spacerSequenceRaw.length;
                   const positions = mismatchPositions !== "[]" ? JSON.parse(mismatchPositions) : [];
                 
-                  let highlightedSubstring = '';
-                  for (let i = 0; i < bestMatchingSubstring.length; i++) {
-                    if (positions.includes(i + 1)) {
-                      highlightedSubstring += `<span style="color: #BF2C34;">${bestMatchingSubstring[i]}</span>`;
+                  let highlighted = '';
+                  for (let i = 0; i < spacerSequence.length; i++) {
+                    if (i < start || i >= end) {
+                      highlighted += spacerSequence[i];
                     } else {
-                      highlightedSubstring += `<span style="color: #bfee90;">${bestMatchingSubstring[i]}</span>`;
+                      const relativePos = i - start + 1; 
+                      if (positions.includes(relativePos)) {
+                        highlighted += `<span style="color: #BF2C34;">${spacerSequence[i]}</span>`; 
+                      } else {
+                        highlighted += `<span style="color: #bfee90;">${spacerSequence[i]}</span>`; 
+                      }
                     }
                   }
-
-                  const highlightedSequence = 
-                    targetContextSequenceRaw.slice(0, bestMatchIndex-1) +
-                    highlightedSubstring +
-                    targetContextSequenceRaw.slice(bestMatchIndex +  bestMatchingSubstring.length - 1);
-
-                  return highlightedSequence;
+                  return highlighted;
                 };
                 
-                const highlightSpacerSequence = (spacerSequence, spacerSequenceRaw) => {                
-                  const regex = new RegExp(spacerSequenceRaw, "g");
-                
-                  return spacerSequence.replace(regex, `<span style="color: #bfee90;">${spacerSequenceRaw}</span>`);
+                const highlightTarget = (targetSequence, spacerIndex, spacerRawLength, mismatchPositions) => {
+                  const start = spacerIndex - 1;
+                  const end = start + spacerRawLength;
+                  const positions = mismatchPositions !== "[]" ? JSON.parse(mismatchPositions) : [];
+              
+                  let highlighted = '';
+                  for (let i = 0; i < targetSequence.length; i++) {
+                    if (i < start || i >= end) {
+                      highlighted += targetSequence[i]; 
+                    } else {
+                      const relativePos = i - start + 1; 
+                      if (positions.includes(relativePos)) {
+                        highlighted += `<span style="color: #BF2C34;">${targetSequence[i]}</span>`; 
+                      } else {
+                        highlighted += `<span style="color: #bfee90;">${targetSequence[i]}</span>`; 
+                      }
+                    }
+                  }
+              
+                  return highlighted;
                 };
 
-                const highlightTargetContext = (targetContextSequence, targetContextSequenceRaw) => {                
-                  const matchIndex = targetContextSequence.indexOf(targetContextSequenceRaw);
-                                
-                  return (
-                    targetContextSequence.substring(0, matchIndex) +
-                    highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.best_matching_index, item.mismatch_positions) +
-                    targetContextSequence.substring(matchIndex + targetContextSequenceRaw.length)
-                  );
+                const highlightTargetRaw = (targetRaw, fullTarget, spacerIndex, spacerRawLength, mismatchPositions) => {
+                  const start = spacerIndex - 1;
+                  const positions = mismatchPositions !== "[]" ? JSON.parse(mismatchPositions) : [];
+              
+                  const rawStartInFull = fullTarget.indexOf(targetRaw);
+              
+                  let highlighted = '';
+                  for (let i = 0; i < targetRaw.length; i++) {
+                    const posInFull = rawStartInFull + i;
+              
+                    if (posInFull < start || posInFull >= start + spacerRawLength) {
+                      highlighted += targetRaw[i];
+                    } else {
+                      const relativePos = posInFull - start + 1;
+                      if (positions.includes(relativePos)) {
+                        highlighted += `<span style="color: #BF2C34;">${targetRaw[i]}</span>`;
+                      } else {
+                        highlighted += `<span style="color: #bfee90;">${targetRaw[i]}</span>`;
+                      }
+                    }
+                  }
+              
+                  return highlighted;
                 };
                 
                 
@@ -481,9 +513,9 @@ function Data_cas9() {
                   </td>
                   <td>{item.id}</td>
                   <td>{item.spacer_sequence_raw}</td>
-                  <td dangerouslySetInnerHTML={{ __html: highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.best_matching_index, item.mismatch_positions) }}></td>
-                  <td dangerouslySetInnerHTML={{ __html: highlightSpacerSequence(item.spacer_sequence, item.spacer_sequence_raw) }}></td>
-                  <td dangerouslySetInnerHTML={{ __html: highlightTargetContext(item.target_context_sequence, item.target_context_sequence_raw) }}></td>
+                  <td dangerouslySetInnerHTML={{ __html: highlightTargetRaw(item.target_context_sequence_raw, item.target_context_sequence, item.spacer_index, item.spacer_sequence_raw.length, item.mismatch_positions) }}></td>
+                  <td dangerouslySetInnerHTML={{ __html: highlightSpacer(item.spacer_sequence, item.spacer_sequence_raw, item.spacer_index, item.mismatch_positions) }}></td>
+                  <td dangerouslySetInnerHTML={{ __html: highlightTarget(item.target_context_sequence, item.spacer_index, item.spacer_sequence_raw.length, item.mismatch_positions) }}></td>
                   <td>{item.variant}</td>
                   <td>{item.nuclease}</td>
                   <td>{item.gRNA_scaffold}</td>
