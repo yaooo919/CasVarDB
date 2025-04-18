@@ -372,38 +372,54 @@ router.get('/activity-graph', (req, res) => {
 
   const pamLength = pam.length;
   const regexPattern = convertIUPACtoRegex(pam);
+
+  const pamInfo = {
+    cas9: { table: 'cas9', pamStart: 28 },
+    cas12: { table: 'cas12', pamStart: 5 },
+  };
+
   
-  let query = `
-    SELECT variant, mean_background_subtracted_indel_frequency
-    FROM cas9
-    WHERE
-      SUBSTRING(target_context_sequence FROM 28 FOR ?) REGEXP ?
-      AND number_of_mismatches = ?
-      AND variant = ?
-  `;
+  const queries = Object.entries(pamInfo).map(([key, { table, pamStart }]) => {
+    return new Promise((resolve, reject) => {
+      let sql = `
+        SELECT variant, mean_background_subtracted_indel_frequency
+        FROM ${table}
+        WHERE
+          SUBSTRING(target_context_sequence FROM ? FOR ?) REGEXP ?
+          AND number_of_mismatches = ?
+          AND variant = ?
+      `;
+      const params = [pamStart, pamLength, `^${regexPattern}$`, numberOfMismatches, variant];
 
-  const queryParams = [pamLength, `^${regexPattern}$`, numberOfMismatches, variant];
+      if (numberOfMismatches == 1 && mismatchPosition) {
+        sql += ` AND mismatch_positions = ?`;
+        params.push(mismatchPosition);
+      }
 
-  if (numberOfMismatches == 1 && mismatchPosition) {
-    query += `AND mismatch_positions = ?`;
-    queryParams.push(mismatchPosition);
-  }
-
-  db.query(query, queryParams, (err, rows) => {
-    if (err) {
-      console.error('Error fetching activity graph data:', err);
-      return res.status(500).json({ error: 'Failed to fetch activity graph data' });
-    }
-
-    const groupedData = rows.reduce((acc, row) => {
-      const { variant, mean_background_subtracted_indel_frequency } = row;
-      if (!acc[variant]) acc[variant] = [];
-      acc[variant].push(mean_background_subtracted_indel_frequency);
-      return acc;
-    }, {});
-
-    return res.json(groupedData);
+      db.query(sql, params, (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows);
+      });
+    });
   });
+
+  Promise.all(queries)
+    .then(results => {
+      const allRows = results.flat();
+
+      const groupedData = allRows.reduce((acc, row) => {
+        const { variant, mean_background_subtracted_indel_frequency } = row;
+        if (!acc[variant]) acc[variant] = [];
+        acc[variant].push(mean_background_subtracted_indel_frequency);
+        return acc;
+      }, {});
+
+      res.json(groupedData); 
+    })
+    .catch(err => {
+      console.error('Error fetching activity graph data:', err);
+      res.status(500).json({ error: 'Failed to fetch activity graph data' });
+    });
 });
 
 module.exports = router;

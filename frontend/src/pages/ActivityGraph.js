@@ -14,8 +14,8 @@ const ActivityGraph = () => {
     const BASE_URL = `${process.env.REACT_APP_API_URL}`;
 
     const options = {
-        pams: ["NGG", "NNGG", "NNGRRT", "NNNRRT"],
-        mismatches: [0, 1, 2, 3, 4],
+        pams: ["NGG", "NNGG", "NNGRRT", "NNNRRT", "TTTV"],
+        mismatches: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
         variants: ["SpCas9-NLS-FLAG-P2A", "SpCas9-HF1-NLS-FLAG-P2A", "eSpCas9(1.1)-NLS-FLAG-P2A", "Sniper-Cas9-NLS-FLAG-P2A",
             "Sniper2L-NLS-FLAG-P2A", "Sniper2P-NLS-FLAG-P2A", "HypaCas9-NLS-FLAG-P2A", "evoCas9-NLS-FLAG-P2A",
             "xCas9-NLS-FLAG-P2A", "NLS-St1Cas9-NLS-FLAG-P2A", "NLS-SaCas9*-NLS-FLAG-P2A", "NLS-SauriCas9-NLS-FLAG-P2A",
@@ -25,7 +25,7 @@ const ActivityGraph = () => {
             "NLS-SauriCas9-KKH-NLS-FLAG-P2A", "NLS-SlugCas9-HF-NLS-FLAG-P2A", "NLS-SlugCas9-NLS-FLAG-P2A", "NLS-eSaCas9-NLS-FLAG-P2A",
             "NLS-efSaCas9-NLS-FLAG-P2A", "NLS-sRGN3.1-NLS-FLAG-P2A", "QQR1-NLS-FLAG-P2A", "Sc++-NLS-FLAG-P2A",
             "SpCas9-NRCH-NLS-FLAG-P2A", "SpCas9-NRRH-NLS-FLAG-P2A", "SpCas9-NRTH-NLS-FLAG-P2A", "SpG-NLS-FLAG-P2A",
-            "SpRY-NLS-FLAG-P2A", "VQR-NLS-FLAG-P2A", "VRER-NLS-FLAG-P2A", "VRQR-HF1-NLS-FLAG-P2A"],
+            "SpRY-NLS-FLAG-P2A", "VQR-NLS-FLAG-P2A", "VRER-NLS-FLAG-P2A", "VRQR-HF1-NLS-FLAG-P2A", "AsCas12a-NLS-P2A"],
     };
 
     const [parameterSets, setParameterSets] = useState([
@@ -238,6 +238,9 @@ const ActivityGraph = () => {
                                                 <option key={i} value={mismatch}>{mismatch}</option>
                                             ))}
                                         </select>
+                                        <p className="note">
+                                                *Only AsCas12a-NLS-P2A has number of mismatches `{'>'}` 4
+                                        </p>
                                     </div>
 
                                     {set.mismatches === 1 && (
@@ -248,11 +251,11 @@ const ActivityGraph = () => {
                                                 onChange={(e) => updateParameterSet(set.id, 'mismatchPosition', e.target.value)}
                                             >
                                                 <option value="">Select Position</option>
-                                                {Array.from({ length: 25 }, (_, i) => i + 1).map((pos) => (
+                                                {Array.from({ length: 23 }, (_, i) => i + 1).map((pos) => (
                                                     <option key={pos} value={pos}>{pos}</option>
                                                 ))}
                                             </select>
-                                            <p className="mismatch-note">
+                                            <p className="note">
                                                 *Mismatch position is the location of a mismatch counted from the start of the raw spacer sequence (numbered starting from 1)
                                             </p>
                                         </div>
