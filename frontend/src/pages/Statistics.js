@@ -13,7 +13,8 @@ const Statistics = () => {
   const [isNormalized, setIsNormalized] = useState(false);
 
   const [chartStates, setChartStates] = useState({
-    freqPerVariant: { data: null, loading: true },
+    freqPerCas9Variant: { data: null, loading: true },
+    freqPerCas12Variant: { data: null, loading: true },
     freqPerScaffold: { data: null, loading: true },
     dataCountPerStudy: { data: null, loading: true },
     freqPerMismatch: { data: null, loading: true },
@@ -21,12 +22,12 @@ const Statistics = () => {
     heatmapData: { data: null, loading: true },
   });
 
-  const fetchFreqPerVariant = async () => {
+  const fetchFreqPerCas9Variant = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/freq-per-variant`);
+      const response = await axios.get(`${BASE_URL}/statistics/freq-per-cas9-variant`);
       setChartStates((prev) => ({
         ...prev,
-        freqPerVariant: { data: {
+        freqPerCas9Variant: { data: {
           labels: Object.keys(response.data)
                 .map(variant => ({
                   variant,
@@ -56,10 +57,53 @@ const Statistics = () => {
         }, loading: false },
       }));
     } catch (error) {
-      console.error("Error fetching freqPerVariant data:", error);
+      console.error("Error fetching freqPerCas9Variant data:", error);
       setChartStates((prev) => ({
         ...prev,
-        freqPerVariant: { data: null, loading: false },
+        freqPerCas9Variant: { data: null, loading: false },
+      }));
+    }
+  };
+
+  const fetchFreqPerCas12Variant = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/statistics/freq-per-cas12-variant`);
+      setChartStates((prev) => ({
+        ...prev,
+        freqPerCas12Variant: { data: {
+          labels: Object.keys(response.data)
+                .map(variant => ({
+                  variant,
+                  median: response.data[variant].median,
+                }))
+                .sort((a, b) => b.median - a.median)
+                .map(item => item.variant),
+          datasets: [
+            {
+              label: 'Mean Background Subtracted Indel Frequency',
+              data: Object.entries(response.data)
+                .map(([variant, stats]) => ({
+                  x: variant,
+                  min: stats.min,
+                  max: stats.max,
+                  mean: stats.mean,
+                  median: stats.median,
+                  q1: stats.q1,
+                  q3: stats.q3,
+                }))
+                .sort((a, b) => b.median - a.median),
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1,
+            },
+          ],
+        }, loading: false },
+      }));
+    } catch (error) {
+      console.error("Error fetching freqPerCas12Variant data:", error);
+      setChartStates((prev) => ({
+        ...prev,
+        freqPerCas12Variant: { data: null, loading: false },
       }));
     }
   };
@@ -224,7 +268,8 @@ const Statistics = () => {
   };
 
   useEffect(() => {
-    fetchFreqPerVariant();
+    fetchFreqPerCas9Variant();
+    fetchFreqPerCas12Variant();
     fetchFreqPerScaffold();
     fetchDataCountPerStudy();
     fetchFreqPerMismatch();
@@ -290,7 +335,7 @@ const Statistics = () => {
     if (!heatmapData) return null;
 
     const variants = Object.keys(heatmapData);
-    const positions = Array.from({ length: 25 }, (_, i) => i + 1);
+    const positions = Array.from({ length: 23 }, (_, i) => i + 1);
   
     const data = variants.map((variant) =>
        positions.map((pos) => {
@@ -379,13 +424,25 @@ const Statistics = () => {
       </div>
 
       <div id="freq_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
-        {chartStates.freqPerVariant.loading ? (
-          <div>Loading Mean Background Subtracted Indel Frequency per Variant Chart...</div>
+        {chartStates.freqPerCas9Variant.loading ? (
+          <div>Loading Mean Background Subtracted Indel Frequency per Cas9 Variant Chart...</div>
         ) : (
           <Chart
             type="boxplot"
-            data={chartStates.freqPerVariant.data}
-            options={chartOptions("Mean Background Subtracted Indel Frequency per Variant")}
+            data={chartStates.freqPerCas9Variant.data}
+            options={chartOptions("Mean Background Subtracted Indel Frequency per Cas9 Variant")}
+          />
+        )}
+      </div>
+
+      <div id="freq_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
+        {chartStates.freqPerCas12Variant.loading ? (
+          <div>Loading Mean Background Subtracted Indel Frequency per Cas12 Variant Chart...</div>
+        ) : (
+          <Chart
+            type="boxplot"
+            data={chartStates.freqPerCas12Variant.data}
+            options={chartOptions("Mean Background Subtracted Indel Frequency per Cas12 Variant")}
           />
         )}
       </div>

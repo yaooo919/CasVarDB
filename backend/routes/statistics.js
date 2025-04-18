@@ -180,10 +180,25 @@ const processHeatmapData = (data) => {
 };
 
 
-router.get('/freq-per-variant', (req, res) => {
+router.get('/freq-per-cas9-variant', (req, res) => {
   const query = `
     SELECT variant, mean_background_subtracted_indel_frequency 
     FROM cas9
+  `;
+
+  db.query(query, (err, rows) => {
+    if (err) {
+      console.error('Error fetching data:', err);
+      return res.status(500).json({ error: 'Failed to fetch data from database' });
+    }
+    res.json(processFreqPerVariantData(rows));
+  });
+});
+
+router.get('/freq-per-cas12-variant', (req, res) => {
+  const query = `
+    SELECT variant, mean_background_subtracted_indel_frequency 
+    FROM cas12
   `;
 
   db.query(query, (err, rows) => {
