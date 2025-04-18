@@ -17,14 +17,15 @@ const Statistics = () => {
     freqPerCas12Variant: { data: null, loading: true },
     freqPerScaffold: { data: null, loading: true },
     dataCountPerStudy: { data: null, loading: true },
-    freqPerMismatch: { data: null, loading: true },
+    cas9FreqPerMismatch: { data: null, loading: true },
+    cas12FreqPerMismatch: { data: null, loading: true },
     freqMismatchPerVariant: { data: null, loading: true },
     heatmapData: { data: null, loading: true },
   });
 
   const fetchFreqPerCas9Variant = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/freq-per-cas9-variant`);
+      const response = await axios.get(`${BASE_URL}/statistics/cas9-freq-per-variant`);
       setChartStates((prev) => ({
         ...prev,
         freqPerCas9Variant: { data: {
@@ -67,7 +68,7 @@ const Statistics = () => {
 
   const fetchFreqPerCas12Variant = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/freq-per-cas12-variant`);
+      const response = await axios.get(`${BASE_URL}/statistics/cas12-freq-per-variant`);
       setChartStates((prev) => ({
         ...prev,
         freqPerCas12Variant: { data: {
@@ -182,20 +183,20 @@ const Statistics = () => {
     }
   };
   
-  const fetchFreqPerMismatch = async () => {
+  const fetchCas9FreqPerMismatch = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/freq-per-mismatch`);
+      const response = await axios.get(`${BASE_URL}/statistics/cas9-freq-per-mismatch`);
 
       const labels = Object.keys(response.data);
       const data = Object.values(response.data);
 
       setChartStates((prev) => ({
         ...prev,
-        freqPerMismatch: { data: {
+        cas9FreqPerMismatch: { data: {
           labels,
           datasets: [
             {
-              label: "Mean Background Subtracted Indel Frequency vs Number of Mismatches",
+              label: "Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas9)",
               data: labels.map((key, index) => ({
                 x: parseFloat(key),
                 y: data[index],
@@ -210,14 +211,50 @@ const Statistics = () => {
         }, loading: false },
       }));
     } catch (error) {
-      console.error("Error fetching freqPerMismatch data:", error);
+      console.error("Error fetching cas9FreqPerMismatch data:", error);
       setChartStates((prev) => ({
         ...prev,
-        freqPerMismatch: { data: null, loading: false },
+        cas9FreqPerMismatch: { data: null, loading: false },
       }));
     }
   };
   
+  const fetchCas12FreqPerMismatch = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/statistics/cas12-freq-per-mismatch`);
+
+      const labels = Object.keys(response.data);
+      const data = Object.values(response.data);
+
+      setChartStates((prev) => ({
+        ...prev,
+        cas12FreqPerMismatch: { data: {
+          labels,
+          datasets: [
+            {
+              label: "Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas12)",
+              data: labels.map((key, index) => ({
+                x: parseFloat(key),
+                y: data[index],
+              })),
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1,
+              fill: false,
+              tension: 0.1,
+            },
+          ],
+        }, loading: false },
+      }));
+    } catch (error) {
+      console.error("Error fetching cas12FreqPerMismatch data:", error);
+      setChartStates((prev) => ({
+        ...prev,
+        cas12FreqPerMismatch: { data: null, loading: false },
+      }));
+    }
+  };
+
   const fetchFreqMismatchPerVariant = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/statistics/freq-mismatch-per-variant`);
@@ -272,7 +309,8 @@ const Statistics = () => {
     fetchFreqPerCas12Variant();
     fetchFreqPerScaffold();
     fetchDataCountPerStudy();
-    fetchFreqPerMismatch();
+    fetchCas9FreqPerMismatch();
+    fetchCas12FreqPerMismatch();
     fetchFreqMismatchPerVariant();
     fetchHeatmapData();
   }, []);
@@ -471,13 +509,25 @@ const Statistics = () => {
       </div>
 
       <div id="freq_per_mismatch_chart" style={{ position: "relative", width: "60%", height: "500px", margin: "0px auto 100px auto" }}>
-        {chartStates.freqPerMismatch.loading ? (
-          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches Chart...</div>
+        {chartStates.cas9FreqPerMismatch.loading ? (
+          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas9) Chart...</div>
         ) : (
           <Chart
             type="line"
-            data={chartStates.freqPerMismatch.data}
-            options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches")}
+            data={chartStates.cas9FreqPerMismatch.data}
+            options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas9)")}
+          />
+        )}
+      </div>
+
+      <div id="freq_per_mismatch_chart" style={{ position: "relative", width: "60%", height: "500px", margin: "0px auto 100px auto" }}>
+        {chartStates.cas12FreqPerMismatch.loading ? (
+          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas12) Chart...</div>
+        ) : (
+          <Chart
+            type="line"
+            data={chartStates.cas12FreqPerMismatch.data}
+            options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas12)")}
           />
         )}
       </div>
