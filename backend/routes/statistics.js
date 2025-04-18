@@ -230,6 +230,11 @@ router.get('/data-count-per-study', (req, res) => {
   const query = `
     SELECT study 
     FROM cas9
+
+    UNION ALL
+
+    SELECT study
+    FROM cas12
   `;
 
   db.query(query, (err, rows) => {
