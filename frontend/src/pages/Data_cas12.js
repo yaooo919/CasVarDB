@@ -4,7 +4,7 @@ import { Tooltip, OverlayTrigger, Modal, Button } from 'react-bootstrap';
 import axios from "axios";
 import ReactPaginate from "react-paginate";
 import './Data_cas9.css'; // use same css rules as cas9 data page
-import colDescriptionImg from "../assets/col-description.png";
+import cas12ColDescriptionImg from "../assets/cas12-col-description.png";
 
 const studyURLs = {
   "Kim_2017": "https://www.nature.com/articles/nmeth.4104",
@@ -19,10 +19,8 @@ const columnDescriptions = {
     short: "The DNA representation of the sgRNA's spacer region",
     full: (
       <>
-        <p>The DNA representation of the sgRNA's spacer region without any added padding. 
-        A 5' guanosine (G) was added if it was missing (i.e., implied) in the raw sequences from the source data. 
-        Different Cas9 variants may have different lengths, but the spacer sequence is typically 20 nt long for SpCas9.</p>
-        <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
+        <p>The DNA representation of the sgRNA's spacer region without any added padding.</p>
+        <img src={cas12ColDescriptionImg} alt="cas12 sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
     )
   },
@@ -33,12 +31,12 @@ const columnDescriptions = {
       <>
         <p>The original target context sequence taken directly from the non-target DNA strand in the source data. It includes</p>
         <ul>
-          <li><b>5' context sequence:</b> Optional nucleotides upstream of the target sequence</li>
-          <li><b>target sequence:</b> Main target sequence (e.g., 20 nt for SpCas9)</li>
-          <li><b>PAM sequence:</b> Protospacer Adjacent Motif, specific to each Cas9 variant (e.g., 5'-NGG for SpCas9)</li>
-          <li><b>3' context sequence:</b> Optional nucleotides downstream of the PAM</li>
+          <li><b>5' context sequence:</b>Optional nucleotides upstream of the PAM sequence</li>
+          <li><b>PAM sequence:</b>Protospacer Adjacent Motif, specific to each Cas12 variant</li>
+          <li><b>target sequence:</b> Main target sequence</li>
+          <li><b>3' context sequence:</b> Optional nucleotides downstream of the target sequence</li>
         </ul>
-        <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
+        <img src={cas12ColDescriptionImg} alt="cas12 sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
     ),
   },
@@ -47,8 +45,8 @@ const columnDescriptions = {
     short: "The padded version of the raw spacer sequence",
     full: (
       <>
-        <p>The padded version of the raw spacer sequence, with 'N' padding added to the 5' and 3' ends. The padding extends the total length of the spacer sequence to 42 nt, ensuring alignment with the target context sequence.</p>
-        <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
+        <p>The padded version of the raw spacer sequence, with 'N' padding added to the 5' and 3' ends. The padding extends the total length of the spacer sequence to 34 nt, ensuring alignment with the target context sequence.</p>
+        <img src={cas12ColDescriptionImg} alt="cas12 sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
     ),
   },
@@ -57,12 +55,12 @@ const columnDescriptions = {
     short: "The padded version of the raw target sequence",
     full: (
       <>
-        <p>Derived from the raw target sequence with added 'N' padding on both the 5' and 3' ends to align the PAM with the 28th nucleotide position. The full padded sequence is 42 nt long and can be divided into</p>
+        <p>Derived from the raw target sequence with added 'N' padding on both the 5' and 3' ends to align the main target sequence with the 9th nucleotide position. The full padded sequence is 34 nt long and can be divided into</p>
         <ul>
-          <li><b>5' context + target:</b> 27 nt</li>
-          <li><b>PAM + 3' context:</b> 15 nt</li>
+          <li><b>5' context + PAM:</b> 8 nt</li>
+          <li><b>target + 3' context:</b> 26 nt</li>
         </ul>
-        <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
+        <img src={cas12ColDescriptionImg} alt="cas12 sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
     ),
   },
@@ -429,40 +427,73 @@ function Data_cas12() {
               </tr>
             ) : (
               items.map((item) => {
-                const highlightSequence = (targetContextSequenceRaw, bestMatchingSubstring, bestMatchIndex, mismatchPositions) => {
+                const SPACER_INDEX = 9;
+                const highlightSpacer = (spacerSequence, spacerSequenceRaw, mismatchPositions) => {
+                  const start = SPACER_INDEX - 1;
+                  const end = start + spacerSequenceRaw.length;
                   const positions = mismatchPositions !== "[]" ? JSON.parse(mismatchPositions) : [];
                 
-                  let highlightedSubstring = '';
-                  for (let i = 0; i < bestMatchingSubstring.length; i++) {
-                    if (positions.includes(i + 1)) {
-                      highlightedSubstring += `<span style="color: #BF2C34;">${bestMatchingSubstring[i]}</span>`;
+                  let highlighted = '';
+                  for (let i = 0; i < spacerSequence.length; i++) {
+                    if (i < start || i >= end) {
+                      highlighted += spacerSequence[i];
                     } else {
-                      highlightedSubstring += `<span style="color: #bfee90;">${bestMatchingSubstring[i]}</span>`;
+                      const relativePos = i - start + 1; 
+                      if (positions.includes(relativePos)) {
+                        highlighted += `<span style="color: #BF2C34;">${spacerSequence[i]}</span>`; 
+                      } else {
+                        highlighted += `<span style="color: #bfee90;">${spacerSequence[i]}</span>`; 
+                      }
                     }
                   }
-
-                  const highlightedSequence = 
-                    targetContextSequenceRaw.slice(0, bestMatchIndex-1) +
-                    highlightedSubstring +
-                    targetContextSequenceRaw.slice(bestMatchIndex +  bestMatchingSubstring.length - 1);
-
-                  return highlightedSequence;
+                  return highlighted;
                 };
                 
-                const highlightSpacerSequence = (spacerSequence, spacerSequenceRaw) => {                
-                  const regex = new RegExp(spacerSequenceRaw, "g");
-                
-                  return spacerSequence.replace(regex, `<span style="color: #bfee90;">${spacerSequenceRaw}</span>`);
+                const highlightTarget = (targetSequence, spacerRawLength, mismatchPositions) => {
+                  const start = SPACER_INDEX - 1;
+                  const end = start + spacerRawLength;
+                  const positions = mismatchPositions !== "[]" ? JSON.parse(mismatchPositions) : [];
+              
+                  let highlighted = '';
+                  for (let i = 0; i < targetSequence.length; i++) {
+                    if (i < start || i >= end) {
+                      highlighted += targetSequence[i]; 
+                    } else {
+                      const relativePos = i - start + 1; 
+                      if (positions.includes(relativePos)) {
+                        highlighted += `<span style="color: #BF2C34;">${targetSequence[i]}</span>`; 
+                      } else {
+                        highlighted += `<span style="color: #bfee90;">${targetSequence[i]}</span>`; 
+                      }
+                    }
+                  }
+              
+                  return highlighted;
                 };
 
-                const highlightTargetContext = (targetContextSequence, targetContextSequenceRaw) => {                
-                  const matchIndex = targetContextSequence.indexOf(targetContextSequenceRaw);
-                                
-                  return (
-                    targetContextSequence.substring(0, matchIndex) +
-                    highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.best_matching_index, item.mismatch_positions) +
-                    targetContextSequence.substring(matchIndex + targetContextSequenceRaw.length)
-                  );
+                const highlightTargetRaw = (targetRaw, fullTarget, spacerRawLength, mismatchPositions) => {
+                  const start = SPACER_INDEX - 1;
+                  const positions = mismatchPositions !== "[]" ? JSON.parse(mismatchPositions) : [];
+              
+                  const rawStartInFull = fullTarget.indexOf(targetRaw);
+              
+                  let highlighted = '';
+                  for (let i = 0; i < targetRaw.length; i++) {
+                    const posInFull = rawStartInFull + i;
+              
+                    if (posInFull < start || posInFull >= start + spacerRawLength) {
+                      highlighted += targetRaw[i];
+                    } else {
+                      const relativePos = posInFull - start + 1;
+                      if (positions.includes(relativePos)) {
+                        highlighted += `<span style="color: #BF2C34;">${targetRaw[i]}</span>`;
+                      } else {
+                        highlighted += `<span style="color: #bfee90;">${targetRaw[i]}</span>`;
+                      }
+                    }
+                  }
+              
+                  return highlighted;
                 };
                 
                 
@@ -478,9 +509,9 @@ function Data_cas12() {
                   </td>
                   <td>{item.id}</td>
                   <td>{item.spacer_sequence_raw}</td>
-                  <td dangerouslySetInnerHTML={{ __html: highlightSequence(item.target_context_sequence_raw, item.best_matching_substring, item.best_matching_index, item.mismatch_positions) }}></td>
-                  <td dangerouslySetInnerHTML={{ __html: highlightSpacerSequence(item.spacer_sequence, item.spacer_sequence_raw) }}></td>
-                  <td dangerouslySetInnerHTML={{ __html: highlightTargetContext(item.target_context_sequence, item.target_context_sequence_raw) }}></td>
+                  <td dangerouslySetInnerHTML={{ __html: highlightTargetRaw(item.target_context_sequence_raw, item.target_context_sequence, item.spacer_sequence_raw.length, item.mismatch_positions) }}></td>
+                  <td dangerouslySetInnerHTML={{ __html: highlightSpacer(item.spacer_sequence, item.spacer_sequence_raw, item.mismatch_positions) }}></td>
+                  <td dangerouslySetInnerHTML={{ __html: highlightTarget(item.target_context_sequence, item.spacer_sequence_raw.length, item.mismatch_positions) }}></td>
                   <td>{item.variant}</td>
                   <td>{item.nuclease}</td>
                   <td>{item.gRNA_scaffold}</td>

@@ -4,7 +4,7 @@ import { Tooltip, OverlayTrigger, Modal, Button } from 'react-bootstrap';
 import axios from "axios";
 import ReactPaginate from "react-paginate";
 import './Data_cas9.css';
-import colDescriptionImg from "../assets/col-description.png";
+import cas9ColDescriptionImg from "../assets/cas9-col-description.png";
 
 const studyURLs = {
   "['Base Editor']": "https://www.nature.com/articles/s41587-023-01792-x",
@@ -25,7 +25,7 @@ const columnDescriptions = {
         <p>The DNA representation of the sgRNA's spacer region without any added padding. 
         A 5' guanosine (G) was added if it was missing (i.e., implied) in the raw sequences from the source data. 
         Different Cas9 variants may have different lengths, but the spacer sequence is typically 20 nt long for SpCas9.</p>
-        <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
+        <img src={cas9ColDescriptionImg} alt="cas9 sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
     )
   },
@@ -41,7 +41,7 @@ const columnDescriptions = {
           <li><b>PAM sequence:</b> Protospacer Adjacent Motif, specific to each Cas9 variant (e.g., 5'-NGG for SpCas9)</li>
           <li><b>3' context sequence:</b> Optional nucleotides downstream of the PAM</li>
         </ul>
-        <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
+        <img src={cas9ColDescriptionImg} alt="cas9 sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
     ),
   },
@@ -51,7 +51,7 @@ const columnDescriptions = {
     full: (
       <>
         <p>The padded version of the raw spacer sequence, with 'N' padding added to the 5' and 3' ends. The padding extends the total length of the spacer sequence to 42 nt, ensuring alignment with the target context sequence.</p>
-        <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
+        <img src={cas9ColDescriptionImg} alt="cas9 sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
     ),
   },
@@ -65,7 +65,7 @@ const columnDescriptions = {
           <li><b>5' context + target:</b> 27 nt</li>
           <li><b>PAM + 3' context:</b> 15 nt</li>
         </ul>
-        <img src={colDescriptionImg} alt="sequence diagram" style={{ width: "100%", height: "auto" }} />
+        <img src={cas9ColDescriptionImg} alt="cas9 sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
     ),
   },
