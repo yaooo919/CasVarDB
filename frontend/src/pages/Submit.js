@@ -75,7 +75,7 @@ const SubmitPage = () => {
                 <li>Nuclease</li>
                 <li>gRNA Scaffold</li>
                 <li>Day</li>
-                <li>tRNA Feature</li>
+                {/* <li>tRNA Feature</li> */}
                 <li>Study</li>
                 <li>Library</li>
                 <li>Table</li>
@@ -84,7 +84,7 @@ const SubmitPage = () => {
                 <li>n_data</li>
                 <li>Partition</li>
                 <li>Barcode</li>
-                <li>Number of Mismatches</li>
+                {/* <li>Number of Mismatches</li> */}
                 <li>Background Subtracted Indel Frequencies (%)</li>
                 <li>Mean Background Subtracted Indel Frequency (Source, %)</li>
                 <li>Mean Background Subtracted Indel Frequency</li>
