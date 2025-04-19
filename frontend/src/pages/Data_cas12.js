@@ -66,22 +66,13 @@ const columnDescriptions = {
   },
   "variant": {
     title: "Variant",
-    short: "The protein containing the Cas9 nuclease",
-    full: (
-      <>
-        <p>The protein containing the Cas9 nuclease. Variants come in two types, </p>
-        <ul>
-          <li><b>Cas9-NLS-FLAG-P2A:</b> for nucleases not from the "Small Cas9" paper. </li>
-          <li><b>NLS-Cas9-NLS-FLAG-P2A:</b> for nucleases from the "Small Cas9" paper. </li>
-        </ul>
-        <p>In these names, <b>NLS</b> refers to a nuclear localization signal, <b>FLAG</b> refers to the FLAG protein tag, and <b>P2A</b> is a type of 2A peptide.</p>
-      </>
-    )
+    short: "The protein containing the Cas12 nuclease",
+    full: "The protein containing the Cas12 nuclease."
   },
   "nuclease": {
     title: "Nuclease",
-    short: "The Cas9 nuclease contained within each variant",
-    full: "The Cas9 nuclease contained within each variant."
+    short: "The Cas12 nuclease contained within each variant",
+    full: "The Cas12 nuclease contained within each variant."
   },
   "gRNA_scaffold": {
     title: "gRNA Scaffold",
@@ -96,7 +87,7 @@ const columnDescriptions = {
   "day": {
     title: "Day",
     short: "The timepoint at which indel frequencies were measured",
-    full: "The timepoint at which indel frequencies were measured. After introducing Cas9 into cells via transfection (for \"Wild SpCas9,\" \"xCas9_NG,\" and \"DeepHF\" studies) or transduction (for \"SpCas9,\" \"Small Cas9,\" \"Base Editor,\" and \"Sniper\" studies), cells were harvested and indel frequencies were analyzed by deep sequencing."
+    full: "The timepoint at which indel frequencies were measured."
   },
   "cas12a_transfection": {
     title: "Cas12a Transfection",
@@ -136,8 +127,8 @@ const columnDescriptions = {
   },
   "n_data": {
     title: "n_data",
-    short: "Number of times the experiment was repeated for the same guide-target-scaffold-Cas9 combination",
-    full: "Number of times the experiment was repeated for the same guide-target-scaffold-Cas9 combination."
+    short: "Number of times the experiment was repeated for the same guide-target-scaffold-Cas12 combination",
+    full: "Number of times the experiment was repeated for the same guide-target-scaffold-Cas12 combination."
   },
   "partition": {
     title: "Partition",

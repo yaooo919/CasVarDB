@@ -214,6 +214,11 @@ router.get('/freq-per-scaffold', (req, res) => {
   const query = `
     SELECT gRNA_scaffold, mean_background_subtracted_indel_frequency 
     FROM cas9
+
+    UNION ALL
+
+    SELECT gRNA_scaffold, mean_background_subtracted_indel_frequency 
+    FROM cas12
   `;
 
   db.query(query, (err, rows) => {

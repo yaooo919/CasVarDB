@@ -10,7 +10,7 @@ function Navbar() {
             <div className="navbar-bg">
                 <div className={`${navbarClass}`}>
                     <div className="logo">
-                        <Link to='/'>Cas9 Variant Database</Link>
+                        <Link to='/'>CasVarDB</Link>
                     </div>
         
                     <div className="collapse-menu">
