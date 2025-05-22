@@ -239,7 +239,7 @@ const ActivityGraph = () => {
                                             ))}
                                         </select>
                                         <p className="note">
-                                                *Only AsCas12a-NLS-P2A has number of mismatches `{'>'}` 4
+                                                *Only AsCas12a-NLS-P2A has number of mismatches &gt; 4
                                         </p>
                                     </div>
 

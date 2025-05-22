@@ -338,7 +338,7 @@ function Data_cas9() {
     <div>
       <div className="header-container">
           <div className="header">
-              <h1>Data</h1>
+              <h1>Cas9 Data</h1>
           </div>
       </div>
           
