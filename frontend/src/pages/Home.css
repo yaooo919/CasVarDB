@@ -44,7 +44,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    max-width: 1200px;
+    max-width: 80%;
     margin: auto;
   }
   
@@ -54,27 +54,43 @@
     gap: 50px;
     justify-content: center;
     width: 100%;
+    min-height: 78vh;
   }
   
   .text-column,
   .search-column {
     flex: 1 1 45%;
     min-width: 300px;
+    display: flex;
+    flex-direction: column;
   }
-  
+
+.text-box,
+.search-box {
+  display: flex;
+  flex-direction: column;
+  flex: 1;               
+}
+  /*text column*/
+  .text-box {
+    justify-content: space-between; 
+}
+
   .text-column h1 {
-    font-size: 2.5rem;
+    font-size: 2.7vw;
     font-weight: 700;
     text-align: left;
     letter-spacing: 1.3px;
+    margin-top: 0px;
   }
   
   .text-column p {
-    font-size: 21px;
+    font-size: 1.4vw;
     text-align: left;
     line-height: 1.6;
     letter-spacing: 1.3px;
-    
+    padding-bottom: 25px;    
+
   }
   
   .standout-text {
@@ -95,12 +111,12 @@
   
   .text-column-buttons button {
     width: 100%;
-    padding: 10px; 
+    font-size: clamp(1rem, 0.5rem + 1vw, 2.2rem);
+    padding: clamp(10px, 6px + 1vw, 22px);
     background-color: #3a89c9;
     color: white;
     border: none;
     border-radius: 5px;
-    font-size: 1.3rem; 
     cursor: pointer;
     letter-spacing: 1.3px;
   }
@@ -108,16 +124,16 @@
   .text-column_buttons button:hover {
     background-color: #0056b3;
   }
-  
+
+  /*search column*/
   .search-box {
     background: rgba(255, 255, 255, 0.1);
-    /* backdrop-filter: blur(10px); */
-    padding: 20px;
+    padding: 40px;
     border-radius: 12px;
     border: 5px solid #9cc4e4;
     text-align: center;
-    margin-top: 40px;
-    height: 500px;
+    margin-top: 10px;
+    height: auto !important;
   }
   
   .search-box-top {
@@ -127,16 +143,18 @@
   }
   
   .search-box h2 {
-    font-size: 20px;
+    font-size: 1.6vw;
     letter-spacing: 1.3px;
+    margin: 0;
+    text-align: left;
   }
   
   .search-box-top select {
     border-radius: 25px; 
-    padding: 10px 15px; 
-    font-size: 16px; 
+    padding: 1em 2em; 
+    font-size: 1vw; 
     background-color: #f0f4f8; 
-    height: 40px;
+    height: auto;
   }
   
   
@@ -151,7 +169,7 @@
     background-image: url('../assets/chevron-compact-down.svg');
     background-repeat: no-repeat;
     background-position: right 10px center;
-    background-size: 12px;
+    background-size: 0.9em;
     padding-left: 20px;
     padding-right: 35px;
     color: #555;
@@ -162,21 +180,30 @@
     width: 100%;
     padding: 25px 40px 25px 20px;
     border-radius: 5px;
-    margin: 10px 0px 20px 0px;
-    font-size: 18px;
+    margin: 4vh 0px 1vh 0px;
+    font-size: 1.8vw;
+  }
+
+  .dropdown {
+    width: 80%;
+    display: block;
+    margin: 0 auto;
   }
   
   .search-box button {
+    align-items: center;
     background: #9cc4e4;
     color: #fff;
     border: none;
     border-radius: 5px;
-    width: 100%;
-    padding: 15px;
+    padding: 1em;
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 1.3vw;
     letter-spacing: 1.2px;
-    margin: 10px auto;
+    margin-top: 0.5em;
+    margin-bottom: 1em;
+    margin-left: auto;
+    display: inline-block;
   }
   
   .search-box button:hover {
@@ -221,9 +248,13 @@
 .search-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 15px 0 0;
+  gap: 15px;
+  margin: 10px 0 0;
 }
+
+  .search-tags span {
+    font-size: 0.9vw;
+  }
 
 .tag-bubble {
   display: inline-flex;
@@ -234,15 +265,13 @@
   backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 16px;
-  padding: 6px 12px;
+  padding: 0.5em 2em;
   color: white;
-  font-size: 14px;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s ease;
-  line-height: 1.1;
+  line-height: 1.5;
   user-select: none;
-  max-width: 430px;
 }
 
 .tag-bubble:hover {
@@ -264,6 +293,7 @@
   display: flex;
   justify-content: flex-start;
   padding-left: 5px;
+  font-size: 1vw;
 }
 
 /* dropdown button */
@@ -275,10 +305,8 @@
 
 .dropbtn {
   width: 100%;
-  padding: 15px;
   background: #9cc4e4;
   color: #fff;
-  font-size: 1.2rem;
   border: none;
   border-radius: 5px;
   cursor: pointer;

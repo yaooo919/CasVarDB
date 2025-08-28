@@ -4,11 +4,12 @@
     margin: auto;
     margin-bottom: 30px;
     gap: 70px;
+    font-size: 1vw;
 
 }
 
 #submit-paragraph {
-    font-size: large;
+    font-size: 1.3vw;
     font-weight: 700;
 }
 
@@ -27,23 +28,35 @@
     gap: 15px;
     align-items: center;
     margin-bottom: 50px;
+    font-size: 1.3vw;
+}
+
+#select-file input {
+    font-size: 0.9vw;
+}
+
+#metadata {
+    font-size: 1.3vw;
 }
 
 #meta-text {
     display: block;
+    font-size: 1vw;
 }
 
 #metadata textarea {
     margin: 10px 0;
-    max-width: 550px;
+    max-width: 30em;
     max-height: 400px;
     font-family: sans-serif, Arial, Helvetica;
     padding: 10px;
+    letter-spacing: px;
 }
 
 button {
-    padding: 10px 25px;
-    font-size: 17px;
+    margin-top: 1em;
+    padding: 1em 2em;
+    font-size: 1vw;;
     color: white;
     background-color: #3a89c9;
     border: none;

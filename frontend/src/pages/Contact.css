@@ -1,27 +1,35 @@
 .contact-page {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px;
+    align-items: stretch; 
     padding: 20px;
+    min-height: 80vh;
 }
 
 .contact-card {
-    position: relative; 
-    width: 350px;
-    height: 500px;
-    padding: 20px;
-    margin-top: 100px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    text-align: left; 
+  display: flex;
+  /* align-items: stretch;  */
+  flex-direction: column;
+  justify-content: space-between;
+  height: 80%;
+  width: 80%;
+  margin-top: 100px;              
+  /* padding: px 24px 24px;     */
+  position: relative;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  text-align: left;
 }
 
 .avatar-wrapper {
     position: absolute; 
     top: -60px;
     left: 0px;
-    width: 200px;
-    height: 200px;
+    /* width: 200px;
+    height: 200px; */
+    width: 13vw;
+    height: 13vw;
 }
 
 .avatar {
@@ -38,14 +46,17 @@
 }
 
 .contact-info {
-    padding-top: 200px;
+    margin-top: auto;
+    margin-bottom: 6em;
+    font-size: 1vw;
+    padding-left: 2em;
     color: #333;
     line-height: 2;
 }
 
 .contact-info strong {
     display: block;
-    font-size: 25px;
+    font-size: 1.5vw;
     margin-bottom: 15px;
 }
 
