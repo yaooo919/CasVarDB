@@ -12,6 +12,8 @@
 
 .search-download-column select {
     font-size: 17px;
+    box-sizing: content-box;
+    height: 30px;
     padding: 10px 25px 10px 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
