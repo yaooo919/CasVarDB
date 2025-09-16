@@ -164,7 +164,7 @@ function Home() {
             <Modal show={show} onHide={() => setShow(false)} centered>
                 <Modal.Body className="custom-modal-body">
                     <button className="close-button" onClick={() => setShow(false)}>×</button>
-                    <p>Select the file you want to download:</p>
+                    <p>Select the file(s) you want to download:</p>
                     <ul>
                         <li><a href="https://cas9-data.s3.eu-west-2.amazonaws.com/cas9_new2.csv" download="cas9_data.csv">Cas9 Data</a></li>
                         <li><a href="https://cas9-data.s3.eu-west-2.amazonaws.com/cas12_new2.csv" download="cas12_data.csv">Cas12 Data</a></li>
