@@ -64,9 +64,3 @@ button {
     cursor: pointer;
     letter-spacing: 1.2px;
 }
-
-#close-button {
-    width: 20%;
-    justify-content: right;
-}
-

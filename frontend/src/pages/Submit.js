@@ -108,7 +108,17 @@ const SubmitPage = () => {
                     onChange={handleMetadataChange}
                     rows="10"
                     cols="70"
-                    placeholder="Enter publication metadata here..."
+                    placeholder={
+                      `Enter metadata (JSON or plain text). 
+Example:
+{
+  "title": "Paper title",
+  "authors": ["Alice", "Bob"],
+  "journal": "Nature Methods",
+  "year": 2025,
+  "doi": "10.1234/xxxxx",
+  "contactEmail": "name@example.com"
+}`}
                 ></textarea>
                </div>
                <button type="submit">Submit</button>
