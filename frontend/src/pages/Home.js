@@ -166,10 +166,10 @@ function Home() {
                     <button className="close-button" onClick={() => setShow(false)}>×</button>
                     <p>Select the file(s) you want to download:</p>
                     <ul>
-                        <li><a href="https://cas9-data.s3.eu-west-2.amazonaws.com/cas9_new2.csv" download="cas9_data.csv">Cas9 Data</a></li>
-                        <li><a href="https://cas9-data.s3.eu-west-2.amazonaws.com/cas12_new2.csv" download="cas12_data.csv">Cas12 Data</a></li>
-                        <li><a href="https://cas9-data.s3.eu-west-2.amazonaws.com/gRNA_scaffolds.csv" download="gRNA_scaffold.csv">gRNA Scaffold</a></li>
-                        <li><a href="https://cas9-data.s3.eu-west-2.amazonaws.com/CasVarDB_column_description.pdf" download="column_description.pdf">Data Column Description</a></li>
+                        <li><a href="https://drive.google.com/file/d/1cp_gGih_2AV6HyYdINjH0fveo-0xbaVz/view?usp=sharing" download="cas9.csv">Cas9 Data</a></li>
+                        <li><a href="https://drive.google.com/file/d/1U6w07YwiZIIShxbZvWkoXw3J_pIrDocj/view?usp=sharing" download="cas12.csv">Cas12 Data</a></li>
+                        <li><a href="https://drive.google.com/file/d/1sDnQQZzjtbWC_LhaqimjMkOQ6WxyoLZz/view?usp=sharing" download="gRNA_scaffold.csv">gRNA Scaffold</a></li>
+                        <li><a href="https://drive.google.com/file/d/1phM1coBDmBtAMSooySjrL0V5z7cMsMlo/view?usp=sharing" download="column_description.pdf">Data Column Description</a></li>
                     </ul>
                 </Modal.Body>
             </Modal>

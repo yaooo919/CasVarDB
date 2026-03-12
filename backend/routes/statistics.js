@@ -364,7 +364,7 @@ const convertIUPACtoRegex = (pam) => {
 // mock data for testing
 // router.get("/activity-graph", async (req, res) => {
 //     try {
-//       const data = await fs.readFile("nteractive_graph_data.txt", "utf-8");
+//       const data = await fs.readFile("interactive_graph_data.txt", "utf-8");
 //       return res.json({ data: JSON.parse(data) });
 //     } catch (error) {
 //       console.error("Error reading file:", error);
