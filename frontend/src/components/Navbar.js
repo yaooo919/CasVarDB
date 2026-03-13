@@ -38,12 +38,12 @@ function Navbar() {
                         <li><Link to='/grna'>gRNA Scaffold</Link></li>
                         <li><Link to='/studies'>Studies</Link></li>
                         <li><Link to='/submit'>Submit</Link></li>
-                        <li><a
+                        {/* <li><a
                                 href="https://app.theneo.io/9a4553cf-e503-44a2-974d-16e072f7143c/cas-var-db"
                                 target="_blank"
                                 rel="noopener noreferrer">API
                             </a>
-                        </li>
+                        </li> */}
                         <li><Link to='/contact'>Contact</Link></li>
                     </ul>
                 </div>
