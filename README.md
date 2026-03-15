@@ -1,70 +1,104 @@
-# Getting Started with Create React App
+# CasVarDB Setup Guide
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+CasVarDB is currently available for internal access within the University of Oxford. Oxford University members can access the hosted website by connecting to the Oxford VPN and opening http://crisprxai.cs.ox.ac.uk:3000.
 
-## Available Scripts
+For users outside the University of Oxford, local setup is required in order to run and access the website.
 
-In the project directory, you can run:
+This document explains how to set up CasVarDB locally after downloading the repository, including database initialization, data import, and starting both backend and frontend services.
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Prerequisites
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Please make sure the following tools are installed on your machine before starting:
 
-### `npm test`
+- Python - https://www.python.org/downloads/
+- Node.js - https://nodejs.org/en/download/current
+- Docker - https://www.docker.com/
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Project Structure
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+This project is organized with separate backend and frontend directories.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- `backend/`: database setup, data import, and backend service
+- `frontend/`: frontend web application
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## Setup Database
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Open a terminal and navigate to the `backend` directory:
+```
+cd backend
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+<br>
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Start the local MySQL database with Docker Compose:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```
+docker compose up -d
+```
+This will start an empty local database exposed on port `13306`.
 
-## Learn More
+<br>
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Create a Python virtual environment called `myvenv`:
+```
+python -m venv .myvenv
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+<br>
 
-### Code Splitting
+Activate the virtual environment.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+On Windows:
+```
+.myvenv\Scripts\activate
+```
 
-### Analyzing the Bundle Size
+On macOS / Linux:
+```
+source .myvenv/bin/activate
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+<br>
 
-### Making a Progressive Web App
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Install the required Python packages:
+```
+pip install pandas pymysql gdown
+```
 
-### Advanced Configuration
+<br>
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Run the import script to download the source data from Google Drive and populate the database:
+```
+python import_data.py
+```
 
-### Deployment
+This script will:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- download the required dataset files from Google Drive
 
-### `npm run build` fails to minify
+- process the data
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- insert the data into the local MySQL database
+
+Once this step completes successfully, the local database setup is finished.
+
+## Start the Backend
+Still inside the `backend` directory, start the backend service:
+```
+npm start
+```
+
+## Start the Frontend
+Open a second terminal window, navigate to the `frontend` directory, and start the frontend service:
+```
+cd frontend
+npm start
+```
+The website should open automatically in your default browser.
