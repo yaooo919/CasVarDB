@@ -1,6 +1,11 @@
 /backend/node_modules
 /backend/uploads
 /backend/server.js
+/backend/*.csv
+/backend/.*
+
 
 /frontend/node_modules
 /frontend/.env
+
+
