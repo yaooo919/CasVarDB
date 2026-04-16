@@ -84,7 +84,7 @@ const ActivityGraph = () => {
                             pam: set.pam,
                             numberOfMismatches: set.mismatches,
                             variant: set.variant,
-                            mismatchPosition: set.mismatches === 1 ? `[${set.mismatchPosition}]` : undefined,
+                            mismatchPosition: set.mismatches === 1 && set.mismatchPosition ? `[${set.mismatchPosition}]` : undefined,
                         },
                     });
                     return response.data;
@@ -248,7 +248,7 @@ const ActivityGraph = () => {
 
                                     {set.mismatches === 1 && (
                                         <div className="select-wrapper">
-                                            <label>Mismatch Position: </label>
+                                            <label>Mismatch Position (optional): </label>
                                             <select
                                                 value={set.mismatchPosition || ''}
                                                 onChange={(e) => updateParameterSet(set.id, 'mismatchPosition', e.target.value)}
