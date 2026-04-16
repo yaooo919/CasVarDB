@@ -1,8 +1,6 @@
 # CasVarDB Setup Guide
 
-CasVarDB is currently available for internal access within the University of Oxford. Oxford University members can access the hosted website by connecting to the Oxford VPN and opening http://crisprxai.cs.ox.ac.uk:3000.
-
-For users outside the University of Oxford, local setup is required in order to run and access the website.
+A live version of CasVarDB is available at: http://crisprxai.cs.ox.ac.uk:3000.
 
 This document explains how to set up CasVarDB locally after downloading the repository, including database initialization, data import, and starting both backend and frontend services.
 
