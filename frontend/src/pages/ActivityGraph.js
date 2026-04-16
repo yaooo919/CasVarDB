@@ -184,7 +184,10 @@ const ActivityGraph = () => {
 
             <div className="activity-graph-page">
                 <div className={`parameter-panel ${isPanelCollapsed ? 'collapsed' : ''}`}>
-                    <button className="panel-toggle" onClick={togglePanel}>
+                    <button
+                        className={`panel-toggle ${isPanelCollapsed ? 'collapsed' : ''}`}
+                        onClick={togglePanel}
+                    >
                         <img
                             src={isPanelCollapsed ? sidebarRight : sidebarLeft}
                             alt={isPanelCollapsed ? "open sidebar" : "collapse sidebar"}

@@ -33,11 +33,17 @@
 /* sidebar toggle icon */
 .panel-toggle {
     position: absolute;
-    right: -10px;
-    top: 10px;
+    top: 12px;
+    right: 12px;
     background: none;
+    border: none;
     cursor: pointer;
     z-index: 101;
+    padding: 0;
+}
+
+.parameter-panel.collapsed .panel-toggle {
+    right: 10px;
 }
 
 .panel-toggle-icon {
@@ -102,7 +108,7 @@
 
 .remove-set-button {
     position: absolute;
-    top: 8px;
+    top: 4px;
     right: 8px;
     background: none;
     border: none;
