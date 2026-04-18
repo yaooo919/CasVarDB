@@ -64,6 +64,14 @@ const ActivityGraph = () => {
         ));
     };
 
+    const formatParameterSetLabel = (set) => {
+        return `Variant: ${set.variant}, PAM: ${set.pam}, Mismatches: ${set.mismatches}${
+            set.mismatches === 1
+                ? `, Position: ${set.mismatchPosition || 'All Positions'}`
+                : ''
+        }`;
+    };
+
     const handleGenerateGraph = async () => {
         const incompleteSet = parameterSets.find(set =>
             !set.pam || set.mismatches === null || !set.variant
@@ -84,58 +92,91 @@ const ActivityGraph = () => {
                             pam: set.pam,
                             numberOfMismatches: set.mismatches,
                             variant: set.variant,
-                            mismatchPosition: set.mismatches === 1 && set.mismatchPosition ? `[${set.mismatchPosition}]` : undefined,
+                            mismatchPosition:
+                                set.mismatches === 1 && set.mismatchPosition
+                                    ? `[${set.mismatchPosition}]`
+                                    : undefined,
                         },
                     });
+
                     return response.data;
                 })
             );
 
-            const datasets = [];
+            const validEntries = [];
+            const missingSets = [];
+
             parameterSets.forEach((set, i) => {
-                const variantData = allData[i][set.variant];
-                if (!variantData) {
-                    console.error(`No data found for variant: ${set.variant}`);
+                const variantData = allData[i]?.[set.variant];
+
+                if (!variantData || variantData.length === 0) {
+                    missingSets.push(set);
                     return;
                 }
-                const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+
                 const densityData = calculateDensity(variantData);
 
-                datasets.push({
-                    label: `${set.variant} (PAM: ${set.pam}, Mismatches: ${set.mismatches}${
-                        set.mismatches === 1 ? `, Pos: ${set.mismatchPosition}` : ''
-                    })`,
-                    data: densityData,
-                    borderColor: color,
-                    backgroundColor: color,
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    fill: false,
+                if (!densityData || densityData.length === 0) {
+                    missingSets.push(set);
+                    return;
+                }
+
+                const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+
+                validEntries.push({
+                    parameterSet: set,
+                    dataset: {
+                        label: `${set.variant} (PAM: ${set.pam}, Mismatches: ${set.mismatches}${
+                            set.mismatches === 1 && set.mismatchPosition ? `, Pos: ${set.mismatchPosition}` : ''
+                        })`,
+                        data: densityData,
+                        borderColor: color,
+                        backgroundColor: color,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: false,
+                    },
                 });
             });
 
-            if (datasets.length > 0) {
-                const newGraph = {
-                    id: Date.now(),
-                    parameterSets: [...parameterSets],
-                    datasets: datasets,
-                };
+            if (missingSets.length > 0) {
+                const missingSummary = missingSets
+                    .map((set, index) => `${index + 1}. ${formatParameterSetLabel(set)}`)
+                    .join('\n');
 
-                setActivityGraphs(prev => [...prev, newGraph]);
-                setIsFirstGraphGenerated(true);
+                const proceed = window.confirm(
+                    `No data was found for the following parameter set(s):\n\n${missingSummary}\n\nDo you want to proceed with the remaining valid set(s)?`
+                );
 
-                setParameterSets([{
-                    id: Date.now(),
-                    pam: "",
-                    mismatches: null,
-                    mismatchPosition: null,
-                    variant: ""
-                }]);
-        } else {
-                alert("No valid data found for the selected parameters.");
+                if (!proceed) {
+                    return;
+                }
             }
+
+            if (validEntries.length === 0) {
+                alert("No valid data found for the selected parameters.");
+                return;
+            }
+
+            const newGraph = {
+                id: Date.now(),
+                parameterSets: validEntries.map(entry => entry.parameterSet),
+                datasets: validEntries.map(entry => entry.dataset),
+            };
+
+            setActivityGraphs(prev => [...prev, newGraph]);
+            setIsFirstGraphGenerated(true);
+
+            setParameterSets([{
+                id: Date.now(),
+                pam: "",
+                mismatches: null,
+                mismatchPosition: null,
+                variant: ""
+            }]);
         } catch (error) {
             console.error("Error in fetching data:", error);
+            alert("Failed to fetch activity graph data.");
         } finally {
             setIsActivityGraphLoading(false);
         }
@@ -248,12 +289,12 @@ const ActivityGraph = () => {
 
                                     {set.mismatches === 1 && (
                                         <div className="select-wrapper">
-                                            <label>Mismatch Position (optional): </label>
+                                            <label>Mismatch Position: </label>
                                             <select
                                                 value={set.mismatchPosition || ''}
                                                 onChange={(e) => updateParameterSet(set.id, 'mismatchPosition', e.target.value)}
                                             >
-                                                <option value="">Select Position</option>
+                                                <option value="">All Positions</option>
                                                 {Array.from({ length: 23 }, (_, i) => i + 1).map((pos) => (
                                                     <option key={pos} value={pos}>{pos}</option>
                                                 ))}
@@ -316,9 +357,12 @@ const ActivityGraph = () => {
                                         <div key={i}>
                                             <span>PAM:</span> <span style={{ fontWeight: "normal" }}>{set.pam}</span>
                                             <span> | Number of mismatches:</span> <span style={{ fontWeight: "normal" }}>{set.mismatches}</span>
-                                            {set.mismatches === 1 && set.mismatchPosition && (
+                                            {set.mismatches === 1 && (
                                                 <>
-                                                    <span> | Mismatch position:</span> <span style={{ fontWeight: "normal" }}>{set.mismatchPosition}</span>
+                                                    <span> | Mismatch position:</span>{" "}
+                                                    <span style={{ fontWeight: "normal" }}>
+                                                        {set.mismatchPosition || "All Positions"}
+                                                    </span>
                                                 </>
                                             )}
                                             <span> | Variant:</span> <span style={{ fontWeight: "normal" }}> {set.variant}</span>
