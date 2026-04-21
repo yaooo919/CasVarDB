@@ -388,7 +388,7 @@ const ActivityGraph = () => {
                                                 className="graph-color-chip"
                                                 style={{ backgroundColor: graph.datasets[i]?.borderColor || "#999" }}
                                             />
-                                            <span>
+                                            <span className="graph-title-text">
                                                 <strong>PAM:</strong> <span style={{ fontWeight: "normal" }}>{set.pam}</span>
                                                 <strong> | Number of mismatches:</strong> <span style={{ fontWeight: "normal" }}>{set.mismatches}</span>
                                                 {set.mismatches === 1 && (
