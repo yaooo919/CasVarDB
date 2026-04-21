@@ -341,7 +341,7 @@ const ActivityGraph = () => {
 
 
                 <div className={`activity-graph-main-content ${isPanelCollapsed ? 'expanded' : ''}`}>
-                    <h1>Mean Background Subtracted Indel Frequency Distribution</h1>
+                    {/* <h1>Mean Background Subtracted Indel Frequency Distribution</h1> */}
 
                     <div className="graph-container">
                         {!isActivityGraphLoading && activityGraphs.length === 0 && (
@@ -352,23 +352,29 @@ const ActivityGraph = () => {
 
                         {activityGraphs.map(graph => (
                             <div key={graph.id} className="graph-card">
-                                <h5 className="graph-title">
+                                <div className="graph-title">
                                     {graph.parameterSets.map((set, i) => (
-                                        <div key={i}>
-                                            <span>PAM:</span> <span style={{ fontWeight: "normal" }}>{set.pam}</span>
-                                            <span> | Number of mismatches:</span> <span style={{ fontWeight: "normal" }}>{set.mismatches}</span>
-                                            {set.mismatches === 1 && (
-                                                <>
-                                                    <span> | Mismatch position:</span>{" "}
-                                                    <span style={{ fontWeight: "normal" }}>
-                                                        {set.mismatchPosition || "All Positions"}
-                                                    </span>
-                                                </>
-                                            )}
-                                            <span> | Variant:</span> <span style={{ fontWeight: "normal" }}> {set.variant}</span>
+                                        <div key={i} className="graph-title-line">
+                                            <span
+                                                className="graph-color-chip"
+                                                style={{ backgroundColor: graph.datasets[i]?.borderColor || "#999" }}
+                                            />
+                                            <span>
+                                                <strong>PAM:</strong> <span style={{ fontWeight: "normal" }}>{set.pam}</span>
+                                                <strong> | Number of mismatches:</strong> <span style={{ fontWeight: "normal" }}>{set.mismatches}</span>
+                                                {set.mismatches === 1 && (
+                                                    <>
+                                                        <strong> | Mismatch position:</strong>{" "}
+                                                        <span style={{ fontWeight: "normal" }}>
+                                                            {set.mismatchPosition || "All Positions"}
+                                                        </span>
+                                                    </>
+                                                )}
+                                                <strong> | Variant:</strong> <span style={{ fontWeight: "normal" }}>{set.variant}</span>
+                                            </span>
                                         </div>
                                     ))}
-                                </h5>
+                                </div>
 
                                 <div className="chart-container">
                                     <Chart
@@ -379,6 +385,11 @@ const ActivityGraph = () => {
                                         options={{
                                             responsive: true,
                                             maintainAspectRatio: false,
+                                            plugins: {
+                                                legend: {
+                                                    display: false,
+                                                },
+                                            },
                                             scales: {
                                                 x: {
                                                     type: 'linear',

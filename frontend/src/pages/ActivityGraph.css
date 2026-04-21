@@ -222,8 +222,26 @@
 
 .graph-title {
     color: black;
-    padding: 12px 15px 0px 30px;
+    padding: 12px 15px 0px 20px;
     margin: 0;
+}
+
+.graph-title-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    font-size: 15px;
+    line-height: 1.4;
+    flex-wrap: wrap;
+}
+
+.graph-color-chip {
+    width: 28px;
+    height: 12px;
+    border-radius: 2px;
+    display: inline-block;
+    flex: 0 0 28px;
 }
 
 .chart-container {
