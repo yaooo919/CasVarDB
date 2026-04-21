@@ -211,9 +211,38 @@ const ActivityGraph = () => {
         }
     };
 
+    const getSharedXAxisRange = () => {
+        let minX = Infinity;
+        let maxX = -Infinity;
+
+        activityGraphs.forEach((graph) => {
+            graph.datasets.forEach((dataset) => {
+                dataset.data.forEach((point) => {
+                    const x = typeof point === "number" ? point : point.x;
+
+                    if (Number.isFinite(x)) {
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                    }
+                });
+            });
+        });
+
+        if (!Number.isFinite(minX) || !Number.isFinite(maxX)) {
+            return { min: undefined, max: undefined };
+        }
+
+        return {
+            min: Math.floor(minX / 10) * 10,
+            max: Math.ceil(maxX / 10) * 10,
+        };
+    };
+
     const togglePanel = () => {
         setIsPanelCollapsed(!isPanelCollapsed);
     };
+
+    const sharedXAxisRange = getSharedXAxisRange();
 
     return (
         <div>
@@ -393,6 +422,8 @@ const ActivityGraph = () => {
                                             scales: {
                                                 x: {
                                                     type: 'linear',
+                                                    min: sharedXAxisRange.min,
+                                                    max: sharedXAxisRange.max,
                                                     title: {
                                                         display: true,
                                                         text: "Mean Background Subtracted Indel Frequency"
