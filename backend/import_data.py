@@ -35,7 +35,11 @@ def download_from_gdrive(url: str, output_path: str):
         print(f"Skip existing file: {output_path}")
         return
 
-    gdown.download(url=url, output=output_path, fuzzy=True, quiet=False)
+    try:
+        gdown.download(url=url, output=output_path, fuzzy=True, quiet=False)
+    except:    
+        gdown.download(url=url, output=output_path, quiet=False)
+
     ensure_not_html(output_path)
     print(f"Downloaded: {output_path}")
 
