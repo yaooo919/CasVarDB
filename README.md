@@ -67,7 +67,7 @@ source .myvenv/bin/activate
 
 Install the required Python packages:
 ```
-pip install pandas pymysql gdown
+pip install pandas pymysql gdown==4.0.0 cryptography
 ```
 
 <br>
