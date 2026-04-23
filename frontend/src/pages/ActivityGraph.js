@@ -211,38 +211,38 @@ const ActivityGraph = () => {
         }
     };
 
-    const getSharedXAxisRange = () => {
-        let minX = Infinity;
-        let maxX = -Infinity;
+    // const getSharedXAxisRange = () => {
+    //     let minX = Infinity;
+    //     let maxX = -Infinity;
 
-        activityGraphs.forEach((graph) => {
-            graph.datasets.forEach((dataset) => {
-                dataset.data.forEach((point) => {
-                    const x = typeof point === "number" ? point : point.x;
+    //     activityGraphs.forEach((graph) => {
+    //         graph.datasets.forEach((dataset) => {
+    //             dataset.data.forEach((point) => {
+    //                 const x = typeof point === "number" ? point : point.x;
 
-                    if (Number.isFinite(x)) {
-                        if (x < minX) minX = x;
-                        if (x > maxX) maxX = x;
-                    }
-                });
-            });
-        });
+    //                 if (Number.isFinite(x)) {
+    //                     if (x < minX) minX = x;
+    //                     if (x > maxX) maxX = x;
+    //                 }
+    //             });
+    //         });
+    //     });
 
-        if (!Number.isFinite(minX) || !Number.isFinite(maxX)) {
-            return { min: undefined, max: undefined };
-        }
+    //     if (!Number.isFinite(minX) || !Number.isFinite(maxX)) {
+    //         return { min: undefined, max: undefined };
+    //     }
 
-        return {
-            min: Math.floor(minX / 10) * 10,
-            max: Math.ceil(maxX / 10) * 10,
-        };
-    };
+    //     return {
+    //         min: Math.floor(minX / 10) * 10,
+    //         max: Math.ceil(maxX / 10) * 10,
+    //     };
+    // };
 
     const togglePanel = () => {
         setIsPanelCollapsed(!isPanelCollapsed);
     };
 
-    const sharedXAxisRange = getSharedXAxisRange();
+    // const sharedXAxisRange = getSharedXAxisRange();
 
     return (
         <div>
@@ -381,7 +381,7 @@ const ActivityGraph = () => {
 
                         {activityGraphs.map(graph => (
                             <div key={graph.id} className="graph-card">
-                                <div className="graph-title">
+                                {/* <div className="graph-title">
                                     {graph.parameterSets.map((set, i) => (
                                         <div key={i} className="graph-title-line">
                                             <span
@@ -403,6 +403,24 @@ const ActivityGraph = () => {
                                             </span>
                                         </div>
                                     ))}
+                                </div> */}
+
+                                <div className="graph-title">
+                                    {graph.parameterSets.map((set, i) => (
+                                        <div key={i}>
+                                            <span>PAM:</span> <span style={{ fontWeight: "normal" }}>{set.pam}</span>
+                                            <span> | Number of mismatches:</span> <span style={{ fontWeight: "normal" }}>{set.mismatches}</span>
+                                            {set.mismatches === 1 && (
+                                                <>
+                                                    <span> | Mismatch position:</span>{" "}
+                                                    <span style={{ fontWeight: "normal" }}>
+                                                        {set.mismatchPosition || "All Positions"}
+                                                    </span>
+                                                </>
+                                            )}
+                                            <span> | Variant:</span> <span style={{ fontWeight: "normal" }}> {set.variant}</span>
+                                        </div>
+                                    ))}
                                 </div>
 
                                 <div className="chart-container">
@@ -414,16 +432,16 @@ const ActivityGraph = () => {
                                         options={{
                                             responsive: true,
                                             maintainAspectRatio: false,
-                                            plugins: {
-                                                legend: {
-                                                    display: false,
-                                                },
-                                            },
+                                            // plugins: {
+                                            //     legend: {
+                                            //         display: false,
+                                            //     },
+                                            // },
                                             scales: {
                                                 x: {
                                                     type: 'linear',
-                                                    min: sharedXAxisRange.min,
-                                                    max: sharedXAxisRange.max,
+                                                    // min: sharedXAxisRange.min,
+                                                    // max: sharedXAxisRange.max,
                                                     title: {
                                                         display: true,
                                                         text: "Mean Background Subtracted Indel Frequency"
