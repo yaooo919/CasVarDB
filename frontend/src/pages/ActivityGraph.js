@@ -107,10 +107,11 @@ const ActivityGraph = () => {
                                 pam: set.pam,
                                 numberOfMismatches: set.mismatches,
                                 variant: set.variant,
+                                countOnly: true,
                             },
                         });
 
-                        allPositionsCount = allPositionsResponse.data?.[set.variant]?.length || 0;
+                        allPositionsCount = allPositionsResponse.data?.[set.variant] || 0;
                     }
 
                     return {

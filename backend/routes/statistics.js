@@ -373,7 +373,11 @@ const convertIUPACtoRegex = (pam) => {
 //   });
 
 router.get('/activity-graph', (req, res) => {
-  const { pam, numberOfMismatches, variant, mismatchPosition } = req.query;
+  const { pam, numberOfMismatches, variant, mismatchPosition, countOnly } = req.query;
+
+  if (!pam || numberOfMismatches === undefined || !variant) {
+    return res.status(400).json({ error: 'Missing required query parameters' });
+  }
 
   const pamLength = pam.length;
   const regexPattern = convertIUPACtoRegex(pam);
@@ -383,17 +387,19 @@ router.get('/activity-graph', (req, res) => {
     cas12: { table: 'cas12', pamStart: 5 },
   };
 
-  
-  const queries = Object.entries(pamInfo).map(([key, { table, pamStart }]) => {
+  const queries = Object.values(pamInfo).map(({ table, pamStart }) => {
     return new Promise((resolve, reject) => {
       let sql = `
-        SELECT variant, mean_background_subtracted_indel_frequency
+        SELECT ${countOnly === 'true'
+          ? 'COUNT(*) AS datapoint_count'
+          : 'variant, mean_background_subtracted_indel_frequency'}
         FROM ${table}
         WHERE
           SUBSTRING(target_context_sequence FROM ? FOR ?) REGEXP ?
           AND number_of_mismatches = ?
           AND variant = ?
       `;
+
       const params = [pamStart, pamLength, `^${regexPattern}$`, numberOfMismatches, variant];
 
       if (numberOfMismatches == 1 && mismatchPosition) {
@@ -412,6 +418,15 @@ router.get('/activity-graph', (req, res) => {
     .then(results => {
       const allRows = results.flat();
 
+      if (countOnly === 'true') {
+        const totalCount = allRows.reduce((sum, row) => {
+          return sum + Number(row.datapoint_count || 0);
+        }, 0);
+
+        res.json({ [variant]: totalCount });
+        return;
+      }
+
       const groupedData = allRows.reduce((acc, row) => {
         const { variant, mean_background_subtracted_indel_frequency } = row;
         if (!acc[variant]) acc[variant] = [];
@@ -419,7 +434,7 @@ router.get('/activity-graph', (req, res) => {
         return acc;
       }, {});
 
-      res.json(groupedData); 
+      res.json(groupedData);
     })
     .catch(err => {
       console.error('Error fetching activity graph data:', err);
