@@ -87,7 +87,7 @@ const ActivityGraph = () => {
         try {
             const allData = await Promise.all(
                 parameterSets.map(async (set) => {
-                    const response = await axios.get(`${BASE_URL}/statistics/activity-graph`, {
+                    const currentResponse = await axios.get(`${BASE_URL}/statistics/activity-graph`, {
                         params: {
                             pam: set.pam,
                             numberOfMismatches: set.mismatches,
@@ -99,7 +99,24 @@ const ActivityGraph = () => {
                         },
                     });
 
-                    return response.data;
+                    let allPositionsCount = null;
+
+                    if (set.mismatches === 1) {
+                        const allPositionsResponse = await axios.get(`${BASE_URL}/statistics/activity-graph`, {
+                            params: {
+                                pam: set.pam,
+                                numberOfMismatches: set.mismatches,
+                                variant: set.variant,
+                            },
+                        });
+
+                        allPositionsCount = allPositionsResponse.data?.[set.variant]?.length || 0;
+                    }
+
+                    return {
+                        data: currentResponse.data,
+                        allPositionsCount,
+                    };
                 })
             );
 
@@ -107,7 +124,8 @@ const ActivityGraph = () => {
             const missingSets = [];
 
             parameterSets.forEach((set, i) => {
-                const variantData = allData[i]?.[set.variant];
+                const variantData = allData[i]?.data?.[set.variant];
+                const allPositionsCount = allData[i]?.allPositionsCount;
 
                 if (!variantData || variantData.length === 0) {
                     missingSets.push(set);
@@ -121,10 +139,14 @@ const ActivityGraph = () => {
                     return;
                 }
 
-                const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+                const color = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0")}`;
 
                 validEntries.push({
-                    parameterSet: set,
+                    parameterSet: {
+                        ...set,
+                        datapointCount: variantData.length,
+                        allPositionsCount,
+                    },
                     dataset: {
                         label: `${set.variant} (PAM: ${set.pam}, Mismatches: ${set.mismatches}${
                             set.mismatches === 1 && set.mismatchPosition ? `, Pos: ${set.mismatchPosition}` : ''
@@ -366,9 +388,6 @@ const ActivityGraph = () => {
                     </div>
                 </div>
 
-
-
-
                 <div className={`activity-graph-main-content ${isPanelCollapsed ? 'expanded' : ''}`}>
                     {/* <h1>Mean Background Subtracted Indel Frequency Distribution</h1> */}
 
@@ -381,16 +400,21 @@ const ActivityGraph = () => {
 
                         {activityGraphs.map(graph => (
                             <div key={graph.id} className="graph-card">
-                                {/* <div className="graph-title">
+                                <div className="graph-title">
                                     {graph.parameterSets.map((set, i) => (
                                         <div key={i} className="graph-title-line">
                                             <span
                                                 className="graph-color-chip"
                                                 style={{ backgroundColor: graph.datasets[i]?.borderColor || "#999" }}
                                             />
+
                                             <span className="graph-title-text">
-                                                <strong>PAM:</strong> <span style={{ fontWeight: "normal" }}>{set.pam}</span>
-                                                <strong> | Number of mismatches:</strong> <span style={{ fontWeight: "normal" }}>{set.mismatches}</span>
+                                                <strong>PAM:</strong>{" "}
+                                                <span style={{ fontWeight: "normal" }}>{set.pam}</span>
+
+                                                <strong> | Number of mismatches:</strong>{" "}
+                                                <span style={{ fontWeight: "normal" }}>{set.mismatches}</span>
+
                                                 {set.mismatches === 1 && (
                                                     <>
                                                         <strong> | Mismatch position:</strong>{" "}
@@ -399,17 +423,32 @@ const ActivityGraph = () => {
                                                         </span>
                                                     </>
                                                 )}
-                                                <strong> | Variant:</strong> <span style={{ fontWeight: "normal" }}>{set.variant}</span>
+
+                                                <strong> | Variant:</strong>{" "}
+                                                <span style={{ fontWeight: "normal" }}>
+                                                    {set.variant}
+                                                    {set.mismatches === 1 && set.mismatchPosition && (
+                                                        ` (${set.datapointCount ?? 0} / ${set.allPositionsCount ?? 0}, ${
+                                                            set.allPositionsCount
+                                                                ? ((set.datapointCount / set.allPositionsCount) * 100).toFixed(2)
+                                                                : "0.00"
+                                                        }% of mismatch=1 all positions)`
+                                                    )}
+                                                </span>
                                             </span>
                                         </div>
                                     ))}
-                                </div> */}
+                                </div>
 
-                                <div className="graph-title">
+                                {/* <div className="graph-title">
                                     {graph.parameterSets.map((set, i) => (
                                         <div key={i}>
-                                            <span>PAM:</span> <span style={{ fontWeight: "normal" }}>{set.pam}</span>
-                                            <span> | Number of mismatches:</span> <span style={{ fontWeight: "normal" }}>{set.mismatches}</span>
+                                            <span>PAM:</span>{" "}
+                                            <span style={{ fontWeight: "normal" }}>{set.pam}</span>
+
+                                            <span> | Number of mismatches:</span>{" "}
+                                            <span style={{ fontWeight: "normal" }}>{set.mismatches}</span>
+
                                             {set.mismatches === 1 && (
                                                 <>
                                                     <span> | Mismatch position:</span>{" "}
@@ -418,10 +457,21 @@ const ActivityGraph = () => {
                                                     </span>
                                                 </>
                                             )}
-                                            <span> | Variant:</span> <span style={{ fontWeight: "normal" }}> {set.variant}</span>
+
+                                            <span> | Variant:</span>{" "}
+                                            <span style={{ fontWeight: "normal" }}>
+                                                {set.variant}
+                                                {set.mismatches === 1 && set.mismatchPosition && (
+                                                    ` (${set.datapointCount ?? 0} / ${set.allPositionsCount ?? 0}, ${
+                                                        set.allPositionsCount
+                                                            ? ((set.datapointCount / set.allPositionsCount) * 100).toFixed(2)
+                                                            : "0.00"
+                                                    }% of mismatch=1 all positions)`
+                                                )}
+                                            </span>
                                         </div>
                                     ))}
-                                </div>
+                                </div> */}
 
                                 <div className="chart-container">
                                     <Chart
@@ -432,11 +482,11 @@ const ActivityGraph = () => {
                                         options={{
                                             responsive: true,
                                             maintainAspectRatio: false,
-                                            // plugins: {
-                                            //     legend: {
-                                            //         display: false,
-                                            //     },
-                                            // },
+                                            plugins: {
+                                                legend: {
+                                                    display: false,
+                                                },
+                                            },
                                             scales: {
                                                 x: {
                                                     type: 'linear',
