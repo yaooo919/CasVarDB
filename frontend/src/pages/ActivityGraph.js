@@ -401,7 +401,7 @@ const ActivityGraph = () => {
 
                         {activityGraphs.map(graph => (
                             <div key={graph.id} className="graph-card">
-                                <div className="graph-title">
+                                {/* <div className="graph-title">
                                     {graph.parameterSets.map((set, i) => (
                                         <div key={i} className="graph-title-line">
                                             <span
@@ -439,9 +439,9 @@ const ActivityGraph = () => {
                                             </span>
                                         </div>
                                     ))}
-                                </div>
+                                </div> */}
 
-                                {/* <div className="graph-title">
+                                <div className="graph-title">
                                     {graph.parameterSets.map((set, i) => (
                                         <div key={i}>
                                             <span>PAM:</span>{" "}
@@ -472,7 +472,7 @@ const ActivityGraph = () => {
                                             </span>
                                         </div>
                                     ))}
-                                </div> */}
+                                </div>
 
                                 <div className="chart-container">
                                     <Chart
@@ -483,11 +483,11 @@ const ActivityGraph = () => {
                                         options={{
                                             responsive: true,
                                             maintainAspectRatio: false,
-                                            plugins: {
-                                                legend: {
-                                                    display: false,
-                                                },
-                                            },
+                                            // plugins: {
+                                            //     legend: {
+                                            //         display: false,
+                                            //     },
+                                            // },
                                             scales: {
                                                 x: {
                                                     type: 'linear',
