@@ -3,10 +3,27 @@ import axios from "axios";
 import { Chart as ChartJS, CategoryScale, LinearScale,  BarElement, LineElement, PointElement, Tooltip, Legend, Title } from "chart.js";
 import { BoxPlotController, BoxAndWiskers } from "@sgratzl/chartjs-chart-boxplot";
 import { Chart } from "react-chartjs-2";
-import Heatmap from 'react-heatmap-grid';
-import './Statistics.css';
+import Heatmap from "react-heatmap-grid";
+import "./Statistics.css";
 
 ChartJS.register(BoxPlotController, BoxAndWiskers, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend, Title);
+
+type ChartState = {
+  data: any | null;
+  loading: boolean;
+};
+
+type SummaryStats = {
+  min: number;
+  max: number;
+  mean: number;
+  median: number;
+  q1: number;
+  q3: number;
+};
+
+type SummaryStatsResponse = Record<string, SummaryStats>;
+type ColorLegendProps = { min: number; max: number };
 
 const Statistics = () => {
   const BASE_URL = `${process.env.REACT_APP_API_URL}`;
@@ -20,26 +37,27 @@ const Statistics = () => {
     cas9FreqPerMismatch: { data: null, loading: true },
     cas12FreqPerMismatch: { data: null, loading: true },
     freqMismatchPerVariant: { data: null, loading: true },
-    heatmapData: { data: null, loading: true },
+    heatmapData: { data: null, loading: true }
   });
 
   const fetchFreqPerCas9Variant = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/statistics/cas9-freq-per-variant`);
+      const statsByVariant = response.data as SummaryStatsResponse;
       setChartStates((prev) => ({
         ...prev,
         freqPerCas9Variant: { data: {
-          labels: Object.keys(response.data)
-                .map(variant => ({
-                  variant,
-                  median: response.data[variant].median,
-                }))
-                .sort((a, b) => b.median - a.median)
-                .map(item => item.variant),
+          labels: Object.keys(statsByVariant)
+            .map(variant => ({
+              variant,
+              median: statsByVariant[variant].median
+            }))
+            .sort((a, b) => b.median - a.median)
+            .map(item => item.variant),
           datasets: [
             {
-              label: 'Mean Background Subtracted Indel Frequency',
-              data: Object.entries(response.data)
+              label: "Mean Background Subtracted Indel Frequency",
+              data: Object.entries(statsByVariant)
                 .map(([variant, stats]) => ({
                   x: variant,
                   min: stats.min,
@@ -47,21 +65,21 @@ const Statistics = () => {
                   mean: stats.mean,
                   median: stats.median,
                   q1: stats.q1,
-                  q3: stats.q3,
+                  q3: stats.q3
                 }))
                 .sort((a, b) => b.median - a.median),
               backgroundColor: "rgba(75, 192, 192, 0.2)",
               borderColor: "rgba(75, 192, 192, 1)",
-              borderWidth: 1,
-            },
-          ],
-        }, loading: false },
+              borderWidth: 1
+            }
+          ]
+        }, loading: false }
       }));
     } catch (error) {
       console.error("Error fetching freqPerCas9Variant data:", error);
       setChartStates((prev) => ({
         ...prev,
-        freqPerCas9Variant: { data: null, loading: false },
+        freqPerCas9Variant: { data: null, loading: false }
       }));
     }
   };
@@ -69,20 +87,21 @@ const Statistics = () => {
   const fetchFreqPerCas12Variant = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/statistics/cas12-freq-per-variant`);
+      const statsByVariant = response.data as SummaryStatsResponse;
       setChartStates((prev) => ({
         ...prev,
         freqPerCas12Variant: { data: {
-          labels: Object.keys(response.data)
-                .map(variant => ({
-                  variant,
-                  median: response.data[variant].median,
-                }))
-                .sort((a, b) => b.median - a.median)
-                .map(item => item.variant),
+          labels: Object.keys(statsByVariant)
+            .map(variant => ({
+              variant,
+              median: statsByVariant[variant].median
+            }))
+            .sort((a, b) => b.median - a.median)
+            .map(item => item.variant),
           datasets: [
             {
-              label: 'Mean Background Subtracted Indel Frequency',
-              data: Object.entries(response.data)
+              label: "Mean Background Subtracted Indel Frequency",
+              data: Object.entries(statsByVariant)
                 .map(([variant, stats]) => ({
                   x: variant,
                   min: stats.min,
@@ -90,42 +109,43 @@ const Statistics = () => {
                   mean: stats.mean,
                   median: stats.median,
                   q1: stats.q1,
-                  q3: stats.q3,
+                  q3: stats.q3
                 }))
                 .sort((a, b) => b.median - a.median),
               backgroundColor: "rgba(75, 192, 192, 0.2)",
               borderColor: "rgba(75, 192, 192, 1)",
-              borderWidth: 1,
-            },
-          ],
-        }, loading: false },
+              borderWidth: 1
+            }
+          ]
+        }, loading: false }
       }));
     } catch (error) {
       console.error("Error fetching freqPerCas12Variant data:", error);
       setChartStates((prev) => ({
         ...prev,
-        freqPerCas12Variant: { data: null, loading: false },
+        freqPerCas12Variant: { data: null, loading: false }
       }));
     }
   };
-  
+
   const fetchFreqPerScaffold = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/statistics/freq-per-scaffold`);
+      const statsByScaffold = response.data as SummaryStatsResponse;
       setChartStates((prev) => ({
         ...prev,
         freqPerScaffold: { data: {
-          labels: Object.keys(response.data)
-                .map(gRNA_scaffold => ({
-                  gRNA_scaffold,
-                  median: response.data[gRNA_scaffold].median,
-                }))
-                .sort((a, b) => b.median - a.median)
-                .map(item => item.gRNA_scaffold),
+          labels: Object.keys(statsByScaffold)
+            .map(gRNA_scaffold => ({
+              gRNA_scaffold,
+              median: statsByScaffold[gRNA_scaffold].median
+            }))
+            .sort((a, b) => b.median - a.median)
+            .map(item => item.gRNA_scaffold),
           datasets: [
             {
-              label: 'Mean Background Subtracted Indel Frequency',
-              data: Object.entries(response.data)
+              label: "Mean Background Subtracted Indel Frequency",
+              data: Object.entries(statsByScaffold)
                 .map(([gRNA_scaffold, stats]) => ({
                   x: gRNA_scaffold,
                   min: stats.min,
@@ -133,25 +153,25 @@ const Statistics = () => {
                   mean: stats.mean,
                   median: stats.median,
                   q1: stats.q1,
-                  q3: stats.q3,
+                  q3: stats.q3
                 }))
                 .sort((a, b) => b.median - a.median),
               backgroundColor: "rgba(75, 192, 192, 0.2)",
               borderColor: "rgba(75, 192, 192, 1)",
-              borderWidth: 1,
-            },
-          ],
-        }, loading: false },
+              borderWidth: 1
+            }
+          ]
+        }, loading: false }
       }));
     } catch (error) {
       console.error("Error fetching freqPerScaffold data:", error);
       setChartStates((prev) => ({
         ...prev,
-        freqPerScaffold: { data: null, loading: false },
+        freqPerScaffold: { data: null, loading: false }
       }));
     }
   };
-  
+
   const fetchDataCountPerStudy = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/statistics/data-count-per-study`);
@@ -169,20 +189,20 @@ const Statistics = () => {
               data,
               backgroundColor: "rgba(75, 192, 192, 0.2)",
               borderColor: "rgba(75, 192, 192, 1)",
-              borderWidth: 1,
-            },
-          ],
-        }, loading: false },
+              borderWidth: 1
+            }
+          ]
+        }, loading: false }
       }));
     } catch (error) {
       console.error("Error fetching dataCountPerStudy data:", error);
       setChartStates((prev) => ({
         ...prev,
-        dataCountPerStudy: { data: null, loading: false },
+        dataCountPerStudy: { data: null, loading: false }
       }));
     }
   };
-  
+
   const fetchCas9FreqPerMismatch = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/statistics/cas9-freq-per-mismatch`);
@@ -199,26 +219,26 @@ const Statistics = () => {
               label: "Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas9)",
               data: labels.map((key, index) => ({
                 x: parseFloat(key),
-                y: data[index],
+                y: data[index]
               })),
               backgroundColor: "rgba(75, 192, 192, 0.2)",
               borderColor: "rgba(75, 192, 192, 1)",
               borderWidth: 1,
               fill: false,
-              tension: 0.1,
-            },
-          ],
-        }, loading: false },
+              tension: 0.1
+            }
+          ]
+        }, loading: false }
       }));
     } catch (error) {
       console.error("Error fetching cas9FreqPerMismatch data:", error);
       setChartStates((prev) => ({
         ...prev,
-        cas9FreqPerMismatch: { data: null, loading: false },
+        cas9FreqPerMismatch: { data: null, loading: false }
       }));
     }
   };
-  
+
   const fetchCas12FreqPerMismatch = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/statistics/cas12-freq-per-mismatch`);
@@ -235,22 +255,22 @@ const Statistics = () => {
               label: "Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas12)",
               data: labels.map((key, index) => ({
                 x: parseFloat(key),
-                y: data[index],
+                y: data[index]
               })),
               backgroundColor: "rgba(75, 192, 192, 0.2)",
               borderColor: "rgba(75, 192, 192, 1)",
               borderWidth: 1,
               fill: false,
-              tension: 0.1,
-            },
-          ],
-        }, loading: false },
+              tension: 0.1
+            }
+          ]
+        }, loading: false }
       }));
     } catch (error) {
       console.error("Error fetching cas12FreqPerMismatch data:", error);
       setChartStates((prev) => ({
         ...prev,
-        cas12FreqPerMismatch: { data: null, loading: false },
+        cas12FreqPerMismatch: { data: null, loading: false }
       }));
     }
   };
@@ -265,41 +285,41 @@ const Statistics = () => {
           datasets: response.data.map((variantData) => ({
             label: variantData.variant,
             data: Object.keys(variantData)
-              .filter((key) => key !== 'variant')  // Exclude the variant key
+              .filter((key) => key !== "variant")  // Exclude the variant key
               .map((key) => ({
                 x: parseInt(key),  // mismatch count (0, 1, 3, 4)
-                y: variantData[key], // frequency value
+                y: variantData[key] // frequency value
               })),
-          borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // random color
-          backgroundColor: "rgba(75, 192, 192, 0.2)",
-          borderWidth: 1,
-          fill: false,
-          tension: 0.1,
-        })),
-        }, loading: false },
+            borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // random color
+            backgroundColor: "rgba(75, 192, 192, 0.2)",
+            borderWidth: 1,
+            fill: false,
+            tension: 0.1
+          }))
+        }, loading: false }
       }));
     } catch (error) {
       console.error("Error fetching freqMismatchPerVariant data:", error);
       setChartStates((prev) => ({
         ...prev,
-        freqMismatchPerVariant: { data: null, loading: false },
+        freqMismatchPerVariant: { data: null, loading: false }
       }));
     }
   };
-  
+
   const fetchHeatmapData = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/statistics/heatmap-data`);
 
       setChartStates((prev) => ({
         ...prev,
-        heatmapData: { data: response.data, loading: false },
+        heatmapData: { data: response.data, loading: false }
       }));
     } catch (error) {
       console.error("Error fetching heatmap data:", error);
       setChartStates((prev) => ({
         ...prev,
-        heatmapData: { data: null, loading: false },
+        heatmapData: { data: null, loading: false }
       }));
     }
   };
@@ -313,9 +333,10 @@ const Statistics = () => {
     fetchCas12FreqPerMismatch();
     fetchFreqMismatchPerVariant();
     fetchHeatmapData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const chartOptions = (title) => ({
+  const chartOptions = (title: string): any => ({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -323,17 +344,17 @@ const Statistics = () => {
         display: true,
         text: title,
         font: { size: 16, weight: "bold" },
-        padding: { top: 10, bottom: 10 },
+        padding: { top: 10, bottom: 10 }
       },
       tooltip: {
         enabled: true,
         mode: "nearest",
-        intersect: false,
+        intersect: false
       },
       legend: {
         labels: {
           usePointStyle: true,
-          pointStyle: 'rect',
+          pointStyle: "rect",
           generateLabels: (chart) => {
             const labels = ChartJS.defaults.plugins.legend.labels.generateLabels(chart);
             labels.forEach(label => {
@@ -345,11 +366,11 @@ const Statistics = () => {
           }
         }
       }
-    },
+    }
   });
 
   /* functions for heatmap graph */
-  const ColorLegend = ({ min, max }) => {
+  const ColorLegend = ({ min, max }: ColorLegendProps) => {
     return (
       <div style={{ display: "flex", alignItems: "center", marginTop: "10px" }}>
         <div
@@ -357,7 +378,7 @@ const Statistics = () => {
             width: "20px",
             height: "200px",
             background: "linear-gradient(to bottom, rgba(0, 151, 230, 1), rgba(0, 151, 230, 0))",
-            marginRight: "10px",
+            marginRight: "10px"
           }}
         />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "200px" }}>
@@ -374,29 +395,53 @@ const Statistics = () => {
 
     const variants = Object.keys(heatmapData);
     const positions = Array.from({ length: 23 }, (_, i) => i + 1);
-  
+
     const data = variants.map((variant) =>
-       positions.map((pos) => {
+      positions.map((pos) => {
         const value = heatmapData[variant][pos];
         if (!value) return 0;
         return isNormalized ? value.normalized : value.raw;
-       })
+      })
     );
 
     const flatData = data.flat();
     const minValue = Math.min(...flatData);
     const maxValue = Math.max(...flatData);
-  
+
     return {
       positions,
       variants,
       data,
       minValue,
-      maxValue,
+      maxValue
     };
   };
 
   const heatmapDataForMismatch = getHeatmapDataForMismatch();
+
+  const renderChart = (
+    chartState: ChartState,
+    loadingMessage: string,
+    emptyMessage: string,
+    type: "bar" | "boxplot" | "line",
+    title: string
+  ) => {
+    if (chartState.loading) {
+      return <div>{loadingMessage}</div>;
+    }
+
+    if (!chartState.data) {
+      return <div>{emptyMessage}</div>;
+    }
+
+    return (
+      <Chart
+        type={type}
+        data={chartState.data}
+        options={chartOptions(title)}
+      />
+    );
+  };
 
   return (
     <div>
@@ -425,7 +470,7 @@ const Statistics = () => {
               </div>
               <Heatmap
                 xLabels={heatmapDataForMismatch.positions}
-                yLabels={heatmapDataForMismatch.variants.map(v => v === 'AsCas12a-NLS-P2A' ? <span>AsCas12a-NLS-P2A<sup>†</sup></span> : v)}
+                yLabels={heatmapDataForMismatch.variants.map(v => v === "AsCas12a-NLS-P2A" ? <span>AsCas12a-NLS-P2A<sup>†</sup></span> : v)}
                 data={heatmapDataForMismatch.data}
                 xLabelWidth={50}
                 yLabelWidth={200}
@@ -433,7 +478,7 @@ const Statistics = () => {
                 cellStyle={(background, value, min, max, data, x, y) => ({
                   background: `rgb(0, 151, 230, ${1 - (max - value) / (max - min)})`,
                   fontSize: "11px",
-                  color: "#444",
+                  color: "#444"
                 })}
                 labelStyle={{ fontSize: "5px" }}
                 cellRender={(value) => value && value.toFixed(2)}
@@ -443,15 +488,15 @@ const Statistics = () => {
                 fontSize: "12px",
                 color: "#666",
                 fontStyle: "italic",
-                padding: "10px 0px 10px 220px",
+                padding: "10px 0px 10px 220px"
               }}>
-                * These numbers represent mismatch positions counted from the start of the raw spacer sequence (numbered starting from 1)<br/>
+                * These numbers represent mismatch positions counted from the start of the raw spacer sequence (numbered starting from 1)<br />
                 <sup>†</sup> indicates data from Cas12
               </div>
             </div>
 
             <div id="heatmap-right">
-              <ColorLegend min={heatmapDataForMismatch.minValue} max={heatmapDataForMismatch.maxValue}/>
+              <ColorLegend min={heatmapDataForMismatch.minValue} max={heatmapDataForMismatch.maxValue} />
               {/* <p id="PAM">PAM</p> */}
             </div>
 
@@ -462,85 +507,72 @@ const Statistics = () => {
       </div>
 
       <div id="freq_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
-        {chartStates.freqPerCas9Variant.loading ? (
-          <div>Loading Mean Background Subtracted Indel Frequency per Cas9 Variant Chart...</div>
-        ) : (
-          <Chart
-            type="boxplot"
-            data={chartStates.freqPerCas9Variant.data}
-            options={chartOptions("Mean Background Subtracted Indel Frequency per Cas9 Variant")}
-          />
+        {renderChart(
+          chartStates.freqPerCas9Variant,
+          "Loading Mean Background Subtracted Indel Frequency per Cas9 Variant Chart...",
+          "No Cas9 variant frequency data available.",
+          "boxplot",
+          "Mean Background Subtracted Indel Frequency per Cas9 Variant"
         )}
       </div>
 
       <div id="freq_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
-        {chartStates.freqPerCas12Variant.loading ? (
-          <div>Loading Mean Background Subtracted Indel Frequency per Cas12 Variant Chart...</div>
-        ) : (
-          <Chart
-            type="boxplot"
-            data={chartStates.freqPerCas12Variant.data}
-            options={chartOptions("Mean Background Subtracted Indel Frequency per Cas12 Variant")}
-          />
+        {renderChart(
+          chartStates.freqPerCas12Variant,
+          "Loading Mean Background Subtracted Indel Frequency per Cas12 Variant Chart...",
+          "No Cas12 variant frequency data available.",
+          "boxplot",
+          "Mean Background Subtracted Indel Frequency per Cas12 Variant"
         )}
       </div>
 
       <div id="freq_per_scaffold_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
-        {chartStates.freqPerScaffold.loading ? (
-          <div>Loading Mean Background Subtracted Indel Frequency per gRNA Scaffold Chart...</div>
-        ) : (
-          <Chart
-            type="boxplot"
-            data={chartStates.freqPerScaffold.data}
-            options={chartOptions("Mean Background Subtracted Indel Frequency per gRNA Scaffold")}
-          />
+        {renderChart(
+          chartStates.freqPerScaffold,
+          "Loading Mean Background Subtracted Indel Frequency per gRNA Scaffold Chart...",
+          "No gRNA scaffold frequency data available.",
+          "boxplot",
+          "Mean Background Subtracted Indel Frequency per gRNA Scaffold"
         )}
       </div>
 
       <div id="data_count_per_study_chart" style={{ position: "relative", width: "60%", height: "400px", margin: "0px auto 50px auto" }}>
-        {chartStates.dataCountPerStudy.loading ? (
-          <div>Loading Number of Data per Study Chart...</div>
-        ) : (
-          <Chart type="bar"
-            data={chartStates.dataCountPerStudy.data}
-            options={chartOptions("Number of Data per Study")}
-          />
+        {renderChart(
+          chartStates.dataCountPerStudy,
+          "Loading Number of Data per Study Chart...",
+          "No study count data available.",
+          "bar",
+          "Number of Data per Study"
         )}
       </div>
 
       <div id="freq_per_mismatch_chart" style={{ position: "relative", width: "60%", height: "500px", margin: "0px auto 100px auto" }}>
-        {chartStates.cas9FreqPerMismatch.loading ? (
-          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas9) Chart...</div>
-        ) : (
-          <Chart
-            type="line"
-            data={chartStates.cas9FreqPerMismatch.data}
-            options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas9)")}
-          />
+        {renderChart(
+          chartStates.cas9FreqPerMismatch,
+          "Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas9) Chart...",
+          "No Cas9 mismatch frequency data available.",
+          "line",
+          "Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas9)"
         )}
       </div>
 
       <div id="freq_per_mismatch_chart" style={{ position: "relative", width: "60%", height: "500px", margin: "0px auto 100px auto" }}>
-        {chartStates.cas12FreqPerMismatch.loading ? (
-          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas12) Chart...</div>
-        ) : (
-          <Chart
-            type="line"
-            data={chartStates.cas12FreqPerMismatch.data}
-            options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas12)")}
-          />
+        {renderChart(
+          chartStates.cas12FreqPerMismatch,
+          "Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas12) Chart...",
+          "No Cas12 mismatch frequency data available.",
+          "line",
+          "Mean Background Subtracted Indel Frequency vs Number of Mismatches (for Cas12)"
         )}
       </div>
 
       <div id="freq_mismatch_per_variant_chart" style={{ position: "relative", width: "95%", height: "600px", margin: "0px auto 50px auto" }}>
-        {chartStates.freqMismatchPerVariant.loading ? (
-          <div>Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant Chart...</div>
-        ) : (
-            <Chart
-              type="line"
-              data={chartStates.freqMismatchPerVariant.data}
-              options={chartOptions("Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant")}
-            />
+        {renderChart(
+          chartStates.freqMismatchPerVariant,
+          "Loading Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant Chart...",
+          "No variant mismatch frequency data available.",
+          "line",
+          "Mean Background Subtracted Indel Frequency vs Number of Mismatches for Each Variant"
         )}
       </div>
     </div>

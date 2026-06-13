@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import awsLambdaFastify from "@fastify/aws-lambda";
+import multipart from "@fastify/multipart";
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { FastifyAdapter, NestFastifyApplication } from "@nestjs/platform-fastify";
@@ -14,6 +15,7 @@ async function getProxy(): Promise<LambdaProxy> {
   proxyPromise ??= (async () => {
     const adapter = new FastifyAdapter();
     const app = await NestFactory.create<NestFastifyApplication>(AppModule, adapter);
+    await app.register(multipart);
     app.enableCors();
     app.useGlobalPipes(
       new ValidationPipe({

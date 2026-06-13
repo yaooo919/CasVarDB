@@ -1,20 +1,17 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Tooltip, OverlayTrigger, Modal, Button } from 'react-bootstrap';
+import { Tooltip, OverlayTrigger, Modal, Button } from "react-bootstrap";
 import axios from "axios";
 import ReactPaginate from "react-paginate";
-import './Data_cas9.css';
-import cas9ColDescriptionImg from "../assets/cas9-col-description.png";
+import "./Data_cas9.css"; // use same css rules as cas9 data page
+import cas12ColDescriptionImg from "../assets/cas12-col-description.png";
 
 const studyURLs = {
-  "['Base Editor']": "https://www.nature.com/articles/s41587-023-01792-x",
-  "['xCas9_NG']": "https://www.nature.com/articles/s41551-019-0505-1",
-  "['Small Cas9']": "https://www.nature.com/articles/s41592-023-01875-2",
-  "['DeepHF']": "https://www.nature.com/articles/s41467-019-12281-8",
-  "['SpCas9']": "https://www.nature.com/articles/s41587-020-0537-9",
-  "['Sniper']": "https://www.science.org/doi/10.1126/sciadv.aax9249",
-  "['Wild SpCas9']": "https://www.science.org/doi/10.1126/sciadv.aax9249",
-}
+  "Kim_2017": "https://www.nature.com/articles/nmeth.4104",
+  "Kim_2018": "https://www.nature.com/articles/nbt.4061",
+  "Marquart_2024": "https://www.nature.com/articles/s41592-024-02418-z",
+  "Chen_2025": "https://www.nature.com/articles/s41467-025-57150-9"
+};
 
 const columnDescriptions = {
   "spacer_sequence_raw": {
@@ -22,10 +19,8 @@ const columnDescriptions = {
     short: "The DNA representation of the sgRNA's spacer region",
     full: (
       <>
-        <p>The DNA representation of the sgRNA's spacer region without any added padding. 
-        A 5' guanosine (G) was added if it was missing (i.e., implied) in the raw sequences from the source data. 
-        Different Cas9 variants may have different lengths, but the spacer sequence is typically 20 nt long for SpCas9.</p>
-        <img src={cas9ColDescriptionImg} alt="cas9 sequence diagram" style={{ width: "100%", height: "auto" }} />
+        <p>The DNA representation of the sgRNA's spacer region without any added padding.</p>
+        <img src={cas12ColDescriptionImg} alt="cas12 sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
     )
   },
@@ -36,57 +31,48 @@ const columnDescriptions = {
       <>
         <p>The original target context sequence taken directly from the non-target DNA strand in the source data. It includes</p>
         <ul>
-          <li><b>5' context sequence:</b> Optional nucleotides upstream of the target sequence</li>
-          <li><b>target sequence:</b> Main target sequence (e.g., 20 nt for SpCas9)</li>
-          <li><b>PAM sequence:</b> Protospacer Adjacent Motif, specific to each Cas9 variant (e.g., 5'-NGG for SpCas9)</li>
-          <li><b>3' context sequence:</b> Optional nucleotides downstream of the PAM</li>
+          <li><b>5' context sequence:</b>Optional nucleotides upstream of the PAM sequence</li>
+          <li><b>PAM sequence:</b>Protospacer Adjacent Motif, specific to each Cas12 variant</li>
+          <li><b>target sequence:</b> Main target sequence</li>
+          <li><b>3' context sequence:</b> Optional nucleotides downstream of the target sequence</li>
         </ul>
-        <img src={cas9ColDescriptionImg} alt="cas9 sequence diagram" style={{ width: "100%", height: "auto" }} />
+        <img src={cas12ColDescriptionImg} alt="cas12 sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
-    ),
+    )
   },
   "spacer_sequence": {
     title: "Spacer Sequence",
     short: "The padded version of the raw spacer sequence",
     full: (
       <>
-        <p>The padded version of the raw spacer sequence, with 'N' padding added to the 5' and 3' ends. The padding extends the total length of the spacer sequence to 42 nt, ensuring alignment with the target context sequence.</p>
-        <img src={cas9ColDescriptionImg} alt="cas9 sequence diagram" style={{ width: "100%", height: "auto" }} />
+        <p>The padded version of the raw spacer sequence, with 'N' padding added to the 5' and 3' ends. The padding extends the total length of the spacer sequence to 34 nt, ensuring alignment with the target context sequence.</p>
+        <img src={cas12ColDescriptionImg} alt="cas12 sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
-    ),
+    )
   },
   "target_context_sequence": {
     title: "Target Context Sequence",
     short: "The padded version of the raw target sequence",
     full: (
       <>
-        <p>Derived from the raw target sequence with added 'N' padding on both the 5' and 3' ends to align the PAM with the 28th nucleotide position. The full padded sequence is 42 nt long and can be divided into</p>
+        <p>Derived from the raw target sequence with added 'N' padding on both the 5' and 3' ends to align the main target sequence with the 9th nucleotide position. The full padded sequence is 34 nt long and can be divided into</p>
         <ul>
-          <li><b>5' context + target:</b> 27 nt</li>
-          <li><b>PAM + 3' context:</b> 15 nt</li>
+          <li><b>5' context + PAM:</b> 8 nt</li>
+          <li><b>target + 3' context:</b> 26 nt</li>
         </ul>
-        <img src={cas9ColDescriptionImg} alt="cas9 sequence diagram" style={{ width: "100%", height: "auto" }} />
-      </>
-    ),
-  },
-  "variant": {
-    title: "Variant",
-    short: "The protein containing the Cas9 nuclease",
-    full: (
-      <>
-        <p>The protein containing the Cas9 nuclease. Variants come in two types, </p>
-        <ul>
-          <li><b>Cas9-NLS-FLAG-P2A:</b> for nucleases not from the "Small Cas9" paper. </li>
-          <li><b>NLS-Cas9-NLS-FLAG-P2A:</b> for nucleases from the "Small Cas9" paper. </li>
-        </ul>
-        <p>In these names, <b>NLS</b> refers to a nuclear localization signal, <b>FLAG</b> refers to the FLAG protein tag, and <b>P2A</b> is a type of 2A peptide.</p>
+        <img src={cas12ColDescriptionImg} alt="cas12 sequence diagram" style={{ width: "100%", height: "auto" }} />
       </>
     )
   },
+  "variant": {
+    title: "Variant",
+    short: "The protein containing the Cas12 nuclease",
+    full: "The protein containing the Cas12 nuclease."
+  },
   "nuclease": {
     title: "Nuclease",
-    short: "The Cas9 nuclease contained within each variant",
-    full: "The Cas9 nuclease contained within each variant."
+    short: "The Cas12 nuclease contained within each variant",
+    full: "The Cas12 nuclease contained within each variant."
   },
   "gRNA_scaffold": {
     title: "gRNA Scaffold",
@@ -94,19 +80,19 @@ const columnDescriptions = {
     full: (
       <>
         <p>The scaffold of the sgRNA, consisting of the repeat-anti-repeat loop and other stem loops.</p>
-        See <a href="/grna" style={{ color: 'blue', textDecoration: 'underline' }} target="_blank">gRNA Scaffold</a> for more details.
+        See <a href="/grna" style={{ color: "blue", textDecoration: "underline" }} target="_blank">gRNA Scaffold</a> for more details.
       </>
     )
   },
   "day": {
     title: "Day",
     short: "The timepoint at which indel frequencies were measured",
-    full: "The timepoint at which indel frequencies were measured. After introducing Cas9 into cells via transfection (for \"Wild SpCas9,\" \"xCas9_NG,\" and \"DeepHF\" studies) or transduction (for \"SpCas9,\" \"Small Cas9,\" \"Base Editor,\" and \"Sniper\" studies), cells were harvested and indel frequencies were analyzed by deep sequencing."
+    full: "The timepoint at which indel frequencies were measured."
   },
-  "tRNA_feature": {
-    title: "tRNA Feature",
-    short: "Whether tRNA-associated processing happened",
-    full: "Indicates whether tRNA-associated processing happened. If so, the tRNA-N20 sgRNA was cleaved to yield an N20 sgRNA (for more details, refer to Supplementary Figure 3 of the \"SpCas9\" study)."
+  "cas12a_transfection": {
+    title: "Cas12a Transfection",
+    short: "The method used to introduce Cas12a into cells",
+    full: "The method used to introduce Cas12a into cells."
   },
   "study": {
     title: "Study",
@@ -114,7 +100,7 @@ const columnDescriptions = {
     full: (
       <>
         <p>The source study from which the data was obtained. Each study has an abbreviated name.
-          See <a href="/studies" style={{ color: 'blue', textDecoration: 'underline' }}>Studies</a> for more details.
+          See <a href="/studies" style={{ color: "blue", textDecoration: "underline" }}>Studies</a> for more details.
         </p>
       </>
     )
@@ -141,8 +127,8 @@ const columnDescriptions = {
   },
   "n_data": {
     title: "n_data",
-    short: "Number of times the experiment was repeated for the same guide-target-scaffold-Cas9 combination",
-    full: "Number of times the experiment was repeated for the same guide-target-scaffold-Cas9 combination."
+    short: "Number of times the experiment was repeated for the same guide-target-scaffold-Cas12 combination",
+    full: "Number of times the experiment was repeated for the same guide-target-scaffold-Cas12 combination."
   },
   "partition": {
     title: "Partition",
@@ -186,9 +172,9 @@ const columnDescriptions = {
       </>
     )
   }
-}
+};
 
-function Data_cas9() {
+function Data_cas12() {
   const [items, setItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
@@ -198,17 +184,17 @@ function Data_cas9() {
   const [searchTerm, setSearchTerm] = useState(searchParams.get("query") || "");
   const [pendingSearchField, setPendingSearchField] = useState(searchField);
   const [loading, setLoading] = useState(false);
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
-  
+
   const [hoveredColumn, setHoveredColumn] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [modalContent, setModalContent] = useState({title:"", full:""});
+  const [modalContent, setModalContent] = useState({ title:"", full:"" });
 
   const [sortField, setSortField] = useState("id");
   const [sortDirection, setSortDirection] = useState("ASC");
-  
+
   const startIndex = (currentPage - 1) * pageSize;
   const startItem = totalItems > 0 ? startIndex + 1 : 0;
   const endItem = Math.min(startIndex + pageSize, totalItems);
@@ -216,30 +202,31 @@ function Data_cas9() {
 
   const fetchData = async() => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/data/cas9`, {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/data/cas12`, {
         params: {
           page: currentPage,
           pageSize,
           searchField,
           searchTerm,
           sortField,
-          sortDirection,
-        },
+          sortDirection
+        }
       });
       setItems(response.data.data);
       setTotalItems(response.data.count);
     } catch (err) {
       console.error("Error fetching data:", err);
     }
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   useEffect(() => {
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize, searchField, searchTerm, sortField, sortDirection]);
 
   const handleSearch = () => {
-    setSearchField(pendingSearchField); 
+    setSearchField(pendingSearchField);
     setSearchParams({ field: pendingSearchField, query: searchTerm });
     setCurrentPage(1);
     setLoading(true);
@@ -261,13 +248,13 @@ function Data_cas9() {
     }
   };
 
-  const isCurrentPageAllSelected = items.every((item) => 
+  const isCurrentPageAllSelected = items.every((item) =>
     selectedItems.includes(item.id)
   );
 
   const handlePageClick = (data) => {
     setCurrentPage(data.selected + 1);
-  }
+  };
 
   const handleDownload = async () => {
     if (selectedItems.length === 0) {
@@ -277,11 +264,11 @@ function Data_cas9() {
 
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/download`, {
-        selectedIds: selectedItems,
+        selectedIds: selectedItems
       }, {
-        responseType: 'blob',
+        responseType: "blob"
       });
-      const blob = new Blob([response.data], { type: "text/csv"});
+      const blob = new Blob([response.data], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -289,20 +276,20 @@ function Data_cas9() {
       link.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Error downloading data:", err)
+      console.error("Error downloading data:", err);
     }
   };
 
   const renderTooltip = (column) => (
     <Tooltip id={`tooltip-${column}`}>
       {columnDescriptions[column].short} <br />
-      <a 
-        href="#"
+      <a
+        href="/#details"
         onClick={(event) => {
           event.stopPropagation();
           handleShowModal(column);
         }}
-        style={{ fontSize: '12px', color: 'blue', textDecoration: 'underline' }}
+        style={{ fontSize: "12px", color: "blue", textDecoration: "underline" }}
       >
         View More
       </a>
@@ -315,7 +302,7 @@ function Data_cas9() {
       full: columnDescriptions[column].full
     });
     setShowModal(true);
-  }
+  };
 
   const handleCloseModal = () => setShowModal(false);
 
@@ -332,16 +319,16 @@ function Data_cas9() {
       return sortDirection === "ASC" ? (<i className="bi bi-caret-up-fill"></i>) : (<i className="bi bi-caret-down-fill"></i>);
     }
     return null;
-  }
+  };
 
   return (
     <div>
       <div className="header-container">
-          <div className="header">
-              <h1>Cas9 Data</h1>
-          </div>
+        <div className="header">
+          <h1>Cas12 Data</h1>
+        </div>
       </div>
-          
+
       <div className="controls">
         <div className="total-count-column">
           <p><span id="total">Total: </span><span id="item-count">{totalItems}</span></p>
@@ -364,41 +351,41 @@ function Data_cas9() {
                 <option value="nuclease">Nuclease</option>
                 <option value="gRNA_scaffold">gRNA scaffold</option>
                 <option value="day">Day</option>
-                <option value="tRNA_feature">tRNA feature</option>
+                <option value="cas12a_transfection">Cas12a transfection</option>
                 <option value="study">Study</option>
                 <option value="number_of_mismatches">Number of mismatches</option>
               </select>
             </span>
             <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
             <button onClick={handleSearch}>Search</button>
           </div>
-          
+
           <div className="download-link">
-            <a href="#" onClick={handleDownload}>Download Checked <i class="bi bi-file-earmark-arrow-down-fill"></i></a>
-          </div> 
+            <a href="/#download" onClick={handleDownload}>Download Checked <i className="bi bi-file-earmark-arrow-down-fill"></i></a>
+          </div>
         </div>
       </div>
 
       <div className="legend">
-          <span className="color-box" style={{ backgroundColor: "#bfee90" }}></span> Matched bases
-          <span className="color-box" style={{ backgroundColor: "#BF2C34" }}></span> Mismatched bases
-          {/* <span className="color-box" style={{ backgroundColor: "#43A5BE" }}></span> PAM */}
+        <span className="color-box" style={{ backgroundColor: "#bfee90" }}></span> Matched bases
+        <span className="color-box" style={{ backgroundColor: "#BF2C34" }}></span> Mismatched bases
+        {/* <span className="color-box" style={{ backgroundColor: "#43A5BE" }}></span> PAM */}
       </div>
 
       <div className="data-table-container">
-        <table> 
+        <table>
           <thead>
             <tr>
               <th className="col-0">
-              <input
+                <input
                   type="checkbox"
                   onChange={handleSelectAll}
                   checked={isCurrentPageAllSelected}
-              />
+                />
               </th>
 
               <th onClick={() => handleSort("id")} style={{ minWidth: "40px" }}>
@@ -411,80 +398,81 @@ function Data_cas9() {
                   onMouseEnter={() => setHoveredColumn(column)}
                   onMouseLeave={() => setHoveredColumn(null)}
                   onClick={() => handleSort(column)}
-                >                            
-                <OverlayTrigger
-                  show={hoveredColumn === column}
-                  placement="top"
-                  overlay={renderTooltip(column)}
                 >
-                <span>{columnDescriptions[column].title} {renderSortIcon(column)}</span>
-                </OverlayTrigger>
+                  <OverlayTrigger
+                    show={hoveredColumn === column}
+                    placement="top"
+                    overlay={renderTooltip(column)}
+                  >
+                    <span>{columnDescriptions[column].title} {renderSortIcon(column)}</span>
+                  </OverlayTrigger>
                 </th>
-              ))}                        
+              ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="20" style={{ textAlign: "center", fontSize: "16px", padding: "20px" }}>
+                <td colSpan={20} style={{ textAlign: "center", fontSize: "16px", padding: "20px" }}>
                   Loading...
                 </td>
               </tr>
             ) : (
               items.map((item) => {
-                const highlightSpacer = (spacerSequence, spacerSequenceRaw, spacerIndex, mismatchPositions) => {
-                  const start = spacerIndex - 1;
+                const SPACER_INDEX = 9;
+                const highlightSpacer = (spacerSequence, spacerSequenceRaw, mismatchPositions) => {
+                  const start = SPACER_INDEX - 1;
                   const end = start + spacerSequenceRaw.length;
                   const positions = mismatchPositions !== "[]" ? JSON.parse(mismatchPositions) : [];
-                
-                  let highlighted = '';
+
+                  let highlighted = "";
                   for (let i = 0; i < spacerSequence.length; i++) {
                     if (i < start || i >= end) {
                       highlighted += spacerSequence[i];
                     } else {
-                      const relativePos = i - start + 1; 
+                      const relativePos = i - start + 1;
                       if (positions.includes(relativePos)) {
-                        highlighted += `<span style="color: #BF2C34;">${spacerSequence[i]}</span>`; 
+                        highlighted += `<span style="color: #BF2C34;">${spacerSequence[i]}</span>`;
                       } else {
-                        highlighted += `<span style="color: #bfee90;">${spacerSequence[i]}</span>`; 
+                        highlighted += `<span style="color: #bfee90;">${spacerSequence[i]}</span>`;
                       }
                     }
                   }
-                  return highlighted;
-                };
-                
-                const highlightTarget = (targetSequence, spacerIndex, spacerRawLength, mismatchPositions) => {
-                  const start = spacerIndex - 1;
-                  const end = start + spacerRawLength;
-                  const positions = mismatchPositions !== "[]" ? JSON.parse(mismatchPositions) : [];
-              
-                  let highlighted = '';
-                  for (let i = 0; i < targetSequence.length; i++) {
-                    if (i < start || i >= end) {
-                      highlighted += targetSequence[i]; 
-                    } else {
-                      const relativePos = i - start + 1; 
-                      if (positions.includes(relativePos)) {
-                        highlighted += `<span style="color: #BF2C34;">${targetSequence[i]}</span>`; 
-                      } else {
-                        highlighted += `<span style="color: #bfee90;">${targetSequence[i]}</span>`; 
-                      }
-                    }
-                  }
-              
                   return highlighted;
                 };
 
-                const highlightTargetRaw = (targetRaw, fullTarget, spacerIndex, spacerRawLength, mismatchPositions) => {
-                  const start = spacerIndex - 1;
+                const highlightTarget = (targetSequence, spacerRawLength, mismatchPositions) => {
+                  const start = SPACER_INDEX - 1;
+                  const end = start + spacerRawLength;
                   const positions = mismatchPositions !== "[]" ? JSON.parse(mismatchPositions) : [];
-              
+
+                  let highlighted = "";
+                  for (let i = 0; i < targetSequence.length; i++) {
+                    if (i < start || i >= end) {
+                      highlighted += targetSequence[i];
+                    } else {
+                      const relativePos = i - start + 1;
+                      if (positions.includes(relativePos)) {
+                        highlighted += `<span style="color: #BF2C34;">${targetSequence[i]}</span>`;
+                      } else {
+                        highlighted += `<span style="color: #bfee90;">${targetSequence[i]}</span>`;
+                      }
+                    }
+                  }
+
+                  return highlighted;
+                };
+
+                const highlightTargetRaw = (targetRaw, fullTarget, spacerRawLength, mismatchPositions) => {
+                  const start = SPACER_INDEX - 1;
+                  const positions = mismatchPositions !== "[]" ? JSON.parse(mismatchPositions) : [];
+
                   const rawStartInFull = fullTarget.indexOf(targetRaw);
-              
-                  let highlighted = '';
+
+                  let highlighted = "";
                   for (let i = 0; i < targetRaw.length; i++) {
                     const posInFull = rawStartInFull + i;
-              
+
                     if (posInFull < start || posInFull >= start + spacerRawLength) {
                       highlighted += targetRaw[i];
                     } else {
@@ -496,51 +484,49 @@ function Data_cas9() {
                       }
                     }
                   }
-              
+
                   return highlighted;
                 };
-                
-                
-                
-               return (
-                <tr key={item.id}>
-                  <td>
+
+                return (
+                  <tr key={item.id}>
+                    <td>
                       <input
-                      type="checkbox"
-                      checked={selectedItems.includes(item.id)}
-                      onChange={() => handleSelect(item.id)}
+                        type="checkbox"
+                        checked={selectedItems.includes(item.id)}
+                        onChange={() => handleSelect(item.id)}
                       />
-                  </td>
-                  <td>{item.id}</td>
-                  <td>{item.spacer_sequence_raw}</td>
-                  <td dangerouslySetInnerHTML={{ __html: highlightTargetRaw(item.target_context_sequence_raw, item.target_context_sequence, item.spacer_index, item.spacer_sequence_raw.length, item.mismatch_positions) }}></td>
-                  <td dangerouslySetInnerHTML={{ __html: highlightSpacer(item.spacer_sequence, item.spacer_sequence_raw, item.spacer_index, item.mismatch_positions) }}></td>
-                  <td dangerouslySetInnerHTML={{ __html: highlightTarget(item.target_context_sequence, item.spacer_index, item.spacer_sequence_raw.length, item.mismatch_positions) }}></td>
-                  <td>{item.variant}</td>
-                  <td>{item.nuclease}</td>
-                  <td>{item.gRNA_scaffold}</td>
-                  <td>{item.day}</td>
-                  <td>{item.tRNA_feature}</td>
-                  <td><a href={studyURLs[item.study]} style={{ color:"#3a89c9"}}>{item.study}</a></td>
-                  <td>{item.library}</td>
-                  <td>{item.table_number}</td>
-                  <td>{item.sheet_number}</td>
-                  <td>{item.src_idx}</td>
-                  <td>{item.n_data}</td>
-                  <td>{item.partition}</td>
-                  <td>{item.barcode}</td>
-                  <td>{item.number_of_mismatches}</td>
-                  <td>{item.background_subtracted_indel_frequencies}</td>
-                  <td>{item.mean_background_subtracted_indel_frequency_source}</td>
-                  <td>{item.mean_background_subtracted_indel_frequency}</td>
-                </tr>
-              );
-            })
-          )}
+                    </td>
+                    <td>{item.id}</td>
+                    <td>{item.spacer_sequence_raw}</td>
+                    <td dangerouslySetInnerHTML={{ __html: highlightTargetRaw(item.target_context_sequence_raw, item.target_context_sequence, item.spacer_sequence_raw.length, item.mismatch_positions) }}></td>
+                    <td dangerouslySetInnerHTML={{ __html: highlightSpacer(item.spacer_sequence, item.spacer_sequence_raw, item.mismatch_positions) }}></td>
+                    <td dangerouslySetInnerHTML={{ __html: highlightTarget(item.target_context_sequence, item.spacer_sequence_raw.length, item.mismatch_positions) }}></td>
+                    <td>{item.variant}</td>
+                    <td>{item.nuclease}</td>
+                    <td>{item.gRNA_scaffold}</td>
+                    <td>{item.day}</td>
+                    <td>{item.cas12a_transfection}</td>
+                    <td><a href={studyURLs[item.study]} style={{ color:"#3a89c9" }}>{item.study}</a></td>
+                    <td>{item.library}</td>
+                    <td>{item.table_number}</td>
+                    <td>{item.sheet_number}</td>
+                    <td>{item.src_idx}</td>
+                    <td>{item.n_data}</td>
+                    <td>{item.partition}</td>
+                    <td>{item.barcode}</td>
+                    <td>{item.number_of_mismatches}</td>
+                    <td>{item.background_subtracted_indel_frequencies}</td>
+                    <td>{item.mean_background_subtracted_indel_frequency_source}</td>
+                    <td>{item.mean_background_subtracted_indel_frequency}</td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
-      
+
       <div className="pagination-container">
         <div className="page-size-selector">
           <label>
@@ -551,8 +537,8 @@ function Data_cas9() {
               <option value={200}>200</option>
             </select>
           </label>
-        </div>  
-        
+        </div>
+
         <div className="pagination">
           <ReactPaginate
             previousLabel={"Prev"}
@@ -566,7 +552,7 @@ function Data_cas9() {
             activeClassName={"active"}
             previousClassName={currentPage === 1 ? "disabled" : ""}
             nextClassName={currentPage === totalPages ? "disabled" : ""}
-            forcePage={currentPage - 1}  
+            forcePage={currentPage - 1}
           />
         </div>
       </div>
@@ -574,9 +560,9 @@ function Data_cas9() {
       <Modal
         show={showModal}
         onHide={handleCloseModal}
-        backdrop="static" 
-        keyboard={true}   
-        centered          
+        backdrop="static"
+        keyboard
+        centered
       >
         <Modal.Header>
           <Modal.Title>{modalContent.title}</Modal.Title>
@@ -587,9 +573,9 @@ function Data_cas9() {
             Close
           </Button>
         </Modal.Footer>
-      </Modal>      
+      </Modal>
     </div>
-  )
+  );
 }
 
-export default Data_cas9;
+export default Data_cas12;

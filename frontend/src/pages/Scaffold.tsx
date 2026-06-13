@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import './Scaffold.css';
+import "./Scaffold.css";
 
 function Scaffold() {
   const [items, setItems] = useState([]);
@@ -18,14 +18,14 @@ function Scaffold() {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/grna`, {
           params: {
             sortField,
-            sortDirection,
-          },
-      });
-      setItems(response.data);
-      setFilteredItems(response.data);
-    } catch (err) {
-      console.error("Error fetching data:", err);
-    }};
+            sortDirection
+          }
+        });
+        setItems(response.data);
+        setFilteredItems(response.data);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }};
     fetchData();
   }, [sortField, sortDirection]);
 
@@ -58,17 +58,17 @@ function Scaffold() {
     const selectedData = filteredItems.filter((item) =>
       selectedItems.includes(item.id)
     );
-  
+
     const headers = Object.keys(selectedData[0]).join(",");
     const rows = selectedData.map((item) =>
       Object.values(item)
-        .map((value) => `"${value}"`) 
+        .map((value) => `"${value}"`)
         .join(",")
     );
     const csvContent = [headers, ...rows].join("\n");
-  
+
     const blob = new Blob([csvContent], {
-      type: "text/csv",
+      type: "text/csv"
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -90,7 +90,7 @@ function Scaffold() {
       return sortDirection === "ASC" ? (<i className="bi bi-caret-up-fill"></i>) : (<i className="bi bi-caret-down-fill"></i>);
     }
     return null;
-  }
+  };
 
   return (
     <div>
@@ -98,7 +98,7 @@ function Scaffold() {
         <div className="header">
           <h1>gRNA Scaffolds</h1>
         </div>
-      </div>  
+      </div>
 
       <div className="controls">
         <div className="total-count-column">
@@ -114,14 +114,14 @@ function Scaffold() {
             />
             <button onClick={handleSearch}>Search</button>
           </div>
-          
+
           <div className="download-link">
-            <a href="#" onClick={handleDownload}>Download Checked <i class="bi bi-file-earmark-arrow-down-fill"></i></a>
-          </div> 
+            <a href="/#download" onClick={handleDownload}>Download Checked <i className="bi bi-file-earmark-arrow-down-fill"></i></a>
+          </div>
         </div>
       </div>
 
-      <table className="general-table-container"> 
+      <table className="general-table-container">
         <thead>
           <tr>
             <th className="col-checkbox">
