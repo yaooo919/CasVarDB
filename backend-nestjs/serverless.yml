@@ -1,0 +1,75 @@
+service: casvardb-backend-nestjs
+frameworkVersion: "4"
+
+plugins:
+  - serverless-esbuild
+
+build:
+  esbuild: false
+
+custom:
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    target: node22
+    platform: node
+    concurrency: 4
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, 'prod'}
+  region: ${env:AWS_REGION, 'ap-southeast-2'}
+  environment:
+    NODE_ENV: production
+    DB_HOST: ${env:DB_HOST}
+    DB_PORT: ${env:DB_PORT, '3306'}
+    DB_USER: ${env:DB_USER}
+    DB_PASSWORD: ${env:DB_PASSWORD}
+    DB_NAME: ${env:DB_NAME, 'casvardb'}
+    SQS_QUEUE_URL: !Ref ExportJobsQueue
+    SQS_QUEUE_NAME: ${env:SQS_QUEUE_NAME, 'casvardb-export-jobs-prod'}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueUrl
+            - sqs:GetQueueAttributes
+          Resource:
+            Fn::GetAtt: [ExportJobsQueue, Arn]
+
+package:
+  patterns:
+    - package.json
+    - "!docker-compose.yml"
+
+functions:
+  api:
+    handler: src/lambda.handler
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: ANY
+
+  exportWorker:
+    handler: src/worker/lambda.handler
+    reservedConcurrency: ${env:WORKER_RESERVED_CONCURRENCY, 2}
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt: [ExportJobsQueue, Arn]
+          batchSize: 1
+          maximumConcurrency: ${env:WORKER_MAXIMUM_CONCURRENCY, 2}
+
+resources:
+  Resources:
+    ExportJobsQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${env:SQS_QUEUE_NAME, 'casvardb-export-jobs-prod'}
+        VisibilityTimeout: 300

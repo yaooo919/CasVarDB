@@ -1,0 +1,45 @@
+{
+  "name": "casvardb-backend-nestjs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "db:init": "ts-node src/db-init/main.ts",
+    "serverless:deploy": "serverless deploy",
+    "serverless:package": "serverless package",
+    "start": "ts-node src/main.ts",
+    "start:dev": "ts-node src/main.ts",
+    "start:worker": "ts-node src/worker/main.ts",
+    "lint": "eslint \"src/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "validate": "npm run lint && npm run typecheck"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.828.0",
+    "@fastify/aws-lambda": "^6.1.1",
+    "@fastify/cors": "^11.0.1",
+    "@nestjs/common": "^11.1.3",
+    "@nestjs/core": "^11.1.3",
+    "@nestjs/platform-fastify": "^11.1.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "csv-parse": "^6.2.1",
+    "dotenv": "^16.5.0",
+    "mysql2": "^3.14.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@types/aws-lambda": "^8.10.149",
+    "@types/node": "^22.15.32",
+    "esbuild": "^0.28.1",
+    "eslint": "^9.29.0",
+    "jiti": "^2.7.0",
+    "serverless": "^4.37.0",
+    "serverless-esbuild": "^1.57.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.34.1"
+  }
+}
