@@ -178,6 +178,9 @@ else
   echo "[6/6] Frontend dependencies already installed."
 fi
 
+echo "[CasVarDB UAT] Writing frontend .env for static IP API..."
+printf "REACT_APP_API_URL=%s\n" "$PUBLIC_API_URL" > "$FRONTEND_DIR/.env"
+
 echo "[CasVarDB UAT] Launching NestJS API, queue worker, and React frontend..."
 echo "NestJS API bind: http://0.0.0.0:$API_PORT"
 echo "NestJS API public: $PUBLIC_API_URL"
@@ -191,7 +194,7 @@ backend_pid="$!"
 (cd "$BACKEND_DIR" && AWS_REGION=ap-southeast-2 AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test SQS_ENDPOINT="$SQS_ENDPOINT" SQS_QUEUE_NAME=casvardb-jobs SQS_WAIT_TIME_SECONDS=10 SQS_VISIBILITY_TIMEOUT_SECONDS=300 WORKER_POLL_INTERVAL_MS=1000 WORKER_CONCURRENCY=4 npm run start:worker) &
 worker_pid="$!"
 
-(cd "$FRONTEND_DIR" && HOST=0.0.0.0 PORT="$FRONTEND_PORT" REACT_APP_API_URL="$PUBLIC_API_URL" npm start) &
+(cd "$FRONTEND_DIR" && HOST=0.0.0.0 PORT="$FRONTEND_PORT" npm start) &
 frontend_pid="$!"
 
 while true; do
