@@ -6,6 +6,7 @@ BACKEND_DIR="$ROOT_DIR/backend-nestjs"
 FRONTEND_DIR="$ROOT_DIR/frontend"
 
 backend_pid=""
+worker_pid=""
 frontend_pid=""
 
 require_command() {
@@ -47,6 +48,39 @@ assert_port_free() {
   fi
 }
 
+localstack_endpoint() {
+  local address
+
+  address="$(cd "$BACKEND_DIR" && docker-compose port localstack 4566 | tr -d '\r')"
+  if [[ -z "$address" ]]; then
+    echo "Could not discover LocalStack host port."
+    exit 1
+  fi
+
+  if [[ "$address" == "[::]:"* ]]; then
+    address="127.0.0.1:${address##*:}"
+  else
+    address="${address/0.0.0.0/127.0.0.1}"
+  fi
+
+  echo "http://$address"
+}
+
+wait_for_localstack() {
+  local endpoint="$1"
+  local attempt
+
+  for attempt in $(seq 1 60); do
+    if curl -fs "$endpoint/_localstack/health" | grep -q '"sqs"' >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 2
+  done
+
+  echo "LocalStack SQS did not become ready in time."
+  exit 1
+}
+
 wait_for_mysql() {
   local attempt
 
@@ -81,6 +115,10 @@ cleanup() {
   if [[ -n "$backend_pid" ]] && kill -0 "$backend_pid" >/dev/null 2>&1; then
     kill "$backend_pid" >/dev/null 2>&1 || true
   fi
+
+  if [[ -n "$worker_pid" ]] && kill -0 "$worker_pid" >/dev/null 2>&1; then
+    kill "$worker_pid" >/dev/null 2>&1 || true
+  fi
 }
 
 trap cleanup INT TERM EXIT
@@ -90,24 +128,30 @@ echo "[CasVarDB UAT] Starting macOS local stack..."
 ensure_docker_compose
 require_command npm
 require_command lsof
+require_command curl
 
 assert_port_free 8888 "NestJS API"
 assert_port_free 3000 "React frontend"
 
-echo "[1/5] Starting Docker MySQL..."
+echo "[1/6] Starting Docker MySQL and LocalStack SQS..."
 (cd "$BACKEND_DIR" && docker-compose up -d)
 
-echo "[2/5] Waiting for MySQL to become healthy..."
+echo "[2/6] Waiting for MySQL to become healthy..."
 wait_for_mysql
 
+SQS_ENDPOINT="$(localstack_endpoint)"
+
+echo "[3/6] Waiting for LocalStack SQS at $SQS_ENDPOINT..."
+wait_for_localstack "$SQS_ENDPOINT"
+
 if [[ ! -d "$BACKEND_DIR/node_modules/@fastify/multipart" ]]; then
-  echo "[3/5] Installing backend dependencies..."
+  echo "[4/6] Installing backend dependencies..."
   (cd "$BACKEND_DIR" && npm install)
 else
-  echo "[3/5] Backend dependencies already installed."
+  echo "[4/6] Backend dependencies already installed."
 fi
 
-echo "[4/5] Checking database data..."
+echo "[5/6] Checking database data..."
 cas9_count="$(table_count cas9)"
 cas12_count="$(table_count cas12)"
 grna_count="$(table_count grna_scaffold)"
@@ -124,18 +168,22 @@ else
 fi
 
 if [[ ! -d "$FRONTEND_DIR/node_modules/typescript" ]]; then
-  echo "[5/5] Installing frontend dependencies..."
+  echo "[6/6] Installing frontend dependencies..."
   (cd "$FRONTEND_DIR" && npm install)
 else
-  echo "[5/5] Frontend dependencies already installed."
+  echo "[6/6] Frontend dependencies already installed."
 fi
 
-echo "[CasVarDB UAT] Launching NestJS API and React frontend..."
+echo "[CasVarDB UAT] Launching NestJS API, queue worker, and React frontend..."
 echo "NestJS API: http://localhost:8888"
 echo "React frontend: http://localhost:3000"
+echo "LocalStack SQS: $SQS_ENDPOINT"
 
-(cd "$BACKEND_DIR" && npm start) &
+(cd "$BACKEND_DIR" && AWS_REGION=ap-southeast-2 AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test SQS_ENDPOINT="$SQS_ENDPOINT" SQS_QUEUE_NAME=casvardb-jobs SQS_WAIT_TIME_SECONDS=10 SQS_VISIBILITY_TIMEOUT_SECONDS=300 npm start) &
 backend_pid="$!"
+
+(cd "$BACKEND_DIR" && AWS_REGION=ap-southeast-2 AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test SQS_ENDPOINT="$SQS_ENDPOINT" SQS_QUEUE_NAME=casvardb-jobs SQS_WAIT_TIME_SECONDS=10 SQS_VISIBILITY_TIMEOUT_SECONDS=300 WORKER_POLL_INTERVAL_MS=1000 WORKER_CONCURRENCY=4 npm run start:worker) &
+worker_pid="$!"
 
 (cd "$FRONTEND_DIR" && REACT_APP_API_URL=http://localhost:8888 npm start) &
 frontend_pid="$!"
@@ -148,6 +196,11 @@ while true; do
 
   if ! kill -0 "$frontend_pid" >/dev/null 2>&1; then
     echo "React frontend process stopped."
+    exit 1
+  fi
+
+  if ! kill -0 "$worker_pid" >/dev/null 2>&1; then
+    echo "Queue worker process stopped."
     exit 1
   fi
 

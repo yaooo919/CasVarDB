@@ -4,6 +4,11 @@ import { AppConfigService } from "../config/config.service";
 
 export type SqlParam = string | number | boolean | Date | Buffer | null;
 
+interface MysqlError {
+  code?: string;
+  errno?: number;
+}
+
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   private pool: Pool;
@@ -56,8 +61,28 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         completed_at timestamp NULL DEFAULT NULL,
         PRIMARY KEY (id),
         KEY idx_backend_jobs_status (status),
-        KEY idx_backend_jobs_created_at (created_at)
+        KEY idx_backend_jobs_created_at (created_at),
+        KEY idx_backend_jobs_status_completed_at (status, completed_at)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
     `);
+
+    await this.ensureBackendJobsCleanupIndex();
+  }
+
+  private async ensureBackendJobsCleanupIndex(): Promise<void> {
+    try {
+      await this.execute("CREATE INDEX idx_backend_jobs_status_completed_at ON backend_jobs (status, completed_at)");
+    } catch (error) {
+      if (this.isDuplicateIndexError(error)) {
+        return;
+      }
+
+      throw error;
+    }
+  }
+
+  private isDuplicateIndexError(error: unknown): boolean {
+    const mysqlError = error as MysqlError;
+    return mysqlError.code === "ER_DUP_KEYNAME" || mysqlError.errno === 1061;
   }
 }

@@ -1,102 +1,65 @@
 # CasVarDB Setup Guide
 
-A live version of CasVarDB is available at: http://crisprxai.cs.ox.ac.uk:3000.
+The current UAT stack runs:
 
-This document explains how to set up CasVarDB locally after downloading the repository, including database initialization, data import, and starting both backend and frontend services.
+- React frontend from `frontend/`
+- NestJS API from `backend-nestjs/`
+- NestJS queue worker from `backend-nestjs/`
+- MySQL and LocalStack SQS from `backend-nestjs/docker-compose.yml`
 
----
+The old Express backend in `backend/` is kept as the legacy route contract source and is not part of the UAT runner.
 
-## Prerequisites
+## UAT Runner
 
-Please make sure the following tools are installed on your machine before starting:
+Windows 11:
 
-- Python - https://www.python.org/downloads/
-- Node.js - https://nodejs.org/en/download/current
-- Docker - https://www.docker.com/
-
----
-
-## Project Structure
-
-This project is organized with separate backend and frontend directories.
-
-- `backend/`: database setup, data import, and backend service
-- `frontend/`: frontend web application
-
----
-
-## Setup Database
-
-Open a terminal and navigate to the `backend` directory:
-```
-cd backend
+```bat
+deploy\uat\run-win11-localhost.bat
 ```
 
-<br>
+macOS:
 
-Start the local MySQL database with Docker Compose:
-
-```
-docker compose up -d
-```
-This will start an empty local database exposed on port `13306`.
-
-<br>
-
-Create a Python virtual environment called `myvenv`:
-```
-python -m venv .myvenv
+```bash
+chmod +x deploy/uat/run-macos-localhost.sh
+./deploy/uat/run-macos-localhost.sh
 ```
 
-<br>
+The runner starts Docker infra, checks whether the database already has data, runs `npm run db:init` only for a clean or incomplete DB, then starts the API, queue worker, and frontend.
 
-Activate the virtual environment.
+Statistics pages use DB-backed queue caching in UAT. A cache miss returns a queued job ID, the NestJS worker processes the statistics job from LocalStack SQS, and the frontend polls `/jobs/:id/result`. A repeat request from the same IP with the same payload can return cached JSON directly from MySQL. If the cached result is older than 30 minutes, the API returns the stale result immediately and queues a background refresh.
 
-On Windows:
-```
-.myvenv\Scripts\activate
-```
+## Manual Backend Commands
 
-On macOS / Linux:
-```
-source .myvenv/bin/activate
-```
-
-<br>
-
-
-Install the required Python packages:
-```
-pip install pandas pymysql gdown==4.0.0 cryptography
-```
-
-<br>
-
-Run the import script to download the source data from Google Drive and populate the database:
-```
-python import_data.py
-```
-
-This script will:
-
-- download the required dataset files from Google Drive
-
-- process the data
-
-- insert the data into the local MySQL database
-
-Once this step completes successfully, the local database setup is finished.
-
-## Start the Backend
-Still inside the `backend` directory, start the backend service:
-```
+```bash
+cd backend-nestjs
+npm install
+cp .env.example .env
+docker-compose up -d
+npm run validate
+npm run db:init
 npm start
 ```
 
-## Start the Frontend
-Open a second terminal window, navigate to the `frontend` directory, and start the frontend service:
+On Windows PowerShell, create `.env` with:
+
+```powershell
+Copy-Item .env.example .env -Force
 ```
+
+Use the UAT runner when the queue worker is needed; it injects the LocalStack SQS endpoint at runtime instead of storing queue settings in `.env`.
+
+For manual local frontend runs, set `frontend/.env` to:
+
+```text
+REACT_APP_API_URL=http://localhost:8888
+```
+
+## Manual Frontend Commands
+
+```bash
 cd frontend
+npm install
+npm run lint
+npm run typecheck
 npm start
 ```
-The website should open automatically in your default browser.

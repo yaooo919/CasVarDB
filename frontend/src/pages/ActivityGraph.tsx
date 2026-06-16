@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { Chart as ChartJS, CategoryScale, LinearScale,  BarElement, LineElement, PointElement, Tooltip, Legend, Title } from "chart.js";
 import { BoxPlotController, BoxAndWiskers } from "@sgratzl/chartjs-chart-boxplot";
 import { Chart } from "react-chartjs-2";
 import { density1d } from "fast-kde";
+import { getQueuedResult } from "../api/queuedRequest";
 import "./ActivityGraph.css";
 import sidebarRight from "../assets/sidebar-right.png";
 import sidebarLeft from "../assets/sidebar-left.png";
@@ -87,7 +87,7 @@ const ActivityGraph = () => {
     try {
       const allData = await Promise.all(
         parameterSets.map(async (set) => {
-          const currentResponse = await axios.get(`${BASE_URL}/statistics/activity-graph`, {
+          const currentData = await getQueuedResult<Record<string, number[]>>(`${BASE_URL}/statistics/activity-graph`, {
             params: {
               pam: set.pam,
               numberOfMismatches: set.mismatches,
@@ -102,7 +102,7 @@ const ActivityGraph = () => {
           let allPositionsCount = null;
 
           if (set.mismatches === 1) {
-            const allPositionsResponse = await axios.get(`${BASE_URL}/statistics/activity-graph`, {
+            const allPositionsData = await getQueuedResult<Record<string, number>>(`${BASE_URL}/statistics/activity-graph`, {
               params: {
                 pam: set.pam,
                 numberOfMismatches: set.mismatches,
@@ -111,11 +111,11 @@ const ActivityGraph = () => {
               }
             });
 
-            allPositionsCount = allPositionsResponse.data?.[set.variant] || 0;
+            allPositionsCount = allPositionsData?.[set.variant] || 0;
           }
 
           return {
-            data: currentResponse.data,
+            data: currentData,
             allPositionsCount
           };
         })

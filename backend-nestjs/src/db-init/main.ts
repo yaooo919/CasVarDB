@@ -112,7 +112,8 @@ CREATE TABLE IF NOT EXISTS ${escapeId("backend_jobs")} (
   ${escapeId("completed_at")} timestamp NULL DEFAULT NULL,
   PRIMARY KEY (${escapeId("id")}),
   KEY ${escapeId("idx_backend_jobs_status")} (${escapeId("status")}),
-  KEY ${escapeId("idx_backend_jobs_created_at")} (${escapeId("created_at")})
+  KEY ${escapeId("idx_backend_jobs_created_at")} (${escapeId("created_at")}),
+  KEY ${escapeId("idx_backend_jobs_status_completed_at")} (${escapeId("status")}, ${escapeId("completed_at")})
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 `;
 

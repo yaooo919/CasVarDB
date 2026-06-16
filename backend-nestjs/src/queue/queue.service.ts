@@ -39,6 +39,9 @@ export class QueueService implements OnModuleInit {
     }
 
     this.queueUrl = await this.resolveQueueUrl();
+    this.logger.log(
+      `Queue ready: name=${this.config.sqs.queueName ?? "from-url"} endpoint=${this.config.sqs.endpoint ?? "aws"}`
+    );
   }
 
   async send(message: QueueJobMessage): Promise<void> {
@@ -62,7 +65,7 @@ export class QueueService implements OnModuleInit {
     const response = await this.sqs.send(
       new ReceiveMessageCommand({
         QueueUrl: this.getQueueUrl(),
-        MaxNumberOfMessages: 10,
+        MaxNumberOfMessages: this.config.worker.concurrency,
         WaitTimeSeconds: this.config.sqs.waitTimeSeconds,
         VisibilityTimeout: this.config.sqs.visibilityTimeoutSeconds
       })

@@ -4,11 +4,12 @@ import { DatabaseModule } from "../database/database.module";
 import { DownloadModule } from "../download/download.module";
 import { JobsModule } from "../jobs/jobs.module";
 import { QueueModule } from "../queue/queue.module";
+import { StatisticsModule } from "../statistics/statistics.module";
 import { WorkerRuntimeService } from "./worker-runtime.service";
 import { WorkerService } from "./worker.service";
 
 @Module({
-  imports: [AppConfigModule, DatabaseModule, DownloadModule, JobsModule, QueueModule],
+  imports: [AppConfigModule, DatabaseModule, DownloadModule, JobsModule, QueueModule, StatisticsModule],
   providers: [WorkerService, WorkerRuntimeService],
   exports: [WorkerService]
 })

@@ -1,49 +1,68 @@
 ---
 name: casvardb-project
-description: Maintain the CasVarDB project across the old Express backend, new NestJS backend, React TypeScript frontend, Docker MySQL local runtime, UAT runner scripts, exact 1:1 Express route compatibility, DB init/import flow, AWS deployment configuration, and cross-stack validation.
+description: Maintain the CasVarDB project across the legacy Express backend, parallel NestJS/Fastify backend, React TypeScript frontend, Docker MySQL plus LocalStack UAT runtime, queue-backed statistics/jobs, DB init import flow, UAT runner scripts, AWS GitLab CI deployment assumptions, and 1:1 route compatibility validation.
 ---
 
 # CasVarDB Project
 
-## Project Layout
+## Layout
 
-- `backend/`: old Express backend. Treat this as the source of truth for legacy API contracts. Do not modify it unless the user explicitly asks.
-- `backend-nestjs/`: new NestJS/Fastify replacement backend.
-- `frontend/`: React frontend, migrated to TypeScript/TSX.
-- `deploy/uat/`: local UAT runner scripts for Win11 and macOS.
-- `skill/`: this project skill.
+- `backend/`: legacy Express backend. Treat it as the API contract and data-init source. Do not edit unless explicitly asked.
+- `backend-nestjs/`: parallel NestJS/Fastify backend replacement.
+- `frontend/`: React TypeScript frontend.
+- `deploy/uat/`: local UAT runners.
+- `skill/`: this project-wise skill.
 
-## Non-Negotiables
+## Hard Rules
 
-- Preserve old Express route paths and response shapes 1:1 in `backend-nestjs`. This is the acceptance criterion.
+- Preserve legacy Express route paths and visible response shapes 1:1 in `backend-nestjs`.
 - Keep `backend/` untouched during Nest migration work.
-- Keep working source and local npm scripts TypeScript-first. Do not add local scripts that run `node dist/*.js`.
-- Do not add a Dockerfile or Dockerized API/worker runtime for local work unless explicitly requested.
-- Docker is local MySQL only for now. Do not add LocalStack, API, worker, or db-init services to `backend-nestjs/docker-compose.yml`.
-- Future local queue emulation may be added later, but do not reintroduce LocalStack preemptively.
-- Use `mysql2/promise` pool for app DB access.
-- Use parameterized SQL. Never interpolate selected IDs or search values.
-- HTTP handlers should validate input and delegate work; CPU-heavy or long-running exports belong in worker/job flow.
-- Keep generated artifacts out of the repo after verification, especially `frontend/build`, `backend-nestjs/dist`, and temporary upload/test files.
+- Use TypeScript runtime scripts for app work. Do not add local scripts that run `node dist/*.js`.
+- Use `ts-node`, not `tsx`, for Nest runtime scripts because decorator metadata matters.
+- Docker local runtime is infrastructure only: MySQL plus LocalStack SQS. Do not add API, worker, frontend, db-init services, or app Dockerfiles unless the user explicitly asks.
+- Use `docker-compose`, not `docker compose`, in docs and scripts.
+- Keep `.env.example` local and minimal. Do not commit AWS credentials or local SQS env; UAT scripts inject them at runtime.
+- Use `mysql2/promise` pool and parameterized SQL. Never interpolate selected IDs or search input.
+- Do not run CPU-heavy statistics work in HTTP handlers. HTTP handlers validate, cache/check jobs, enqueue, and return.
+- Keep generated artifacts out of the repo after verification, especially `frontend/build`, `backend-nestjs/dist`, uploads, and temporary test files.
 
-## Local Runtime
+## Local UAT Runtime
 
-Docker Compose starts only MySQL from `backend-nestjs/docker-compose.yml`:
+Use these root scripts for the whole local stack:
+
+```bat
+deploy\uat\run-win11-localhost.bat
+```
+
+```bash
+chmod +x deploy/uat/run-macos-localhost.sh
+./deploy/uat/run-macos-localhost.sh
+```
+
+The runners:
+
+- Start `backend-nestjs/docker-compose.yml`.
+- Keep Docker services to `mysql` and `localstack` only.
+- Discover dynamic MySQL and LocalStack host ports with `docker-compose port`.
+- Install dependencies only when missing.
+- Conditionally run `npm run db:init` only when `cas9`, `cas12`, or `grna_scaffold` is empty.
+- Start API on `http://localhost:8888`.
+- Start frontend on `http://localhost:3000` with `REACT_APP_API_URL=http://localhost:8888`.
+- Start the NestJS worker with LocalStack SQS env and `WORKER_CONCURRENCY=4`.
+- Refuse to launch when ports `8888` or `3000` are already in use.
+
+For macOS, the runner checks `docker-compose`; if missing, it attempts `brew install docker-compose` and fails clearly if Homebrew is missing.
+
+Manual infra commands:
 
 ```bash
 cd backend-nestjs
 docker-compose up -d
-```
-
-The MySQL host port is not fixed. Compose publishes container port `3306` to a Docker-assigned host port:
-
-```bash
 docker-compose port mysql 3306
+docker-compose port localstack 4566
 ```
 
-Local `.env` should not include `DB_PORT`. The Nest app and `db:init` discover the Docker port automatically in non-production runtimes.
-
-Reset local Docker MySQL only when a clean DB is intended:
+Reset infra only when a clean DB/queue is intended:
 
 ```bash
 cd backend-nestjs
@@ -51,107 +70,71 @@ docker-compose down -v --remove-orphans
 docker-compose up -d
 ```
 
-## UAT Runner Scripts
-
-Root UAT scripts live in `deploy/uat`:
-
-- `run-win11.bat`
-- `run-macos.sh`
-
-These scripts run the local stack as a whole:
-
-- Docker Compose starts MySQL only.
-- Backend runs with `npm start` from `backend-nestjs`.
-- Frontend runs with `REACT_APP_API_URL=http://localhost:8888 npm start` from `frontend`.
-- DB init is conditional: check `cas9`, `cas12`, and `grna_scaffold` row counts; run `npm run db:init` only when the DB is clean or incomplete.
-- Check ports `8888` and `3000` before launching app processes.
-- Install npm dependencies only when missing or incomplete.
-
-For macOS, `run-macos.sh` must check whether `docker-compose` exists. If missing, try to install it with Homebrew:
+## Backend Commands
 
 ```bash
-brew install docker-compose
-```
-
-If `brew` is unavailable, fail clearly and ask the user to install Homebrew first. Re-check `docker-compose` after installation before continuing.
-
-## Backend NestJS
-
-Use TypeScript entrypoints directly in `backend-nestjs`:
-
-```bash
+cd backend-nestjs
+npm install
 npm run validate
 npm run db:init
 npm start
 npm run start:worker
 ```
 
-Expected meanings:
+Script meanings:
 
-- `validate`: lint and typecheck only; it must not generate `dist/`.
-- `db:init`: run `ts-node src/db-init/main.ts`.
-- `start`: run `ts-node src/main.ts`.
-- `start:worker`: run `ts-node src/worker/main.ts`.
+- `validate`: lint and typecheck only.
+- `db:init`: `ts-node src/db-init/main.ts`.
+- `start`: `ts-node src/main.ts`.
+- `start:worker`: `ts-node src/worker/main.ts`.
 
-Use `ts-node`, not `tsx`, for Nest runtime scripts. Nest dependency injection needs TypeScript decorator metadata from `emitDecoratorMetadata`; `tsx`/esbuild does not emit it.
-
-Avoid adding `npm run build` to local backend instructions. AWS packaging can bundle TypeScript via Serverless/esbuild.
-
-### Runtime Hygiene
-
-Local API uses port `8888`.
-
-Before starting a validation API on Windows, check whether the port is already owned by this backend:
+Local API uses port `8888`. If `EADDRINUSE` occurs on Windows, check ownership before stopping anything:
 
 ```powershell
 Get-NetTCPConnection -LocalPort 8888 -ErrorAction SilentlyContinue
 Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*backend-nestjs*src/main.ts*' }
 ```
 
-If a previous validation process owns the port, stop only that process. Do not kill unrelated processes.
-
-Do not leave background validation API processes running after the user needs to start the API themselves.
-
 ## Frontend
 
-Frontend source in `frontend/src` should be TypeScript only:
+- `frontend/src` should be TypeScript only: `.ts` and `.tsx`.
+- Keep ESLint style enforcement active, including 2-space TSX/JSX indentation.
+- For local UAT, `frontend/.env` should be:
 
-- Use `.tsx` for React files.
-- Do not leave `.js` or `.jsx` source files in `frontend/src`.
-- Keep ESLint as an actual style-enforcing config in `frontend/.eslintrc.json`.
-- Enforce 2-space indentation for TSX/JSX with ESLint rules.
-- Use `REACT_APP_API_URL=http://localhost:8888` for local Nest API testing.
+```text
+REACT_APP_API_URL=http://localhost:8888
+```
 
 Frontend commands:
 
 ```bash
 cd frontend
-npm run lint
-npm run typecheck
+npm install
+npm run validate
 npm run build
 ```
 
-Remove `frontend/build` after build verification unless the user explicitly wants build artifacts left in place.
+Remove `frontend/build` after build verification unless the user asks to keep it.
 
 ## DB Init
 
-`backend-nestjs/src/db-init/main.ts` aggregates the old backend DB setup:
+`backend-nestjs/src/db-init/main.ts` is the TypeScript aggregation of the real legacy data setup:
 
-- Schema source: `backend/mysql_casvardb.sql`
-- Import behavior source: `backend/import_data.py`
-- Creates: `cas9`, `cas12`, `grna_scaffold`, `backend_jobs`
-- Downloads source CSVs from the original Google Drive file IDs.
-- Caches CSVs in `backend-nestjs/data` locally unless `DATA_DIR` overrides it.
+- Schema source: `backend/mysql_casvardb.sql`.
+- Import behavior source: `backend/import_data.py`.
+- Creates/imports `cas9`, `cas12`, `grna_scaffold`, and `backend_jobs`.
+- Downloads original source CSVs from the existing Google Drive file IDs.
+- Caches downloads in `backend-nestjs/data` unless `DATA_DIR` overrides it.
 - Uses streaming CSV parsing.
-- `ensureNotHtml` must only read a small file header, not the entire CSV. Cas9 CSV is very large.
-- Skips importing a dataset if its target table already has rows unless `FORCE_DB_IMPORT=true`.
-- Retries MySQL connections while Docker MySQL is starting.
+- `ensureNotHtml` must read only a small header, never the entire large Cas9 CSV.
+- Skips non-empty datasets unless `FORCE_DB_IMPORT=true`.
+- Retries MySQL while Docker MySQL is starting.
 
-Only run full `npm run db:init` when it is acceptable to download/import the full datasets.
+Only run full `npm run db:init` when downloading/importing the full datasets is acceptable.
 
 ## Local Env
 
-`backend-nestjs/.env.example` should stay minimal:
+Keep `backend-nestjs/.env.example` close to:
 
 ```text
 NODE_ENV=development
@@ -162,75 +145,30 @@ DB_PASSWORD=Cv2y*%
 DB_NAME=casvardb
 DB_CONNECTION_LIMIT=10
 DATA_DIR=./data
+WORKER_CONCURRENCY=4
+JOB_CACHE_TTL_MS=1800000
 ```
 
-Do not add AWS credentials or local SQS settings to committed env files.
+Do not include `DB_PORT` locally unless explicitly needed; non-production code discovers the Docker MySQL port. Do not add AWS credentials or SQS settings to committed env files.
 
-## Old Express Route Contract
+## Legacy Route Contract
 
 Source of truth:
 
 - `backend/server.js`
 - `backend/routes/*.js`
+- Frontend consumers in `frontend/src/pages`
 
-Nest must expose every old Express route below with the same visible contract.
+Compatibility routes:
 
-### Data Routes
+- `GET /data/cas9` returns exactly `{ data, count }`.
+- `GET /data/cas12` returns exactly `{ data, count }`.
+- `GET /data` is a Cas9 compatibility alias and may include `{ rows, total, data, count }`.
+- `GET /grna` returns an array of scaffold rows.
+- `POST /download` accepts `{ selectedIds: number[] }`, defaults to Cas9, returns CSV with filename `selected_data.csv`.
+- `POST /submit` accepts multipart `file` and `metadata`; with `@fastify/multipart`, consume the file stream before relying on sibling fields.
 
-- `GET /data/cas9`
-- `GET /data/cas12`
-
-Old response shape is exactly:
-
-```ts
-{ data, count }
-```
-
-Do not add extra top-level keys on these old paths.
-
-`GET /data` is a new compatibility alias for Cas9 and may return the migration shape:
-
-```ts
-{ rows, total, data, count }
-```
-
-### Scaffold Route
-
-- `GET /grna`
-
-Return an array of `grna_scaffold` rows, not an object wrapper.
-
-### Download Route
-
-- `POST /download`
-
-Old request body:
-
-```ts
-{ selectedIds: number[] }
-```
-
-Old visible behavior:
-
-- Query Cas9 by default.
-- Return CSV content.
-- Set `Content-Disposition` filename to `selected_data.csv`.
-- Return 400-ish failure for missing IDs and 404-ish failure when no rows match.
-
-The Nest implementation may keep safer parameterized SQL and CSV escaping, but must preserve the route and normal response contract.
-
-### Submit Route
-
-- `POST /submit`
-
-Accept `multipart/form-data` with fields:
-
-- `file`
-- `metadata`
-
-Frontend sends `file` before `metadata`; when using `@fastify/multipart`, consume the file stream before relying on parsed sibling fields.
-
-Store uploads under `backend-nestjs/uploads` at runtime. Response must include the old fields:
+Keep `POST /submit` response fields:
 
 ```ts
 {
@@ -244,7 +182,9 @@ Store uploads under `backend-nestjs/uploads` at runtime. Response must include t
 
 Register `@fastify/multipart` in both `backend-nestjs/src/main.ts` and `backend-nestjs/src/lambda.ts`.
 
-### Statistics Routes
+## Statistics Queue Contract
+
+All `/statistics/*` routes are subqueued:
 
 - `GET /statistics/cas9-freq-per-variant`
 - `GET /statistics/cas12-freq-per-variant`
@@ -256,63 +196,107 @@ Register `@fastify/multipart` in both `backend-nestjs/src/main.ts` and `backend-
 - `GET /statistics/heatmap-data`
 - `GET /statistics/activity-graph`
 
-Port aggregation behavior from `backend/routes/statistics.js`. Frontend pages `/statistics` and `/statistics/activity-graph` depend on these exact paths and shapes.
+Execution path:
 
-## New Job Routes
+1. Controller logs endpoint, subqueue flag, and sanitized request payload.
+2. `JobsService.createStatisticsJob()` hashes job type, client IP, and normalized payload into a stable job ID.
+3. Fresh completed cache returns original statistics JSON directly.
+4. Missing cache inserts `backend_jobs` row, sends SQS message, and returns `{ id, status }`.
+5. Expired completed cache returns stale JSON immediately and queues a background refresh of the same row.
+6. Worker receives from LocalStack SQS/AWS SQS, logs queue endpoint and payload, runs `StatisticsService`, updates `backend_jobs.result`, and deletes the queue message.
+7. Frontend `getQueuedResult()` polls `/jobs/:id`, then reads `/jobs/:id/result`.
 
-Queued job routes are additive, not old Express compatibility routes:
+Cache rules:
+
+- `JOB_CACHE_TTL_MS=1800000` means 30-minute freshness.
+- TTL is not deletion. Finished job rows stay as the DB cache.
+- Do not clear `result` when refreshing expired statistics jobs.
+- `GET /jobs/:id/result` must return an available statistics result even if the row is currently queued/running for refresh.
+- `JOB_CACHE_TTL_MS=0` means statistics cache never expires.
+
+Worker concurrency:
+
+- Default local `WORKER_CONCURRENCY=4`.
+- `QueueService.receive()` uses it for SQS `MaxNumberOfMessages`.
+- `WorkerRuntimeService` processes each received batch in parallel.
+- Clamp values to SQS receive-message limit `1..10`.
+- Expected worker startup log includes `Worker polling started; concurrency=4`.
+
+Heatmap:
+
+- Do not pull millions of rows into Node for `/statistics/heatmap-data`.
+- Aggregate heatmap data in MySQL using grouped queries and `JSON_EXTRACT(mismatch_positions, '$[0]')`.
+- Keep frontend heatmap shape as `Record<variant, Record<position, { raw, normalized }>>`.
+
+## Job Routes
+
+Additive queued job routes:
 
 - `POST /jobs/export`
 - `GET /jobs/:id`
 - `GET /jobs/:id/result`
 
-If local queue env is not configured, the app may start, but queued job creation should fail clearly with "Queue is not configured".
+Current job types:
+
+- `export`: worker creates CSV; `/jobs/:id/result` sends `selected_data.csv`.
+- `statistics`: worker creates JSON; `/jobs/:id/result` sends the original statistics payload shape.
+
+If queue env is not configured, startup may continue, but queued job creation must fail clearly with `Queue is not configured`.
+
+## Logging And Observability
+
+API logs should include:
+
+- endpoint, including method/path/query
+- whether it is subqueued
+- sanitized payload
+
+Worker logs should include:
+
+- queue ready state
+- idle heartbeat
+- received batch size
+- queue endpoint and payload
+- job start/completion/failure
+- processed count
+
+If the frontend looks stuck but jobs are complete, check that running API/worker/frontend processes were restarted after edits and that `frontend/.env` points to `http://localhost:8888`.
 
 ## AWS/PROD
 
-AWS uses RDS/Aurora MySQL, not Docker MySQL.
+- PROD uses RDS/Aurora MySQL, not Docker MySQL.
+- PROD DB values come from GitLab CI variables: `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`.
+- GitLab CI owns AWS deployment secrets; do not put AWS values in committed env files.
+- If RDS is private, Lambda must run in the same VPC/subnets/security groups.
+- Use SQS maximum concurrency/event-source mapping controls in AWS for worker concurrency.
+- Serverless Framework v4 may require login/license before package/deploy.
 
-PROD database values should come from GitLab CI variables:
-
-```text
-DB_HOST
-DB_PORT
-DB_USER
-DB_PASSWORD
-DB_NAME
-```
-
-If RDS is private, Lambda must be configured for the same VPC/subnets/security groups. Add VPC settings to `serverless.yml` only when the real IDs/variable names are known.
-
-Serverless handlers should point to TypeScript sources and bundle via `serverless-esbuild`:
+Expected TypeScript handler targets:
 
 ```yaml
 handler: src/lambda.handler
 handler: src/worker/lambda.handler
 ```
 
-SQS is for AWS deployment and later local queue emulation. Do not put AWS credentials in committed env files.
-
 ## Validation
 
-After backend changes:
+Backend:
 
 ```bash
 cd backend-nestjs
 npm run validate
-docker-compose config
+docker-compose config --quiet
 ```
 
-After frontend changes:
+Frontend:
 
 ```bash
 cd frontend
-npm run lint
-npm run typecheck
+npm run validate
 npm run build
 ```
 
-For 1:1 route work, also validate representative old paths against the local Nest API and Docker MySQL:
+Route smoke tests should cover:
 
 ```text
 GET  /grna

@@ -1,68 +1,95 @@
-import { BadRequestException, Controller, Get, Query } from "@nestjs/common";
-import { StatisticsService } from "./statistics.service";
+import { BadRequestException, Controller, Get, Query, Req } from "@nestjs/common";
+import { FastifyRequest } from "fastify";
+import { getClientIp } from "../http/client-ip";
+import { JobCreateResponse } from "../jobs/jobs.types";
+import { JobsService } from "../jobs/jobs.service";
+import { SubqueueRoute } from "../logging/subqueue-route.decorator";
+import { ActivityGraphQuery, StatisticsJobEndpoint, StatisticsJobResult } from "./statistics.types";
+
+type StatisticsRouteResponse = Promise<JobCreateResponse | StatisticsJobResult>;
 
 @Controller("statistics")
 export class StatisticsController {
-  constructor(private readonly statisticsService: StatisticsService) {}
+  constructor(private readonly jobsService: JobsService) {}
 
   @Get("cas9-freq-per-variant")
-  getCas9FreqPerVariant() {
-    return this.statisticsService.getCas9FreqPerVariant();
+  @SubqueueRoute()
+  getCas9FreqPerVariant(@Req() request: FastifyRequest): StatisticsRouteResponse {
+    return this.enqueueStatisticsJob("cas9-freq-per-variant", request);
   }
 
   @Get("cas12-freq-per-variant")
-  getCas12FreqPerVariant() {
-    return this.statisticsService.getCas12FreqPerVariant();
+  @SubqueueRoute()
+  getCas12FreqPerVariant(@Req() request: FastifyRequest): StatisticsRouteResponse {
+    return this.enqueueStatisticsJob("cas12-freq-per-variant", request);
   }
 
   @Get("freq-per-scaffold")
-  getFreqPerScaffold() {
-    return this.statisticsService.getFreqPerScaffold();
+  @SubqueueRoute()
+  getFreqPerScaffold(@Req() request: FastifyRequest): StatisticsRouteResponse {
+    return this.enqueueStatisticsJob("freq-per-scaffold", request);
   }
 
   @Get("data-count-per-study")
-  getDataCountPerStudy() {
-    return this.statisticsService.getDataCountPerStudy();
+  @SubqueueRoute()
+  getDataCountPerStudy(@Req() request: FastifyRequest): StatisticsRouteResponse {
+    return this.enqueueStatisticsJob("data-count-per-study", request);
   }
 
   @Get("cas9-freq-per-mismatch")
-  getCas9FreqPerMismatch() {
-    return this.statisticsService.getCas9FreqPerMismatch();
+  @SubqueueRoute()
+  getCas9FreqPerMismatch(@Req() request: FastifyRequest): StatisticsRouteResponse {
+    return this.enqueueStatisticsJob("cas9-freq-per-mismatch", request);
   }
 
   @Get("cas12-freq-per-mismatch")
-  getCas12FreqPerMismatch() {
-    return this.statisticsService.getCas12FreqPerMismatch();
+  @SubqueueRoute()
+  getCas12FreqPerMismatch(@Req() request: FastifyRequest): StatisticsRouteResponse {
+    return this.enqueueStatisticsJob("cas12-freq-per-mismatch", request);
   }
 
   @Get("freq-mismatch-per-variant")
-  getFreqMismatchPerVariant() {
-    return this.statisticsService.getFreqMismatchPerVariant();
+  @SubqueueRoute()
+  getFreqMismatchPerVariant(@Req() request: FastifyRequest): StatisticsRouteResponse {
+    return this.enqueueStatisticsJob("freq-mismatch-per-variant", request);
   }
 
   @Get("heatmap-data")
-  getHeatmapData() {
-    return this.statisticsService.getHeatmapData();
+  @SubqueueRoute()
+  getHeatmapData(@Req() request: FastifyRequest): StatisticsRouteResponse {
+    return this.enqueueStatisticsJob("heatmap-data", request);
   }
 
   @Get("activity-graph")
+  @SubqueueRoute()
   getActivityGraph(
+    @Req() request: FastifyRequest,
     @Query("pam") pam?: string,
     @Query("numberOfMismatches") numberOfMismatches?: string,
     @Query("variant") variant?: string,
     @Query("mismatchPosition") mismatchPosition?: string,
     @Query("countOnly") countOnly?: string
-  ) {
+  ): StatisticsRouteResponse {
     if (!pam || numberOfMismatches === undefined || !variant) {
       throw new BadRequestException("Missing required query parameters");
     }
 
-    return this.statisticsService.getActivityGraph({
+    const query: ActivityGraphQuery = {
       pam,
       numberOfMismatches,
       variant,
       mismatchPosition,
       countOnly: countOnly === "true"
-    });
+    };
+
+    return this.enqueueStatisticsJob("activity-graph", request, query);
+  }
+
+  private enqueueStatisticsJob(
+    endpoint: StatisticsJobEndpoint,
+    request: FastifyRequest,
+    query?: ActivityGraphQuery
+  ): StatisticsRouteResponse {
+    return this.jobsService.createStatisticsJob({ endpoint, query }, getClientIp(request));
   }
 }

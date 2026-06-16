@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { Chart as ChartJS, CategoryScale, LinearScale,  BarElement, LineElement, PointElement, Tooltip, Legend, Title } from "chart.js";
 import { BoxPlotController, BoxAndWiskers } from "@sgratzl/chartjs-chart-boxplot";
 import { Chart } from "react-chartjs-2";
 import Heatmap from "react-heatmap-grid";
+import { getQueuedResult } from "../api/queuedRequest";
 import "./Statistics.css";
 
 ChartJS.register(BoxPlotController, BoxAndWiskers, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend, Title);
@@ -23,6 +23,10 @@ type SummaryStats = {
 };
 
 type SummaryStatsResponse = Record<string, SummaryStats>;
+type StudyCountResponse = Record<string, number>;
+type MismatchFrequencyResponse = Record<string, number>;
+type VariantMismatchResponse = Array<Record<string, number | string>>;
+type HeatmapResponse = Record<string, Record<string, { raw: number; normalized: number }>>;
 type ColorLegendProps = { min: number; max: number };
 
 const Statistics = () => {
@@ -42,8 +46,7 @@ const Statistics = () => {
 
   const fetchFreqPerCas9Variant = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/cas9-freq-per-variant`);
-      const statsByVariant = response.data as SummaryStatsResponse;
+      const statsByVariant = await getQueuedResult<SummaryStatsResponse>(`${BASE_URL}/statistics/cas9-freq-per-variant`);
       setChartStates((prev) => ({
         ...prev,
         freqPerCas9Variant: { data: {
@@ -86,8 +89,7 @@ const Statistics = () => {
 
   const fetchFreqPerCas12Variant = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/cas12-freq-per-variant`);
-      const statsByVariant = response.data as SummaryStatsResponse;
+      const statsByVariant = await getQueuedResult<SummaryStatsResponse>(`${BASE_URL}/statistics/cas12-freq-per-variant`);
       setChartStates((prev) => ({
         ...prev,
         freqPerCas12Variant: { data: {
@@ -130,8 +132,7 @@ const Statistics = () => {
 
   const fetchFreqPerScaffold = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/freq-per-scaffold`);
-      const statsByScaffold = response.data as SummaryStatsResponse;
+      const statsByScaffold = await getQueuedResult<SummaryStatsResponse>(`${BASE_URL}/statistics/freq-per-scaffold`);
       setChartStates((prev) => ({
         ...prev,
         freqPerScaffold: { data: {
@@ -174,9 +175,7 @@ const Statistics = () => {
 
   const fetchDataCountPerStudy = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/data-count-per-study`);
-
-      const studyCounts = response.data;
+      const studyCounts = await getQueuedResult<StudyCountResponse>(`${BASE_URL}/statistics/data-count-per-study`);
       const labels = Object.keys(studyCounts);
       const data = Object.values(studyCounts);
       setChartStates((prev) => ({
@@ -205,10 +204,9 @@ const Statistics = () => {
 
   const fetchCas9FreqPerMismatch = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/cas9-freq-per-mismatch`);
-
-      const labels = Object.keys(response.data);
-      const data = Object.values(response.data);
+      const mismatchFrequency = await getQueuedResult<MismatchFrequencyResponse>(`${BASE_URL}/statistics/cas9-freq-per-mismatch`);
+      const labels = Object.keys(mismatchFrequency);
+      const data = Object.values(mismatchFrequency);
 
       setChartStates((prev) => ({
         ...prev,
@@ -241,10 +239,9 @@ const Statistics = () => {
 
   const fetchCas12FreqPerMismatch = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/cas12-freq-per-mismatch`);
-
-      const labels = Object.keys(response.data);
-      const data = Object.values(response.data);
+      const mismatchFrequency = await getQueuedResult<MismatchFrequencyResponse>(`${BASE_URL}/statistics/cas12-freq-per-mismatch`);
+      const labels = Object.keys(mismatchFrequency);
+      const data = Object.values(mismatchFrequency);
 
       setChartStates((prev) => ({
         ...prev,
@@ -277,12 +274,12 @@ const Statistics = () => {
 
   const fetchFreqMismatchPerVariant = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/freq-mismatch-per-variant`);
+      const freqMismatchPerVariant = await getQueuedResult<VariantMismatchResponse>(`${BASE_URL}/statistics/freq-mismatch-per-variant`);
       setChartStates((prev) => ({
         ...prev,
         freqMismatchPerVariant: { data: {
           labels: [0, 1, 2, 3, 4],
-          datasets: response.data.map((variantData) => ({
+          datasets: freqMismatchPerVariant.map((variantData) => ({
             label: variantData.variant,
             data: Object.keys(variantData)
               .filter((key) => key !== "variant")  // Exclude the variant key
@@ -309,11 +306,11 @@ const Statistics = () => {
 
   const fetchHeatmapData = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/statistics/heatmap-data`);
+      const heatmapData = await getQueuedResult<HeatmapResponse>(`${BASE_URL}/statistics/heatmap-data`);
 
       setChartStates((prev) => ({
         ...prev,
-        heatmapData: { data: response.data, loading: false }
+        heatmapData: { data: heatmapData, loading: false }
       }));
     } catch (error) {
       console.error("Error fetching heatmap data:", error);

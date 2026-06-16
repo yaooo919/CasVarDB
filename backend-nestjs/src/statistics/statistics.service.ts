@@ -1,30 +1,18 @@
 import { Injectable } from "@nestjs/common";
 import { RowDataPacket } from "mysql2/promise";
 import { DatabaseService, SqlParam } from "../database/database.service";
-
-type SummaryStats = {
-  min: number;
-  max: number;
-  mean: number;
-  median: number;
-  q1: number;
-  q3: number;
-};
-
-type SummaryStatsResponse = Record<string, SummaryStats>;
-type CountPerStudyResponse = Record<string, number>;
-type FrequencyPerMismatchResponse = Record<string, number>;
-type FrequencyMismatchPerVariantResponse = Array<Record<string, number | string>>;
-type HeatmapResponse = Record<string, Record<string, { raw: number; normalized: number }>>;
-type ActivityGraphResponse = Record<string, number | number[]>;
-
-type ActivityGraphQuery = {
-  pam: string;
-  numberOfMismatches: string;
-  variant: string;
-  mismatchPosition?: string;
-  countOnly: boolean;
-};
+import {
+  ActivityGraphQuery,
+  ActivityGraphResponse,
+  CountPerStudyResponse,
+  FrequencyMismatchPerVariantResponse,
+  FrequencyPerMismatchResponse,
+  HeatmapResponse,
+  StatisticsJobEndpoint,
+  StatisticsJobResult,
+  SummaryStats,
+  SummaryStatsResponse
+} from "./statistics.types";
 
 interface VariantFrequencyRow extends RowDataPacket {
   variant: string;
@@ -49,10 +37,6 @@ interface VariantMismatchFrequencyRow extends MismatchFrequencyRow {
   variant: string;
 }
 
-interface HeatmapRow extends VariantMismatchFrequencyRow {
-  mismatch_positions: string;
-}
-
 interface ActivityGraphDataRow extends RowDataPacket {
   variant: string;
   mean_background_subtracted_indel_frequency: number;
@@ -60,6 +44,17 @@ interface ActivityGraphDataRow extends RowDataPacket {
 
 interface ActivityGraphCountRow extends RowDataPacket {
   datapoint_count: number;
+}
+
+interface HeatmapAggregateRow extends RowDataPacket {
+  mismatch_position: number;
+  raw_frequency: number;
+  variant: string;
+}
+
+interface OnTargetActivityRow extends RowDataPacket {
+  on_target_activity: number;
+  variant: string;
 }
 
 const iupacRegexMap: Record<string, string> = {
@@ -83,6 +78,34 @@ const iupacRegexMap: Record<string, string> = {
 @Injectable()
 export class StatisticsService {
   constructor(private readonly database: DatabaseService) {}
+
+  async runStatisticsJob(endpoint: StatisticsJobEndpoint, query?: ActivityGraphQuery): Promise<StatisticsJobResult> {
+    switch (endpoint) {
+      case "cas9-freq-per-variant":
+        return this.getCas9FreqPerVariant();
+      case "cas12-freq-per-variant":
+        return this.getCas12FreqPerVariant();
+      case "freq-per-scaffold":
+        return this.getFreqPerScaffold();
+      case "data-count-per-study":
+        return this.getDataCountPerStudy();
+      case "cas9-freq-per-mismatch":
+        return this.getCas9FreqPerMismatch();
+      case "cas12-freq-per-mismatch":
+        return this.getCas12FreqPerMismatch();
+      case "freq-mismatch-per-variant":
+        return this.getFreqMismatchPerVariant();
+      case "heatmap-data":
+        return this.getHeatmapData();
+      case "activity-graph":
+        if (!query) {
+          throw new Error("activity-graph statistics job requires query payload");
+        }
+        return this.getActivityGraph(query);
+      default:
+        return this.assertNever();
+    }
+  }
 
   async getCas9FreqPerVariant(): Promise<SummaryStatsResponse> {
     const rows = await this.database.query<VariantFrequencyRow[]>(`
@@ -158,19 +181,46 @@ export class StatisticsService {
   }
 
   async getHeatmapData(): Promise<HeatmapResponse> {
-    const rows = await this.database.query<HeatmapRow[]>(`
-      SELECT number_of_mismatches, variant, mean_background_subtracted_indel_frequency, mismatch_positions
-      FROM cas9
-      WHERE number_of_mismatches = 0 OR number_of_mismatches = 1
+    const onTargetRows = await this.database.query<OnTargetActivityRow[]>(`
+      SELECT variant, AVG(mean_background_subtracted_indel_frequency) AS on_target_activity
+      FROM (
+        SELECT variant, mean_background_subtracted_indel_frequency
+        FROM cas9
+        WHERE number_of_mismatches = 0
 
-      UNION ALL
+        UNION ALL
 
-      SELECT number_of_mismatches, variant, mean_background_subtracted_indel_frequency, mismatch_positions
-      FROM cas12
-      WHERE number_of_mismatches = 0 OR number_of_mismatches = 1
+        SELECT variant, mean_background_subtracted_indel_frequency
+        FROM cas12
+        WHERE number_of_mismatches = 0
+      ) on_target
+      GROUP BY variant
     `);
 
-    return this.processHeatmapData(rows);
+    const heatmapRows = await this.database.query<HeatmapAggregateRow[]>(`
+      SELECT variant, mismatch_position, AVG(mean_background_subtracted_indel_frequency) AS raw_frequency
+      FROM (
+        SELECT
+          variant,
+          CAST(JSON_UNQUOTE(JSON_EXTRACT(mismatch_positions, '$[0]')) AS UNSIGNED) - 1 AS mismatch_position,
+          mean_background_subtracted_indel_frequency
+        FROM cas9
+        WHERE number_of_mismatches = 1 AND JSON_VALID(mismatch_positions)
+
+        UNION ALL
+
+        SELECT
+          variant,
+          CAST(JSON_UNQUOTE(JSON_EXTRACT(mismatch_positions, '$[0]')) AS UNSIGNED) - 1 AS mismatch_position,
+          mean_background_subtracted_indel_frequency
+        FROM cas12
+        WHERE number_of_mismatches = 1 AND JSON_VALID(mismatch_positions)
+      ) single_mismatch
+      WHERE mismatch_position IS NOT NULL
+      GROUP BY variant, mismatch_position
+    `);
+
+    return this.processHeatmapData(onTargetRows, heatmapRows);
   }
 
   async getActivityGraph(query: ActivityGraphQuery): Promise<ActivityGraphResponse> {
@@ -343,31 +393,20 @@ export class StatisticsService {
     });
   }
 
-  private processHeatmapData(rows: HeatmapRow[]): HeatmapResponse {
-    const heatmapData: Record<string, Record<string, { raw: number[] | number; normalized: number[] | number }>> = {};
-    const activityOn: Record<string, number[] | number> = {};
+  private processHeatmapData(onTargetRows: OnTargetActivityRow[], heatmapRows: HeatmapAggregateRow[]): HeatmapResponse {
+    const onTargetActivity = onTargetRows.reduce<Record<string, number>>((acc, row) => {
+      acc[row.variant] = Number(row.on_target_activity);
+      return acc;
+    }, {});
+    const heatmapData: HeatmapResponse = {};
 
-    rows.forEach(({ number_of_mismatches: numberOfMismatches, variant, mean_background_subtracted_indel_frequency: frequency }) => {
-      if (Number(numberOfMismatches) === 0) {
-        if (!activityOn[variant]) {
-          activityOn[variant] = [];
-        }
-        (activityOn[variant] as number[]).push(Number(frequency));
-      }
-    });
+    heatmapRows.forEach((row) => {
+      const variant = row.variant;
+      const activity = onTargetActivity[variant];
+      const raw = Number(row.raw_frequency);
+      const mismatchPosition = Number(row.mismatch_position);
 
-    Object.keys(activityOn).forEach((variant) => {
-      const values = activityOn[variant] as number[];
-      activityOn[variant] = values.reduce((sum, value) => sum + value, 0) / values.length;
-    });
-
-    rows.forEach(({ number_of_mismatches: numberOfMismatches, variant, mean_background_subtracted_indel_frequency: frequency, mismatch_positions: mismatchPositions }) => {
-      if (Number(numberOfMismatches) === 0) {
-        return;
-      }
-
-      const parsedPositions = this.parseMismatchPositions(mismatchPositions);
-      if (parsedPositions.length === 0) {
+      if (!Number.isFinite(activity) || !Number.isFinite(raw) || !Number.isFinite(mismatchPosition)) {
         return;
       }
 
@@ -375,34 +414,13 @@ export class StatisticsService {
         heatmapData[variant] = {};
       }
 
-      const x = String(parsedPositions[0] - 1);
-      if (!heatmapData[variant][x]) {
-        heatmapData[variant][x] = { raw: [], normalized: [] };
-      }
-      (heatmapData[variant][x].raw as number[]).push(Number(frequency));
+      heatmapData[variant][String(mismatchPosition)] = {
+        raw,
+        normalized: activity === 0 ? 0 : raw / activity
+      };
     });
 
-    Object.keys(heatmapData).forEach((variant) => {
-      Object.keys(heatmapData[variant]).forEach((x) => {
-        const rawValues = heatmapData[variant][x].raw as number[];
-        const rawMean = rawValues.reduce((sum, value) => sum + value, 0) / rawValues.length;
-        const onTargetActivity = Number(activityOn[variant]);
-
-        heatmapData[variant][x].raw = rawMean;
-        heatmapData[variant][x].normalized = rawMean / onTargetActivity;
-      });
-    });
-
-    return heatmapData as HeatmapResponse;
-  }
-
-  private parseMismatchPositions(value: string): number[] {
-    try {
-      const parsed: unknown = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed.map(Number).filter(Number.isFinite) : [];
-    } catch {
-      return [];
-    }
+    return heatmapData;
   }
 
   private convertIupacToRegex(pam: string): string {
@@ -411,5 +429,9 @@ export class StatisticsService {
       .split("")
       .map((char) => iupacRegexMap[char] ?? char)
       .join("");
+  }
+
+  private assertNever(): never {
+    throw new Error("Unsupported statistics endpoint");
   }
 }

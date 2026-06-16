@@ -15,23 +15,30 @@ call :assert_port_free 3000 "React frontend" || exit /b 1
 
 pushd "%BACKEND_DIR%" || exit /b 1
 
-echo [1/5] Starting Docker MySQL...
+echo [1/6] Starting Docker MySQL and LocalStack SQS...
 docker-compose up -d
 if errorlevel 1 exit /b 1
 
-echo [2/5] Waiting for MySQL to become healthy...
+echo [2/6] Waiting for MySQL to become healthy...
 call :wait_for_mysql
 if errorlevel 1 exit /b 1
 
+call :get_localstack_endpoint
+if errorlevel 1 exit /b 1
+
+echo [3/6] Waiting for LocalStack SQS at %SQS_ENDPOINT%...
+call :wait_for_localstack "%SQS_ENDPOINT%"
+if errorlevel 1 exit /b 1
+
 if not exist "node_modules\@fastify\multipart" (
-  echo [3/5] Installing backend dependencies...
+  echo [4/6] Installing backend dependencies...
   npm install
   if errorlevel 1 exit /b 1
 ) else (
-  echo [3/5] Backend dependencies already installed.
+  echo [4/6] Backend dependencies already installed.
 )
 
-echo [4/5] Checking database data...
+echo [5/6] Checking database data...
 call :get_table_count cas9 CAS9_COUNT
 call :get_table_count cas12 CAS12_COUNT
 call :get_table_count grna_scaffold GRNA_COUNT
@@ -57,22 +64,24 @@ popd
 
 pushd "%FRONTEND_DIR%" || exit /b 1
 if not exist "node_modules\typescript" (
-  echo [5/5] Installing frontend dependencies...
+  echo [6/6] Installing frontend dependencies...
   npm install
   if errorlevel 1 exit /b 1
 ) else (
-  echo [5/5] Frontend dependencies already installed.
+  echo [6/6] Frontend dependencies already installed.
 )
 popd
 
-echo [CasVarDB UAT] Launching NestJS API and React frontend...
-start "CasVarDB NestJS API" /D "%BACKEND_DIR%" cmd /k npm start
+echo [CasVarDB UAT] Launching NestJS API, queue worker, and React frontend...
+start "CasVarDB NestJS API" /D "%BACKEND_DIR%" cmd /k "set AWS_REGION=ap-southeast-2&& set AWS_ACCESS_KEY_ID=test&& set AWS_SECRET_ACCESS_KEY=test&& set SQS_ENDPOINT=%SQS_ENDPOINT%&& set SQS_QUEUE_NAME=casvardb-jobs&& set SQS_WAIT_TIME_SECONDS=10&& set SQS_VISIBILITY_TIMEOUT_SECONDS=300&& npm start"
+start "CasVarDB Queue Worker" /D "%BACKEND_DIR%" cmd /k "set AWS_REGION=ap-southeast-2&& set AWS_ACCESS_KEY_ID=test&& set AWS_SECRET_ACCESS_KEY=test&& set SQS_ENDPOINT=%SQS_ENDPOINT%&& set SQS_QUEUE_NAME=casvardb-jobs&& set SQS_WAIT_TIME_SECONDS=10&& set SQS_VISIBILITY_TIMEOUT_SECONDS=300&& set WORKER_POLL_INTERVAL_MS=1000&& set WORKER_CONCURRENCY=4&& npm run start:worker"
 start "CasVarDB React Frontend" /D "%FRONTEND_DIR%" cmd /k "set REACT_APP_API_URL=http://localhost:8888&& npm start"
 
 echo.
 echo NestJS API: http://localhost:8888
 echo React frontend: http://localhost:3000
-echo MySQL is managed by backend-nestjs\docker-compose.yml
+echo LocalStack SQS: %SQS_ENDPOINT%
+echo MySQL and LocalStack are managed by backend-nestjs\docker-compose.yml
 exit /b 0
 
 :require_command
@@ -98,6 +107,27 @@ for /L %%I in (1,1,60) do (
   timeout /t 2 /nobreak >nul
 )
 echo MySQL did not become ready in time.
+exit /b 1
+
+:get_localstack_endpoint
+set "LOCALSTACK_ADDRESS="
+for /f "usebackq tokens=*" %%A in (`docker-compose port localstack 4566 2^>nul`) do set "LOCALSTACK_ADDRESS=%%A"
+if not defined LOCALSTACK_ADDRESS (
+  echo Could not discover LocalStack host port.
+  exit /b 1
+)
+set "LOCALSTACK_ADDRESS=%LOCALSTACK_ADDRESS:0.0.0.0=127.0.0.1%"
+set "LOCALSTACK_ADDRESS=%LOCALSTACK_ADDRESS:[::]=127.0.0.1%"
+set "SQS_ENDPOINT=http://%LOCALSTACK_ADDRESS%"
+exit /b 0
+
+:wait_for_localstack
+for /L %%I in (1,1,60) do (
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $health = Invoke-RestMethod -Uri '%~1/_localstack/health' -TimeoutSec 2; if ($health.services.sqs) { exit 0 }; exit 1 } catch { exit 1 }" >nul 2>nul
+  if not errorlevel 1 exit /b 0
+  timeout /t 2 /nobreak >nul
+)
+echo LocalStack SQS did not become ready in time.
 exit /b 1
 
 :get_table_count

@@ -29,7 +29,13 @@ export class AppConfigService {
   };
 
   readonly worker = {
-    pollIntervalMs: this.getNumber("WORKER_POLL_INTERVAL_MS", 1000)
+    pollIntervalMs: this.getNumber("WORKER_POLL_INTERVAL_MS", 1000),
+    idleLogIntervalMs: this.getNumber("WORKER_IDLE_LOG_INTERVAL_MS", 15000),
+    concurrency: this.getWorkerConcurrency()
+  };
+
+  readonly jobs = {
+    cacheTtlMs: this.getNumber("JOB_CACHE_TTL_MS", 30 * 60 * 1000)
   };
 
   private getString(name: string, fallback: string): string {
@@ -68,6 +74,11 @@ export class AppConfigService {
     }
 
     return parsed;
+  }
+
+  private getWorkerConcurrency(): number {
+    const concurrency = Math.trunc(this.getNumber("WORKER_CONCURRENCY", 4));
+    return Math.max(1, Math.min(10, concurrency));
   }
 
   private discoverDockerComposeMysqlPort(): number | undefined {
