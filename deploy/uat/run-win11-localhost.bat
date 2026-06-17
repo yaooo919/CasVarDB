@@ -8,32 +8,32 @@ set "FRONTEND_DIR=%ROOT_DIR%\frontend"
 
 echo [CasVarDB UAT] Starting Windows 11 local stack...
 
-call :require_command docker-compose || exit /b 1
-call :require_command npm || exit /b 1
-call :assert_port_free 8888 "NestJS API" || exit /b 1
-call :assert_port_free 3000 "React frontend" || exit /b 1
+call :require_command docker-compose || goto :fail
+call :require_command npm || goto :fail
+call :assert_port_free 8888 "NestJS API" || goto :fail
+call :assert_port_free 3000 "React frontend" || goto :fail
 
-pushd "%BACKEND_DIR%" || exit /b 1
+pushd "%BACKEND_DIR%" || goto :fail
 
 echo [1/6] Starting Docker MySQL and LocalStack SQS...
 docker-compose up -d
-if errorlevel 1 exit /b 1
+if errorlevel 1 goto :fail
 
 echo [2/6] Waiting for MySQL to become healthy...
 call :wait_for_mysql
-if errorlevel 1 exit /b 1
+if errorlevel 1 goto :fail
 
 call :get_localstack_endpoint
-if errorlevel 1 exit /b 1
+if errorlevel 1 goto :fail
 
 echo [3/6] Waiting for LocalStack SQS at %SQS_ENDPOINT%...
 call :wait_for_localstack "%SQS_ENDPOINT%"
-if errorlevel 1 exit /b 1
+if errorlevel 1 goto :fail
 
 if not exist "node_modules\@fastify\multipart" (
   echo [4/6] Installing backend dependencies...
   npm install
-  if errorlevel 1 exit /b 1
+  if errorlevel 1 goto :fail
 ) else (
   echo [4/6] Backend dependencies already installed.
 )
@@ -55,18 +55,18 @@ echo     grna_scaffold rows: %GRNA_COUNT%
 if "%NEEDS_DB_INIT%"=="1" (
   echo     Clean or incomplete database detected. Running db init...
   npm run db:init
-  if errorlevel 1 exit /b 1
+  if errorlevel 1 goto :fail
 ) else (
   echo     Existing data detected. Skipping db init.
 )
 
 popd
 
-pushd "%FRONTEND_DIR%" || exit /b 1
+pushd "%FRONTEND_DIR%" || goto :fail
 if not exist "node_modules\typescript" (
   echo [6/6] Installing frontend dependencies...
   npm install
-  if errorlevel 1 exit /b 1
+  if errorlevel 1 goto :fail
 ) else (
   echo [6/6] Frontend dependencies already installed.
 )
@@ -82,7 +82,18 @@ echo NestJS API: http://localhost:8888
 echo React frontend: http://localhost:3000
 echo LocalStack SQS: %SQS_ENDPOINT%
 echo MySQL and LocalStack are managed by backend-nestjs\docker-compose.yml
+goto :success
+
+:success
+echo.
+pause
 exit /b 0
+
+:fail
+echo.
+echo [CasVarDB UAT] Startup failed. Review the messages above.
+pause
+exit /b 1
 
 :require_command
 where %~1 >nul 2>nul

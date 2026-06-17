@@ -3,7 +3,8 @@ import { Chart as ChartJS, CategoryScale, LinearScale,  BarElement, LineElement,
 import { BoxPlotController, BoxAndWiskers } from "@sgratzl/chartjs-chart-boxplot";
 import { Chart } from "react-chartjs-2";
 import Heatmap from "react-heatmap-grid";
-import { getQueuedResult } from "../api/queuedRequest";
+import { getQueuedResult, QueuedRequestStatusUpdate } from "../api/queuedRequest";
+import QueueNotice from "../components/QueueNotice";
 import "./Statistics.css";
 
 ChartJS.register(BoxPlotController, BoxAndWiskers, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend, Title);
@@ -32,6 +33,7 @@ type ColorLegendProps = { min: number; max: number };
 const Statistics = () => {
   const BASE_URL = `${process.env.REACT_APP_API_URL}`;
   const [isNormalized, setIsNormalized] = useState(false);
+  const [queuedRequests, setQueuedRequests] = useState<Record<string, QueuedRequestStatusUpdate["status"]>>({});
 
   const [chartStates, setChartStates] = useState({
     freqPerCas9Variant: { data: null, loading: true },
@@ -44,9 +46,30 @@ const Statistics = () => {
     heatmapData: { data: null, loading: true }
   });
 
+  const handleQueuedRequestStatus = ({ id, status }: QueuedRequestStatusUpdate) => {
+    setQueuedRequests((prev) => {
+      const next = { ...prev };
+
+      if (status === "completed" || status === "failed") {
+        delete next[id];
+        return next;
+      }
+
+      next[id] = status;
+      return next;
+    });
+  };
+
+  const queuedRequestOptions = { onStatusChange: handleQueuedRequestStatus };
+  const hasQueuedRequests = Object.keys(queuedRequests).length > 0;
+
   const fetchFreqPerCas9Variant = async () => {
     try {
-      const statsByVariant = await getQueuedResult<SummaryStatsResponse>(`${BASE_URL}/statistics/cas9-freq-per-variant`);
+      const statsByVariant = await getQueuedResult<SummaryStatsResponse>(
+        `${BASE_URL}/statistics/cas9-freq-per-variant`,
+        undefined,
+        queuedRequestOptions
+      );
       setChartStates((prev) => ({
         ...prev,
         freqPerCas9Variant: { data: {
@@ -89,7 +112,11 @@ const Statistics = () => {
 
   const fetchFreqPerCas12Variant = async () => {
     try {
-      const statsByVariant = await getQueuedResult<SummaryStatsResponse>(`${BASE_URL}/statistics/cas12-freq-per-variant`);
+      const statsByVariant = await getQueuedResult<SummaryStatsResponse>(
+        `${BASE_URL}/statistics/cas12-freq-per-variant`,
+        undefined,
+        queuedRequestOptions
+      );
       setChartStates((prev) => ({
         ...prev,
         freqPerCas12Variant: { data: {
@@ -132,7 +159,11 @@ const Statistics = () => {
 
   const fetchFreqPerScaffold = async () => {
     try {
-      const statsByScaffold = await getQueuedResult<SummaryStatsResponse>(`${BASE_URL}/statistics/freq-per-scaffold`);
+      const statsByScaffold = await getQueuedResult<SummaryStatsResponse>(
+        `${BASE_URL}/statistics/freq-per-scaffold`,
+        undefined,
+        queuedRequestOptions
+      );
       setChartStates((prev) => ({
         ...prev,
         freqPerScaffold: { data: {
@@ -175,7 +206,11 @@ const Statistics = () => {
 
   const fetchDataCountPerStudy = async () => {
     try {
-      const studyCounts = await getQueuedResult<StudyCountResponse>(`${BASE_URL}/statistics/data-count-per-study`);
+      const studyCounts = await getQueuedResult<StudyCountResponse>(
+        `${BASE_URL}/statistics/data-count-per-study`,
+        undefined,
+        queuedRequestOptions
+      );
       const labels = Object.keys(studyCounts);
       const data = Object.values(studyCounts);
       setChartStates((prev) => ({
@@ -204,7 +239,11 @@ const Statistics = () => {
 
   const fetchCas9FreqPerMismatch = async () => {
     try {
-      const mismatchFrequency = await getQueuedResult<MismatchFrequencyResponse>(`${BASE_URL}/statistics/cas9-freq-per-mismatch`);
+      const mismatchFrequency = await getQueuedResult<MismatchFrequencyResponse>(
+        `${BASE_URL}/statistics/cas9-freq-per-mismatch`,
+        undefined,
+        queuedRequestOptions
+      );
       const labels = Object.keys(mismatchFrequency);
       const data = Object.values(mismatchFrequency);
 
@@ -239,7 +278,11 @@ const Statistics = () => {
 
   const fetchCas12FreqPerMismatch = async () => {
     try {
-      const mismatchFrequency = await getQueuedResult<MismatchFrequencyResponse>(`${BASE_URL}/statistics/cas12-freq-per-mismatch`);
+      const mismatchFrequency = await getQueuedResult<MismatchFrequencyResponse>(
+        `${BASE_URL}/statistics/cas12-freq-per-mismatch`,
+        undefined,
+        queuedRequestOptions
+      );
       const labels = Object.keys(mismatchFrequency);
       const data = Object.values(mismatchFrequency);
 
@@ -274,7 +317,11 @@ const Statistics = () => {
 
   const fetchFreqMismatchPerVariant = async () => {
     try {
-      const freqMismatchPerVariant = await getQueuedResult<VariantMismatchResponse>(`${BASE_URL}/statistics/freq-mismatch-per-variant`);
+      const freqMismatchPerVariant = await getQueuedResult<VariantMismatchResponse>(
+        `${BASE_URL}/statistics/freq-mismatch-per-variant`,
+        undefined,
+        queuedRequestOptions
+      );
       setChartStates((prev) => ({
         ...prev,
         freqMismatchPerVariant: { data: {
@@ -306,7 +353,11 @@ const Statistics = () => {
 
   const fetchHeatmapData = async () => {
     try {
-      const heatmapData = await getQueuedResult<HeatmapResponse>(`${BASE_URL}/statistics/heatmap-data`);
+      const heatmapData = await getQueuedResult<HeatmapResponse>(
+        `${BASE_URL}/statistics/heatmap-data`,
+        undefined,
+        queuedRequestOptions
+      );
 
       setChartStates((prev) => ({
         ...prev,
@@ -447,6 +498,8 @@ const Statistics = () => {
           <h1>Statistics</h1>
         </div>
       </div>
+
+      {hasQueuedRequests && <QueueNotice />}
 
       <div id="heatmap" style={{ position: "relative", width: "95%", margin: "0px auto 50px auto" }}>
         <h4 style={{ textAlign: "center", color: "#444" }}>Mean Background Subtracted Intel Frequency Heatmap for Single Mismatch</h4>
