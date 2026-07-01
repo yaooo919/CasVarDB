@@ -179,7 +179,7 @@ else
 fi
 
 echo "[CasVarDB UAT] Writing frontend .env for static IP API..."
-printf "REACT_APP_API_URL=%s\n" "$PUBLIC_API_URL" > "$FRONTEND_DIR/.env"
+printf "PUBLIC_URL=/CasVarDB\nREACT_APP_API_URL=%s\n" "$PUBLIC_API_URL" > "$FRONTEND_DIR/.env"
 
 echo "[CasVarDB UAT] Launching NestJS API, queue worker, and React frontend..."
 echo "NestJS API bind: http://0.0.0.0:$API_PORT"

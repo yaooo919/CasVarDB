@@ -116,7 +116,15 @@ function Scaffold() {
           </div>
 
           <div className="download-link">
-            <a href="/#download" onClick={handleDownload}>Download Checked <i className="bi bi-file-earmark-arrow-down-fill"></i></a>
+            <a
+              href="#download"
+              onClick={(event) => {
+                event.preventDefault();
+                handleDownload();
+              }}
+            >
+              Download Checked <i className="bi bi-file-earmark-arrow-down-fill"></i>
+            </a>
           </div>
         </div>
       </div>
