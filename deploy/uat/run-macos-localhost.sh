@@ -8,6 +8,7 @@ FRONTEND_DIR="$ROOT_DIR/frontend"
 backend_pid=""
 worker_pid=""
 frontend_pid=""
+DOCKER_CMD=()
 COMPOSE_CMD=()
 
 require_command() {
@@ -62,20 +63,24 @@ ensure_docker_compose() {
   local has_docker_cli=0
 
   if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    DOCKER_CMD=(docker)
     COMPOSE_CMD=(docker compose)
     return 0
   fi
 
   if command -v docker >/dev/null 2>&1; then
+    DOCKER_CMD=(docker)
     has_docker_cli=1
   fi
 
   if [[ -x "$docker_desktop_cli" ]] && "$docker_desktop_cli" compose version >/dev/null 2>&1; then
+    DOCKER_CMD=("$docker_desktop_cli")
     COMPOSE_CMD=("$docker_desktop_cli" compose)
     return 0
   fi
 
   if [[ -x "$docker_desktop_cli" ]]; then
+    DOCKER_CMD=("$docker_desktop_cli")
     has_docker_cli=1
   fi
 
@@ -93,11 +98,13 @@ ensure_docker_compose() {
   install_user_docker_compose_plugin
 
   if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    DOCKER_CMD=(docker)
     COMPOSE_CMD=(docker compose)
     return 0
   fi
 
   if [[ -x "$docker_desktop_cli" ]] && "$docker_desktop_cli" compose version >/dev/null 2>&1; then
+    DOCKER_CMD=("$docker_desktop_cli")
     COMPOSE_CMD=("$docker_desktop_cli" compose)
     return 0
   fi
@@ -109,6 +116,66 @@ ensure_docker_compose() {
 
 docker_compose() {
   "${COMPOSE_CMD[@]}" "$@"
+}
+
+docker_info() {
+  [[ "${#DOCKER_CMD[@]}" -gt 0 ]] && "${DOCKER_CMD[@]}" info >/dev/null 2>&1
+}
+
+try_docker_desktop_socket() {
+  local socket_path="$HOME/.docker/run/docker.sock"
+  local previous_docker_host="${DOCKER_HOST-}"
+  local had_docker_host=0
+
+  if [[ -n "${DOCKER_HOST-}" ]]; then
+    had_docker_host=1
+  fi
+
+  if [[ ! -S "$socket_path" ]]; then
+    return 1
+  fi
+
+  export DOCKER_HOST="unix://$socket_path"
+  if docker_info; then
+    echo "Using Docker Desktop socket: $socket_path"
+    return 0
+  fi
+
+  if [[ "$had_docker_host" == "1" ]]; then
+    export DOCKER_HOST="$previous_docker_host"
+  else
+    unset DOCKER_HOST
+  fi
+
+  return 1
+}
+
+ensure_docker_daemon() {
+  local attempt
+
+  if docker_info || try_docker_desktop_socket; then
+    return 0
+  fi
+
+  if [[ -d "/Applications/Docker.app" ]] && command -v open >/dev/null 2>&1; then
+    echo "Docker is installed, but the Docker daemon is not reachable. Starting Docker Desktop..."
+    open -ga Docker >/dev/null 2>&1 || true
+
+    for attempt in $(seq 1 90); do
+      if docker_info || try_docker_desktop_socket; then
+        return 0
+      fi
+      sleep 2
+    done
+  fi
+
+  echo "Docker is installed, but the Docker daemon is not reachable."
+  echo "Start Docker Desktop and wait until it is running, then rerun this script."
+  echo "If Docker Desktop is already running, check the active Docker context:"
+  echo "  docker context ls"
+  echo "  docker context use desktop-linux"
+  echo "  docker info"
+  exit 1
 }
 
 assert_port_free() {
@@ -202,6 +269,7 @@ ensure_docker_compose
 require_command npm
 require_command lsof
 require_command curl
+ensure_docker_daemon
 
 assert_port_free 8888 "NestJS API"
 assert_port_free 3000 "React frontend"
