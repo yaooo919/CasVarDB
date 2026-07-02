@@ -21,8 +21,80 @@ require_command() {
   fi
 }
 
+install_user_docker_compose_plugin() {
+  local arch
+  local download_url
+  local plugin_dir
+  local plugin_path
+  local tmp_path
+
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "curl is required to install the Docker Compose plugin."
+    exit 1
+  fi
+
+  case "$(uname -m)" in
+    arm64|aarch64)
+      arch="aarch64"
+      ;;
+    x86_64|amd64)
+      arch="x86_64"
+      ;;
+    *)
+      echo "Unsupported macOS CPU architecture for Docker Compose: $(uname -m)"
+      exit 1
+      ;;
+  esac
+
+  plugin_dir="${DOCKER_CONFIG:-$HOME/.docker}/cli-plugins"
+  plugin_path="$plugin_dir/docker-compose"
+  tmp_path="$plugin_path.tmp.$$"
+  download_url="${CASVARDB_COMPOSE_DOWNLOAD_URL:-https://github.com/docker/compose/releases/latest/download/docker-compose-darwin-$arch}"
+
+  echo "Docker is installed, but the Docker Compose plugin is missing."
+  echo "Installing Docker Compose plugin for this user..."
+  echo "  $plugin_path"
+
+  mkdir -p "$plugin_dir"
+  curl -fL --retry 3 "$download_url" -o "$tmp_path"
+  chmod +x "$tmp_path"
+  mv "$tmp_path" "$plugin_path"
+}
+
 ensure_docker_compose() {
   local docker_desktop_cli="/Applications/Docker.app/Contents/Resources/bin/docker"
+  local has_docker_cli=0
+
+  if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    COMPOSE_CMD=(docker compose)
+    return 0
+  fi
+
+  if command -v docker >/dev/null 2>&1; then
+    has_docker_cli=1
+  fi
+
+  if [[ -x "$docker_desktop_cli" ]] && "$docker_desktop_cli" compose version >/dev/null 2>&1; then
+    COMPOSE_CMD=("$docker_desktop_cli" compose)
+    return 0
+  fi
+
+  if [[ -x "$docker_desktop_cli" ]]; then
+    has_docker_cli=1
+  fi
+
+  if command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE_CMD=(docker-compose)
+    return 0
+  fi
+
+  if [[ "$has_docker_cli" == "0" ]]; then
+    echo "Docker is required but was not found."
+    echo "Install Docker Desktop for macOS, start it, and rerun this script."
+    exit 1
+  fi
+
+  install_user_docker_compose_plugin
 
   if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
     COMPOSE_CMD=(docker compose)
@@ -34,46 +106,9 @@ ensure_docker_compose() {
     return 0
   fi
 
-  if command -v docker-compose >/dev/null 2>&1; then
-    COMPOSE_CMD=(docker-compose)
-    return 0
-  fi
-
-  echo "Docker Compose is required but was not found."
-  echo
-  echo "Install Docker Desktop for macOS, start it, and make sure this command works:"
-  echo "  docker compose version"
-  echo
-  echo "This script will not change Homebrew permissions automatically."
-  echo "To let it try 'brew install docker-compose', rerun with:"
-  echo "  CASVARDB_INSTALL_COMPOSE=1 bash $(basename "$0")"
-  echo
-
-  if [[ "${CASVARDB_INSTALL_COMPOSE:-}" != "1" ]]; then
-    exit 1
-  fi
-
-  if ! command -v brew >/dev/null 2>&1; then
-    echo "Install Docker Desktop for macOS, or install Homebrew first and rerun this script: https://brew.sh"
-    exit 1
-  fi
-
-  echo "Installing docker-compose with Homebrew..."
-
-  if ! brew install docker-compose; then
-    echo "Homebrew could not install docker-compose."
-    echo "If Docker Desktop is installed, make sure 'docker compose version' works in this shell."
-    echo "Otherwise, fix Homebrew permissions and rerun this script."
-    exit 1
-  fi
-
-  if ! command -v docker-compose >/dev/null 2>&1; then
-    echo "docker-compose installation finished, but the docker-compose command is still unavailable."
-    echo "Restart the terminal or check your Homebrew PATH, then rerun this script."
-    exit 1
-  fi
-
-  COMPOSE_CMD=(docker-compose)
+  echo "Docker Compose plugin was installed, but 'docker compose version' is still unavailable."
+  echo "Check Docker CLI plugin discovery or run: docker compose version"
+  exit 1
 }
 
 docker_compose() {
