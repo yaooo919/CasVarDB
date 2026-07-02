@@ -22,8 +22,15 @@ require_command() {
 }
 
 ensure_docker_compose() {
-  if docker compose version >/dev/null 2>&1; then
+  local docker_desktop_cli="/Applications/Docker.app/Contents/Resources/bin/docker"
+
+  if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
     COMPOSE_CMD=(docker compose)
+    return 0
+  fi
+
+  if [[ -x "$docker_desktop_cli" ]] && "$docker_desktop_cli" compose version >/dev/null 2>&1; then
+    COMPOSE_CMD=("$docker_desktop_cli" compose)
     return 0
   fi
 
@@ -32,12 +39,26 @@ ensure_docker_compose() {
     return 0
   fi
 
-  echo "Docker Compose is not installed. Installing docker-compose with Homebrew..."
+  echo "Docker Compose is required but was not found."
+  echo
+  echo "Install Docker Desktop for macOS, start it, and make sure this command works:"
+  echo "  docker compose version"
+  echo
+  echo "This script will not change Homebrew permissions automatically."
+  echo "To let it try 'brew install docker-compose', rerun with:"
+  echo "  CASVARDB_INSTALL_COMPOSE=1 bash $(basename "$0")"
+  echo
+
+  if [[ "${CASVARDB_INSTALL_COMPOSE:-}" != "1" ]]; then
+    exit 1
+  fi
 
   if ! command -v brew >/dev/null 2>&1; then
     echo "Install Docker Desktop for macOS, or install Homebrew first and rerun this script: https://brew.sh"
     exit 1
   fi
+
+  echo "Installing docker-compose with Homebrew..."
 
   if ! brew install docker-compose; then
     echo "Homebrew could not install docker-compose."
