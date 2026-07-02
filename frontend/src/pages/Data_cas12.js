@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Tooltip, OverlayTrigger, Modal, Button } from 'react-bootstrap';
 import axios from "axios";
 import ReactPaginate from "react-paginate";
@@ -80,7 +80,7 @@ const columnDescriptions = {
     full: (
       <>
         <p>The scaffold of the sgRNA, consisting of the repeat-anti-repeat loop and other stem loops.</p>
-        See <a href="/grna" style={{ color: 'blue', textDecoration: 'underline' }} target="_blank">gRNA Scaffold</a> for more details.
+        See <Link to="/grna" style={{ color: 'blue', textDecoration: 'underline' }} target="_blank" rel="noopener noreferrer">gRNA Scaffold</Link> for more details.
       </>
     )
   },
@@ -100,7 +100,7 @@ const columnDescriptions = {
     full: (
       <>
         <p>The source study from which the data was obtained. Each study has an abbreviated name.
-          See <a href="/studies" style={{ color: 'blue', textDecoration: 'underline' }}>Studies</a> for more details.
+          See <Link to="/studies" style={{ color: 'blue', textDecoration: 'underline' }}>Studies</Link> for more details.
         </p>
       </>
     )
