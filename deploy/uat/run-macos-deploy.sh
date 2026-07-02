@@ -12,6 +12,7 @@ PUBLIC_API_URL="http://$PUBLIC_IP:$API_PORT"
 backend_pid=""
 worker_pid=""
 frontend_pid=""
+COMPOSE_CMD=()
 
 require_command() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -21,25 +22,41 @@ require_command() {
 }
 
 ensure_docker_compose() {
-  if command -v docker-compose >/dev/null 2>&1; then
+  if docker compose version >/dev/null 2>&1; then
+    COMPOSE_CMD=(docker compose)
     return 0
   fi
 
-  echo "docker-compose is not installed. Installing docker-compose with Homebrew..."
+  if command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE_CMD=(docker-compose)
+    return 0
+  fi
+
+  echo "Docker Compose is not installed. Installing docker-compose with Homebrew..."
 
   if ! command -v brew >/dev/null 2>&1; then
-    echo "Homebrew is required to auto-install docker-compose on macOS."
-    echo "Install Homebrew first, then rerun this script: https://brew.sh"
+    echo "Install Docker Desktop for macOS, or install Homebrew first and rerun this script: https://brew.sh"
     exit 1
   fi
 
-  brew install docker-compose
+  if ! brew install docker-compose; then
+    echo "Homebrew could not install docker-compose."
+    echo "If Docker Desktop is installed, make sure 'docker compose version' works in this shell."
+    echo "Otherwise, fix Homebrew permissions and rerun this script."
+    exit 1
+  fi
 
   if ! command -v docker-compose >/dev/null 2>&1; then
     echo "docker-compose installation finished, but the docker-compose command is still unavailable."
     echo "Restart the terminal or check your Homebrew PATH, then rerun this script."
     exit 1
   fi
+
+  COMPOSE_CMD=(docker-compose)
+}
+
+docker_compose() {
+  "${COMPOSE_CMD[@]}" "$@"
 }
 
 assert_port_free() {
@@ -55,7 +72,7 @@ assert_port_free() {
 localstack_endpoint() {
   local address
 
-  address="$(cd "$BACKEND_DIR" && docker-compose port localstack 4566 | tr -d '\r')"
+  address="$(cd "$BACKEND_DIR" && docker_compose port localstack 4566 | tr -d '\r')"
   if [[ -z "$address" ]]; then
     echo "Could not discover LocalStack host port."
     exit 1
@@ -89,7 +106,7 @@ wait_for_mysql() {
   local attempt
 
   for attempt in $(seq 1 60); do
-    if (cd "$BACKEND_DIR" && docker-compose exec -T mysql mysqladmin ping -h 127.0.0.1 -prootpass --silent >/dev/null 2>&1); then
+    if (cd "$BACKEND_DIR" && docker_compose exec -T mysql mysqladmin ping -h 127.0.0.1 -prootpass --silent >/dev/null 2>&1); then
       return 0
     fi
     sleep 2
@@ -103,7 +120,7 @@ table_count() {
   local table="$1"
   local count
 
-  count="$(cd "$BACKEND_DIR" && docker-compose exec -T mysql mysql -uroot -prootpass -N -B -e "SELECT COUNT(*) FROM casvardb.$table;" 2>/dev/null | tr -d '\r' | tail -n 1 || true)"
+  count="$(cd "$BACKEND_DIR" && docker_compose exec -T mysql mysql -uroot -prootpass -N -B -e "SELECT COUNT(*) FROM casvardb.$table;" 2>/dev/null | tr -d '\r' | tail -n 1 || true)"
   if [[ "$count" =~ ^[0-9]+$ ]]; then
     echo "$count"
   else
@@ -138,7 +155,7 @@ assert_port_free "$API_PORT" "NestJS API"
 assert_port_free "$FRONTEND_PORT" "React frontend"
 
 echo "[1/6] Starting Docker MySQL and LocalStack SQS..."
-(cd "$BACKEND_DIR" && docker-compose up -d)
+(cd "$BACKEND_DIR" && docker_compose up -d)
 
 echo "[2/6] Waiting for MySQL to become healthy..."
 wait_for_mysql
