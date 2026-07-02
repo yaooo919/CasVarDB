@@ -67,6 +67,7 @@ try_docker_socket() {
 }
 
 ensure_docker_daemon() {
+  local attempt
   local context_name
 
   set_docker_cmd docker
@@ -86,7 +87,45 @@ ensure_docker_daemon() {
   try_docker_socket "$HOME/.orbstack/run/docker.sock" && return 0
   try_docker_socket "$HOME/.rd/docker.sock" && return 0
 
+  if command -v colima >/dev/null 2>&1; then
+    echo "Docker daemon is not reachable. Trying to start Colima..."
+    colima start >/dev/null 2>&1 || true
+  fi
+
+  if command -v orb >/dev/null 2>&1; then
+    echo "Docker daemon is not reachable. Trying to start OrbStack..."
+    orb start >/dev/null 2>&1 || true
+  fi
+
+  if command -v rdctl >/dev/null 2>&1; then
+    echo "Docker daemon is not reachable. Trying to start Rancher Desktop..."
+    rdctl start >/dev/null 2>&1 || true
+  fi
+
+  if [[ -d "/Applications/Docker.app" ]] && command -v open >/dev/null 2>&1; then
+    echo "Docker daemon is not reachable. Trying to start Docker Desktop..."
+    open -g -a Docker >/dev/null 2>&1 || true
+  fi
+
+  for attempt in $(seq 1 90); do
+    set_docker_cmd docker
+    docker_ok && return 0
+
+    for context_name in desktop-linux colima orbstack rancher-desktop default; do
+      try_docker_context "$context_name" && return 0
+    done
+
+    try_docker_socket "$HOME/.docker/run/docker.sock" && return 0
+    try_docker_socket "$HOME/Library/Containers/com.docker.docker/Data/docker.sock" && return 0
+    try_docker_socket "$HOME/.colima/default/docker.sock" && return 0
+    try_docker_socket "$HOME/.orbstack/run/docker.sock" && return 0
+    try_docker_socket "$HOME/.rd/docker.sock" && return 0
+
+    sleep 2
+  done
+
   echo "Docker CLI exists, but no reachable Docker daemon was found."
+  echo "This means 'docker' is installed, but no container runtime is running for user $(whoami)."
   echo "Start Docker Desktop, Colima, OrbStack, or Rancher Desktop, then rerun this script."
   echo "Useful checks:"
   echo "  docker context ls"
