@@ -1,0 +1,71 @@
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    ports:
+      - "3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: casvardb
+      MYSQL_USER: collab_casvardb
+      MYSQL_PASSWORD: "Cv2y*%"
+    volumes:
+      - uat_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -prootpass --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  localstack:
+    image: localstack/localstack:3.5
+    restart: unless-stopped
+    ports:
+      - "4566"
+    environment:
+      SERVICES: sqs
+      DEBUG: "0"
+    volumes:
+      - uat_localstack_data:/var/lib/localstack
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://127.0.0.1:4566/_localstack/health | grep -q '\"sqs\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build:
+      context: ../..
+      dockerfile: deploy/uat/Dockerfile.uat-service
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - localstack
+    ports:
+      - "3000:3000"
+      - "8888:8888"
+    environment:
+      API_PORT: "8888"
+      FRONTEND_PORT: "3000"
+      PUBLIC_URL: /CasVarDB
+      REACT_APP_API_URL: https://crisprxai.cs.ox.ac.uk/CasVarDB/api
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_USER: collab_casvardb
+      DB_PASSWORD: "Cv2y*%"
+      DB_NAME: casvardb
+      AWS_REGION: ap-southeast-2
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      SQS_ENDPOINT: http://localstack:4566
+      SQS_QUEUE_NAME: casvardb-jobs
+      SQS_WAIT_TIME_SECONDS: "10"
+      SQS_VISIBILITY_TIMEOUT_SECONDS: "300"
+      WORKER_POLL_INTERVAL_MS: "1000"
+      WORKER_CONCURRENCY: "4"
+    volumes:
+      - ../../backend-nestjs/data:/app/backend-nestjs/data
+
+volumes:
+  uat_mysql_data: {}
+  uat_localstack_data: {}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { buildApiUrl } from "../api/apiUrl";
 import "./Scaffold.css";
 
 function Scaffold() {
@@ -15,7 +16,7 @@ function Scaffold() {
   useEffect(() => {
     const fetchData = async() => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/grna`, {
+        const response = await axios.get(buildApiUrl("/grna"), {
           params: {
             sortField,
             sortDirection
@@ -116,7 +117,15 @@ function Scaffold() {
           </div>
 
           <div className="download-link">
-            <a href="/#download" onClick={handleDownload}>Download Checked <i className="bi bi-file-earmark-arrow-down-fill"></i></a>
+            <a
+              href="#download"
+              onClick={(event) => {
+                event.preventDefault();
+                handleDownload();
+              }}
+            >
+              Download Checked <i className="bi bi-file-earmark-arrow-down-fill"></i>
+            </a>
           </div>
         </div>
       </div>

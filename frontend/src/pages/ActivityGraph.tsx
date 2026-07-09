@@ -3,17 +3,16 @@ import { Chart as ChartJS, CategoryScale, LinearScale,  BarElement, LineElement,
 import { BoxPlotController, BoxAndWiskers } from "@sgratzl/chartjs-chart-boxplot";
 import { Chart } from "react-chartjs-2";
 import { density1d } from "fast-kde";
+import { buildApiUrl } from "../api/apiUrl";
 import { getQueuedResult, QueuedRequestStatusUpdate } from "../api/queuedRequest";
-import QueueNotice from "../components/QueueNotice";
 import "./ActivityGraph.css";
 import sidebarRight from "../assets/sidebar-right.png";
 import sidebarLeft from "../assets/sidebar-left.png";
+import QueueNotice from "../components/QueueNotice";
 
 ChartJS.register(BoxPlotController, BoxAndWiskers, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend, Title);
 
 const ActivityGraph = () => {
-  const BASE_URL = `${process.env.REACT_APP_API_URL}`;
-
   const options = {
     pams: ["NGG", "NNGG", "NNGRRT", "NNNRRT", "TTTV"],
     mismatches: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
@@ -106,7 +105,7 @@ const ActivityGraph = () => {
     try {
       const allData = await Promise.all(
         parameterSets.map(async (set) => {
-          const currentData = await getQueuedResult<Record<string, number[]>>(`${BASE_URL}/statistics/activity-graph`, {
+          const currentData = await getQueuedResult<Record<string, number[]>>(buildApiUrl("/statistics/activity-graph"), {
             params: {
               pam: set.pam,
               numberOfMismatches: set.mismatches,
@@ -121,7 +120,7 @@ const ActivityGraph = () => {
           let allPositionsCount = null;
 
           if (set.mismatches === 1) {
-            const allPositionsData = await getQueuedResult<Record<string, number>>(`${BASE_URL}/statistics/activity-graph`, {
+            const allPositionsData = await getQueuedResult<Record<string, number>>(buildApiUrl("/statistics/activity-graph"), {
               params: {
                 pam: set.pam,
                 numberOfMismatches: set.mismatches,

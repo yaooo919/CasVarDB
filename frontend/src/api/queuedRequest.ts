@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig } from "axios";
+import { buildApiUrl } from "./apiUrl";
 
 type QueuedResponse = {
   id: string;
@@ -34,29 +35,17 @@ export async function getQueuedResult<T>(
     return response.data as T;
   }
 
-  options.onStatusChange?.({ id: response.data.id, status: response.data.status });
-
-  try {
-    return await pollJobResult<T>(url, response.data.id, options);
-  } catch (error) {
-    options.onStatusChange?.({ id: response.data.id, status: "failed" });
-    throw error;
-  }
+  return pollJobResult<T>(response.data.id);
 }
 
-async function pollJobResult<T>(
-  requestUrl: string,
-  jobId: string,
-  options: QueuedRequestOptions
-): Promise<T> {
+async function pollJobResult<T>(jobId: string): Promise<T> {
   const startedAt = Date.now();
 
   while (Date.now() - startedAt < POLL_TIMEOUT_MS) {
-    const jobResponse = await axios.get<JobStatusResponse>(buildJobUrl(requestUrl, `/jobs/${jobId}`));
-    options.onStatusChange?.({ id: jobResponse.data.id || jobId, status: jobResponse.data.status });
+    const jobResponse = await axios.get<JobStatusResponse>(buildApiUrl(`/jobs/${jobId}`));
 
     if (jobResponse.data.status === "completed") {
-      const resultResponse = await axios.get<T>(buildJobUrl(requestUrl, `/jobs/${jobId}/result`));
+      const resultResponse = await axios.get<T>(buildApiUrl(`/jobs/${jobId}/result`));
       return resultResponse.data;
     }
 
@@ -83,10 +72,6 @@ function isQueuedResponse(value: unknown): value is QueuedResponse {
 
 function isJobStatus(value: unknown): value is JobStatusResponse["status"] {
   return value === "queued" || value === "running" || value === "completed" || value === "failed";
-}
-
-function buildJobUrl(requestUrl: string, path: string): string {
-  return new URL(path, requestUrl).toString();
 }
 
 function sleep(ms: number): Promise<void> {

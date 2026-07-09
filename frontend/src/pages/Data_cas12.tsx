@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Tooltip, OverlayTrigger, Modal, Button } from "react-bootstrap";
 import axios from "axios";
 import ReactPaginate from "react-paginate";
 import "./Data_cas9.css"; // use same css rules as cas9 data page
 import cas12ColDescriptionImg from "../assets/cas12-col-description.png";
+import { buildApiUrl } from "../api/apiUrl";
 
 const studyURLs = {
   "Kim_2017": "https://www.nature.com/articles/nmeth.4104",
@@ -80,7 +81,7 @@ const columnDescriptions = {
     full: (
       <>
         <p>The scaffold of the sgRNA, consisting of the repeat-anti-repeat loop and other stem loops.</p>
-        See <a href="/grna" style={{ color: "blue", textDecoration: "underline" }} target="_blank">gRNA Scaffold</a> for more details.
+        See <Link to="/grna" style={{ color: "blue", textDecoration: "underline" }} target="_blank">gRNA Scaffold</Link> for more details.
       </>
     )
   },
@@ -100,7 +101,7 @@ const columnDescriptions = {
     full: (
       <>
         <p>The source study from which the data was obtained. Each study has an abbreviated name.
-          See <a href="/studies" style={{ color: "blue", textDecoration: "underline" }}>Studies</a> for more details.
+          See <Link to="/studies" style={{ color: "blue", textDecoration: "underline" }}>Studies</Link> for more details.
         </p>
       </>
     )
@@ -202,7 +203,7 @@ function Data_cas12() {
 
   const fetchData = async() => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/data/cas12`, {
+      const response = await axios.get(buildApiUrl("/data/cas12"), {
         params: {
           page: currentPage,
           pageSize,
@@ -263,7 +264,7 @@ function Data_cas12() {
     }
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/download`, {
+      const response = await axios.post(buildApiUrl("/download"), {
         selectedIds: selectedItems
       }, {
         responseType: "blob"
@@ -284,7 +285,7 @@ function Data_cas12() {
     <Tooltip id={`tooltip-${column}`}>
       {columnDescriptions[column].short} <br />
       <a
-        href="/#details"
+        href="#details"
         onClick={(event) => {
           event.stopPropagation();
           handleShowModal(column);
@@ -365,7 +366,15 @@ function Data_cas12() {
           </div>
 
           <div className="download-link">
-            <a href="/#download" onClick={handleDownload}>Download Checked <i className="bi bi-file-earmark-arrow-down-fill"></i></a>
+            <a
+              href="#download"
+              onClick={(event) => {
+                event.preventDefault();
+                handleDownload();
+              }}
+            >
+              Download Checked <i className="bi bi-file-earmark-arrow-down-fill"></i>
+            </a>
           </div>
         </div>
       </div>

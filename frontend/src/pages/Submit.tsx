@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./Submit.css";
 import { Modal, Button } from "react-bootstrap";
+import { buildApiUrl } from "../api/apiUrl";
 
 const SubmitPage = () => {
   const [file, setFile] = useState(null);
@@ -36,7 +37,7 @@ const SubmitPage = () => {
     formData.append("metadata", metadata);
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/submit`, formData, {
+      const response = await axios.post(buildApiUrl("/submit"), formData, {
         headers: {
           "Content-Type": "multipart/form-data"
         }

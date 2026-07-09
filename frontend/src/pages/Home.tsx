@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Modal } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Home.css";
 
 function Home() {
@@ -76,10 +76,10 @@ function Home() {
                 </p>
 
                 <div className="text-column-buttons">
-                  <a href="/statistics">
+                  <Link to="/statistics">
                     <button type="button">Statistics  <i className="bi bi-bar-chart-line-fill"></i></button>
-                  </a>
-                  <a href="/#">
+                  </Link>
+                  <a href="#download">
                     <button type="button" onClick={() => setShow(true)}>Download  <i className="bi bi-download"></i></button>
                   </a>
                 </div>
@@ -121,7 +121,7 @@ function Home() {
                     {selectedDB === null ? "SEARCH" : `Search ${selectedDB}`} <i className="bi bi-caret-down-fill"></i>
                   </button>
                   <div className="dropdown-content">
-                    <a href="/#"
+                    <a href="#search-cas9"
                       onClick={(e) => {
                         e.preventDefault();
                         setSelectedDB("Cas9");
@@ -130,7 +130,7 @@ function Home() {
                     >
                       Search Cas9
                     </a>
-                    <a  href="/#"
+                    <a href="#search-cas12"
                       onClick={(e) => {
                         e.preventDefault();
                         setSelectedDB("Cas12");
