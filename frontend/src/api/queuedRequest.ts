@@ -61,7 +61,19 @@ function isJobStatus(value: unknown): value is JobStatusResponse["status"] {
 }
 
 function buildJobUrl(requestUrl: string, path: string): string {
-  return new URL(path, requestUrl).toString();
+  const apiBaseUrl = process.env.REACT_APP_API_URL?.trim();
+  const normalizedPath = path.replace(/^\/+/, "");
+
+  if (apiBaseUrl) {
+    return new URL(normalizedPath, ensureTrailingSlash(apiBaseUrl)).toString();
+  }
+
+  const url = new URL(requestUrl, window.location.origin);
+  return new URL(normalizedPath, `${url.origin}/`).toString();
+}
+
+function ensureTrailingSlash(value: string): string {
+  return value.endsWith("/") ? value : `${value}/`;
 }
 
 function sleep(ms: number): Promise<void> {
