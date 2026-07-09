@@ -3,6 +3,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale,  BarElement, LineElement,
 import { BoxPlotController, BoxAndWiskers } from "@sgratzl/chartjs-chart-boxplot";
 import { Chart } from "react-chartjs-2";
 import Heatmap from "react-heatmap-grid";
+import { buildApiUrl } from "../api/apiUrl";
 import { getQueuedResult } from "../api/queuedRequest";
 import "./Statistics.css";
 
@@ -30,7 +31,6 @@ type HeatmapResponse = Record<string, Record<string, { raw: number; normalized: 
 type ColorLegendProps = { min: number; max: number };
 
 const Statistics = () => {
-  const BASE_URL = `${process.env.REACT_APP_API_URL}`;
   const [isNormalized, setIsNormalized] = useState(false);
 
   const [chartStates, setChartStates] = useState({
@@ -46,7 +46,7 @@ const Statistics = () => {
 
   const fetchFreqPerCas9Variant = async () => {
     try {
-      const statsByVariant = await getQueuedResult<SummaryStatsResponse>(`${BASE_URL}/statistics/cas9-freq-per-variant`);
+      const statsByVariant = await getQueuedResult<SummaryStatsResponse>(buildApiUrl("/statistics/cas9-freq-per-variant"));
       setChartStates((prev) => ({
         ...prev,
         freqPerCas9Variant: { data: {
@@ -89,7 +89,7 @@ const Statistics = () => {
 
   const fetchFreqPerCas12Variant = async () => {
     try {
-      const statsByVariant = await getQueuedResult<SummaryStatsResponse>(`${BASE_URL}/statistics/cas12-freq-per-variant`);
+      const statsByVariant = await getQueuedResult<SummaryStatsResponse>(buildApiUrl("/statistics/cas12-freq-per-variant"));
       setChartStates((prev) => ({
         ...prev,
         freqPerCas12Variant: { data: {
@@ -132,7 +132,7 @@ const Statistics = () => {
 
   const fetchFreqPerScaffold = async () => {
     try {
-      const statsByScaffold = await getQueuedResult<SummaryStatsResponse>(`${BASE_URL}/statistics/freq-per-scaffold`);
+      const statsByScaffold = await getQueuedResult<SummaryStatsResponse>(buildApiUrl("/statistics/freq-per-scaffold"));
       setChartStates((prev) => ({
         ...prev,
         freqPerScaffold: { data: {
@@ -175,7 +175,7 @@ const Statistics = () => {
 
   const fetchDataCountPerStudy = async () => {
     try {
-      const studyCounts = await getQueuedResult<StudyCountResponse>(`${BASE_URL}/statistics/data-count-per-study`);
+      const studyCounts = await getQueuedResult<StudyCountResponse>(buildApiUrl("/statistics/data-count-per-study"));
       const labels = Object.keys(studyCounts);
       const data = Object.values(studyCounts);
       setChartStates((prev) => ({
@@ -204,7 +204,7 @@ const Statistics = () => {
 
   const fetchCas9FreqPerMismatch = async () => {
     try {
-      const mismatchFrequency = await getQueuedResult<MismatchFrequencyResponse>(`${BASE_URL}/statistics/cas9-freq-per-mismatch`);
+      const mismatchFrequency = await getQueuedResult<MismatchFrequencyResponse>(buildApiUrl("/statistics/cas9-freq-per-mismatch"));
       const labels = Object.keys(mismatchFrequency);
       const data = Object.values(mismatchFrequency);
 
@@ -239,7 +239,7 @@ const Statistics = () => {
 
   const fetchCas12FreqPerMismatch = async () => {
     try {
-      const mismatchFrequency = await getQueuedResult<MismatchFrequencyResponse>(`${BASE_URL}/statistics/cas12-freq-per-mismatch`);
+      const mismatchFrequency = await getQueuedResult<MismatchFrequencyResponse>(buildApiUrl("/statistics/cas12-freq-per-mismatch"));
       const labels = Object.keys(mismatchFrequency);
       const data = Object.values(mismatchFrequency);
 
@@ -274,7 +274,7 @@ const Statistics = () => {
 
   const fetchFreqMismatchPerVariant = async () => {
     try {
-      const freqMismatchPerVariant = await getQueuedResult<VariantMismatchResponse>(`${BASE_URL}/statistics/freq-mismatch-per-variant`);
+      const freqMismatchPerVariant = await getQueuedResult<VariantMismatchResponse>(buildApiUrl("/statistics/freq-mismatch-per-variant"));
       setChartStates((prev) => ({
         ...prev,
         freqMismatchPerVariant: { data: {
@@ -306,7 +306,7 @@ const Statistics = () => {
 
   const fetchHeatmapData = async () => {
     try {
-      const heatmapData = await getQueuedResult<HeatmapResponse>(`${BASE_URL}/statistics/heatmap-data`);
+      const heatmapData = await getQueuedResult<HeatmapResponse>(buildApiUrl("/statistics/heatmap-data"));
 
       setChartStates((prev) => ({
         ...prev,

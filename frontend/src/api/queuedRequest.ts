@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig } from "axios";
+import { buildApiUrl } from "./apiUrl";
 
 type QueuedResponse = {
   id: string;
@@ -21,17 +22,17 @@ export async function getQueuedResult<T>(url: string, config?: AxiosRequestConfi
     return response.data as T;
   }
 
-  return pollJobResult<T>(url, response.data.id);
+  return pollJobResult<T>(response.data.id);
 }
 
-async function pollJobResult<T>(requestUrl: string, jobId: string): Promise<T> {
+async function pollJobResult<T>(jobId: string): Promise<T> {
   const startedAt = Date.now();
 
   while (Date.now() - startedAt < POLL_TIMEOUT_MS) {
-    const jobResponse = await axios.get<JobStatusResponse>(buildJobUrl(requestUrl, `/jobs/${jobId}`));
+    const jobResponse = await axios.get<JobStatusResponse>(buildApiUrl(`/jobs/${jobId}`));
 
     if (jobResponse.data.status === "completed") {
-      const resultResponse = await axios.get<T>(buildJobUrl(requestUrl, `/jobs/${jobId}/result`));
+      const resultResponse = await axios.get<T>(buildApiUrl(`/jobs/${jobId}/result`));
       return resultResponse.data;
     }
 
@@ -58,22 +59,6 @@ function isQueuedResponse(value: unknown): value is QueuedResponse {
 
 function isJobStatus(value: unknown): value is JobStatusResponse["status"] {
   return value === "queued" || value === "running" || value === "completed" || value === "failed";
-}
-
-function buildJobUrl(requestUrl: string, path: string): string {
-  const apiBaseUrl = process.env.REACT_APP_API_URL?.trim();
-  const normalizedPath = path.replace(/^\/+/, "");
-
-  if (apiBaseUrl) {
-    return new URL(normalizedPath, ensureTrailingSlash(apiBaseUrl)).toString();
-  }
-
-  const url = new URL(requestUrl, window.location.origin);
-  return new URL(normalizedPath, `${url.origin}/`).toString();
-}
-
-function ensureTrailingSlash(value: string): string {
-  return value.endsWith("/") ? value : `${value}/`;
 }
 
 function sleep(ms: number): Promise<void> {

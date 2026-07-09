@@ -5,6 +5,7 @@ import axios from "axios";
 import ReactPaginate from "react-paginate";
 import "./Data_cas9.css";
 import cas9ColDescriptionImg from "../assets/cas9-col-description.png";
+import { buildApiUrl } from "../api/apiUrl";
 
 const studyURLs = {
   "['Base Editor']": "https://www.nature.com/articles/s41587-023-01792-x",
@@ -216,7 +217,7 @@ function Data_cas9() {
 
   const fetchData = async() => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/data/cas9`, {
+      const response = await axios.get(buildApiUrl("/data/cas9"), {
         params: {
           page: currentPage,
           pageSize,
@@ -277,7 +278,7 @@ function Data_cas9() {
     }
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/download`, {
+      const response = await axios.post(buildApiUrl("/download"), {
         selectedIds: selectedItems
       }, {
         responseType: "blob"

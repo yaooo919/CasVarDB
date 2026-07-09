@@ -5,6 +5,7 @@ import axios from "axios";
 import ReactPaginate from "react-paginate";
 import "./Data_cas9.css"; // use same css rules as cas9 data page
 import cas12ColDescriptionImg from "../assets/cas12-col-description.png";
+import { buildApiUrl } from "../api/apiUrl";
 
 const studyURLs = {
   "Kim_2017": "https://www.nature.com/articles/nmeth.4104",
@@ -202,7 +203,7 @@ function Data_cas12() {
 
   const fetchData = async() => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/data/cas12`, {
+      const response = await axios.get(buildApiUrl("/data/cas12"), {
         params: {
           page: currentPage,
           pageSize,
@@ -263,7 +264,7 @@ function Data_cas12() {
     }
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/download`, {
+      const response = await axios.post(buildApiUrl("/download"), {
         selectedIds: selectedItems
       }, {
         responseType: "blob"
