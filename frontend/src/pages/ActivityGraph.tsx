@@ -4,10 +4,11 @@ import { BoxPlotController, BoxAndWiskers } from "@sgratzl/chartjs-chart-boxplot
 import { Chart } from "react-chartjs-2";
 import { density1d } from "fast-kde";
 import { buildApiUrl } from "../api/apiUrl";
-import { getQueuedResult } from "../api/queuedRequest";
+import { getQueuedResult, QueuedRequestStatusUpdate } from "../api/queuedRequest";
 import "./ActivityGraph.css";
 import sidebarRight from "../assets/sidebar-right.png";
 import sidebarLeft from "../assets/sidebar-left.png";
+import QueueNotice from "../components/QueueNotice";
 
 ChartJS.register(BoxPlotController, BoxAndWiskers, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend, Title);
 
@@ -40,6 +41,24 @@ const ActivityGraph = () => {
   const [isActivityGraphLoading, setIsActivityGraphLoading] = useState(false);
   const [isFirstGraphGenerated, setIsFirstGraphGenerated] = useState(false);
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
+  const [queuedRequests, setQueuedRequests] = useState<Record<string, QueuedRequestStatusUpdate["status"]>>({});
+
+  const handleQueuedRequestStatus = ({ id, status }: QueuedRequestStatusUpdate) => {
+    setQueuedRequests((prev) => {
+      const next = { ...prev };
+
+      if (status === "completed" || status === "failed") {
+        delete next[id];
+        return next;
+      }
+
+      next[id] = status;
+      return next;
+    });
+  };
+
+  const queuedRequestOptions = { onStatusChange: handleQueuedRequestStatus };
+  const hasQueuedRequests = Object.keys(queuedRequests).length > 0;
 
   const addParameterSet = () => {
     setParameterSets([...parameterSets, {
@@ -96,7 +115,7 @@ const ActivityGraph = () => {
                                   ? `[${set.mismatchPosition}]`
                                   : undefined
             }
-          });
+          }, queuedRequestOptions);
 
           let allPositionsCount = null;
 
@@ -108,7 +127,7 @@ const ActivityGraph = () => {
                 variant: set.variant,
                 countOnly: true
               }
-            });
+            }, queuedRequestOptions);
 
             allPositionsCount = allPositionsData?.[set.variant] || 0;
           }
@@ -390,6 +409,8 @@ const ActivityGraph = () => {
 
         <div className={`activity-graph-main-content ${isPanelCollapsed ? "expanded" : ""}`}>
           {/* <h1>Mean Background Subtracted Indel Frequency Distribution</h1> */}
+
+          {hasQueuedRequests && <QueueNotice />}
 
           <div className="graph-container">
             {!isActivityGraphLoading && activityGraphs.length === 0 && (

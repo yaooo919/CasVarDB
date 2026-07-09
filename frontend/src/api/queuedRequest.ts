@@ -12,10 +12,23 @@ type JobStatusResponse = {
   error: string | null;
 };
 
+export type QueuedRequestStatusUpdate = {
+  id: string;
+  status: JobStatusResponse["status"];
+};
+
+type QueuedRequestOptions = {
+  onStatusChange?: (update: QueuedRequestStatusUpdate) => void;
+};
+
 const POLL_INTERVAL_MS = 1000;
 const POLL_TIMEOUT_MS = 600000;
 
-export async function getQueuedResult<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+export async function getQueuedResult<T>(
+  url: string,
+  config?: AxiosRequestConfig,
+  options: QueuedRequestOptions = {}
+): Promise<T> {
   const response = await axios.get(url, config);
 
   if (!isQueuedResponse(response.data)) {
