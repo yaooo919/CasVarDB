@@ -1,25 +1,41 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "./Navbar.css";
 
 function Navbar() {
   const location = useLocation();
   const navbarClass = location.pathname === "/" ? "navbar-home" : "navbar-data";
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const closeMenu = () => setIsMenuOpen(false);
 
   return (
     <div>
       <div className="navbar-bg">
-        <div className={`${navbarClass}`}>
+        <nav className={navbarClass} aria-label="Primary navigation">
           <div className="logo">
-            <Link to="/">CasVarDB</Link>
+            <Link to="/" onClick={closeMenu}>CasVarDB</Link>
           </div>
 
-          <div className="collapse-menu">
-            <div className="bar"></div>
-            <div className="bar"></div>
-            <div className="bar"></div>
-          </div>
+          <button
+            type="button"
+            className="collapse-menu"
+            aria-controls="primary-navigation-menu"
+            aria-expanded={isMenuOpen}
+            aria-label={`${isMenuOpen ? "Close" : "Open"} navigation menu`}
+            onClick={() => setIsMenuOpen((isOpen) => !isOpen)}
+          >
+            <span className="bar"></span>
+            <span className="bar"></span>
+            <span className="bar"></span>
+          </button>
 
-          <ul className="navbar-menu">
+          <ul
+            id="primary-navigation-menu"
+            className={`navbar-menu${isMenuOpen ? " is-open" : ""}`}
+            aria-label="Primary navigation menu"
+            onClick={closeMenu}
+          >
             <li><Link to="/">Home</Link></li>
             <li>
               <Link to="/data/cas9">Data <i className="bi bi-chevron-compact-down"></i></Link>
@@ -46,7 +62,7 @@ function Navbar() {
                         </li> */}
             <li><Link to="/contact">Contact</Link></li>
           </ul>
-        </div>
+        </nav>
       </div>
     </div>
   );

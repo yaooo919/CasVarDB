@@ -9,6 +9,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
     /* max-width: 1200px; */
     max-width: 80%;
     margin: auto;
@@ -19,6 +20,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
     max-width: 90%;
     margin: auto;
 }
@@ -102,12 +104,17 @@
     flex-direction: column;
     gap: 5px;
     cursor: pointer;
-    position: relative;
-    top: 50%;
-    right: 50px;
+    border: 0;
     background-color: #fff;
     padding: 5px;
     border-radius: 5px;
+}
+
+.collapse-menu:hover,
+.collapse-menu:focus-visible {
+    background-color: #e6e6e6;
+    outline: 2px solid #62a1d4;
+    outline-offset: 2px;
 }
 
 .collapse-menu .bar {
@@ -118,8 +125,49 @@
 }
 
 @media (max-width: 768px) {
+    .navbar-home,
+    .navbar-data {
+        box-sizing: border-box;
+        max-width: none;
+        width: 100%;
+        padding: 0 20px;
+    }
+
     .navbar-menu {
         display: none;
+    }
+
+    .navbar-menu.is-open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 50px;
+        left: 0;
+        width: 100%;
+        padding: 0;
+        background-color: #000;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        z-index: 2000;
+    }
+
+    .navbar-menu.is-open > li {
+        width: 100%;
+    }
+
+    .navbar-menu.is-open a {
+        line-height: 1.4;
+        padding: 14px 20px;
+    }
+
+    .navbar-menu.is-open .dropdown-menu {
+        position: static;
+        display: block;
+        min-width: 0;
+        box-shadow: none;
+    }
+
+    .navbar-menu.is-open .dropdown-menu a {
+        padding-left: 40px;
     }
 
     .collapse-menu {
