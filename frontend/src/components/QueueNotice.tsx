@@ -1,6 +1,6 @@
 import "./QueueNotice.css";
 
-const LOCAL_DATABASE_URL = "https://github.com/Y-0919/CasVarDB.git";
+const LOCAL_DATABASE_URL = "https://github.com/yaooo919/CasVarDB.git";
 
 function QueueNotice() {
   return (
