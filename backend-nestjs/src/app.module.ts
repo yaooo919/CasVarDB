@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { AppConfigModule } from "./config/config.module";
+import { DataModule } from "./data/data.module";
 import { DatabaseModule } from "./database/database.module";
 import { DownloadModule } from "./download/download.module";
 import { GrnaModule } from "./grna/grna.module";
@@ -15,6 +16,7 @@ import { SubmitModule } from "./submit/submit.module";
     AppConfigModule,
     DatabaseModule,
     QueueModule,
+    DataModule,
     GrnaModule,
     DownloadModule,
     JobsModule,
