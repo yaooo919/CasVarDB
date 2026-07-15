@@ -168,7 +168,7 @@ function Home() {
             <li><a href="https://drive.google.com/file/d/1cp_gGih_2AV6HyYdINjH0fveo-0xbaVz/view?usp=sharing" download="cas9.csv">Cas9 Data</a></li>
             <li><a href="https://drive.google.com/file/d/1U6w07YwiZIIShxbZvWkoXw3J_pIrDocj/view?usp=sharing" download="cas12.csv">Cas12 Data</a></li>
             <li><a href="https://drive.google.com/file/d/1sDnQQZzjtbWC_LhaqimjMkOQ6WxyoLZz/view?usp=sharing" download="gRNA_scaffold.csv">gRNA Scaffold</a></li>
-            <li><a href="https://drive.google.com/file/d/1phM1coBDmBtAMSooySjrL0V5z7cMsMlo/view?usp=sharing" download="column_description.pdf">Data Column Description</a></li>
+            <li><a href="https://drive.google.com/file/d/1XuZmgXR6D4-rwYfpTHav2eP8HU9REvKk/view?usp=sharing" download="column_description.pdf">Data Column Description</a></li>
           </ul>
         </Modal.Body>
       </Modal>
